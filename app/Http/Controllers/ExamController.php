@@ -15,7 +15,7 @@ class ExamController extends Controller
         try {
             $exams =Exam::get();
             return $this->apiResponse(200, 'Exams Returned Successfully', null, [
-                $exams->makeHidden(['created_at','updated_at'])
+                'exams'=>$exams->makeHidden(['created_at','updated_at'])
             ]);
         } catch (\Exception $e) {
             DB::rollBack();
