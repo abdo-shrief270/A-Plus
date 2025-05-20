@@ -29,7 +29,7 @@ trait ApiResponse
             $array['errors'] = $errors;
         }
 
-        return response($array, 200);
+        return response($array, $code);
     }
 
 }
