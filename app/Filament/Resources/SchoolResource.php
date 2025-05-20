@@ -3,7 +3,6 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\SchoolResource\Pages;
-use App\Filament\Resources\SchoolResource\RelationManagers;
 use App\Models\School;
 use Filament\Forms;
 use Filament\Forms\Form;
@@ -81,6 +80,7 @@ class SchoolResource extends Resource
         return [
             'index' => Pages\ListSchools::route('/'),
             'create' => Pages\CreateSchool::route('/create'),
+            'edit' => Pages\EditSchool::route('/{record}/edit'),
         ];
     }
 
