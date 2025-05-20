@@ -22,7 +22,7 @@ class CheckUserNameRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'user_name' => 'required|string|max:255',
+            'user_name' => 'required|string|min:5|max:255',
         ];
     }
 
