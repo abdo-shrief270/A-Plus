@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Traits\ApiResponse;
 use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -9,6 +10,7 @@ use Tymon\JWTAuth\Facades\JWTAuth;
 
 class JwtMiddleware
 {
+    use ApiResponse;
     /**
      * Handle an incoming request.
      *
@@ -19,7 +21,7 @@ class JwtMiddleware
         try {
             JWTAuth::parseToken()->authenticate();
         } catch (\Exception $e) {
-            return response()->json(['error' => 'Unauthorized'], 401);
+            return $this->apiResponse(401,'Unauthorized');
         }
 
         return $next($request);
