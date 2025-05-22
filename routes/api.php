@@ -27,7 +27,9 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
             Route::post('/check', [AuthController::class, 'checkUserName']);
         });
     });
-
+    Route::any('/testMethod', function (Illuminate\Http\Request $request) {
+        return response()->json(['method' => $request->method()]);
+    });
 });
 
 
