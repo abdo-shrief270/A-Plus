@@ -22,27 +22,31 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
 
-      - name: SSH Deploy MT School
+      - name: Setup SSH
+        uses: webfactory/ssh-agent@v0.5.3
+        with:
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+
+      - name: SSH Deploy A-Plus-Dashboard
         if: github.event_name == 'push' || github.event_name == 'pull_request' && github.ref == 'refs/heads/main'
         uses: appleboy/ssh-action@master
         with:
           host: ${{ secrets.REMOTE_HOST }}
           username: ${{ secrets.REMOTE_USERNAME }}
-          password: ${{ secrets.REMOTE_PASSWORD }}
-          port: ${{ secrets.REMOTE_PORT }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
             echo "Changing directory to the deployment path"
             cd ${{ secrets.REMOTE_PATH }}
             echo "Pulling the latest changes from the main branch"
-            git pull origin main
+            sudo git pull origin main
             echo "Running database migrations"
-            php artisan migrate --force
+            sudo php artisan migrate --force
             echo "Checking if composer.json was modified"
             if git diff --name-only HEAD^ composer.json | grep composer.json; then
               echo "composer.json modified, running composer update"
-              yes | composer2 update
+              yes | sudo composer update
             else
               echo "No changes in composer.json, skipping composer update"
             fi
             echo "Clearing and optimizing cache"
-            php artisan optimize:clear
+            sudo php artisan optimize:clear
