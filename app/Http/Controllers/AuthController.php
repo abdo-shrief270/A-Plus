@@ -176,30 +176,55 @@ class AuthController extends Controller
         try {
             if(isset($request->user_name)){
                 $user=User::where('user_name',$request->user_name)->first();
+                $token = Str::random(100);
+
+                DB::table('password_reset_tokens')->insert([
+                    'user_id' => $user->id,
+                    'token' => $token,
+                    'created_at' => now(),
+                ]);
                 if(isset($user->phone)){
-                    return $this->apiResponse(200,'OTP is sent check your sms inbox!',null,['otpMethod'=>'phone']);
+                    return $this->apiResponse(200,'OTP is sent check your sms inbox!',null,['token'=>$token]);
                 }elseif(isset($user->email)){
-                    return $this->apiResponse(200,'OTP is sent check your email inbox!',null,['otpMethod'=>'email']);
+                    return $this->apiResponse(200,'OTP is sent check your email inbox!',null,['token'=>$token]);
                 }else{
                     return $this->apiResponse(404, 'لم يتم العثور على المستخدم بهذه البيانات');
                 }
             }
             elseif(isset($request->phone)){
                 $user=User::where('phone',$request->country_code.$request->phone)->first();
-                return $this->apiResponse(200,'OTP is sent check your sms inbox!',null,['otpMethod'=>'phone']);
+                $token = Str::random(100);
+                DB::table('password_reset_tokens')->insert([
+                    'user_id' => $user->id,
+                    'token' => $token,
+                    'created_at' => now(),
+                ]);
+                return $this->apiResponse(200,'OTP is sent check your sms inbox!',null,['token'=>$token]);
             }
             elseif(isset($request->whatsapp)){
                 $user=User::where('phone',$request->country_code.$request->whatsapp)->first();
-                return $this->apiResponse(200,'OTP is sent check your whatsapp inbox!',null,['otpMethod'=>'whatsapp']);
+                $token = Str::random(100);
+                DB::table('password_reset_tokens')->insert([
+                    'user_id' => $user->id,
+                    'token' => $token,
+                    'created_at' => now(),
+                ]);
+                return $this->apiResponse(200,'OTP is sent check your whatsapp inbox!',null,['token'=>$token]);
             }
             elseif(isset($request->email)){
                 $user=User::where('email',$request->email)->first();
-                return $this->apiResponse(200,'OTP is sent check your email inbox!',null,['otpMethod'=>'email']);
+                $token = Str::random(100);
+                DB::table('password_reset_tokens')->insert([
+                    'user_id' => $user->id,
+                    'token' => $token,
+                    'created_at' => now(),
+                ]);
+                return $this->apiResponse(200,'OTP is sent check your email inbox!',null,['token'=>$token]);
             }else{
                 return $this->apiResponse(404, 'لم يتم العثور على المستخدم بهذه البيانات');
             }
 
-            # TODO : Send OTP depend on the method
+            # TODO : Send OTP depend on the method also delete all previous tokens
 
 
         } catch (\Exception $e) {
@@ -210,8 +235,12 @@ class AuthController extends Controller
     public function checkOTP(CheckOTPRequest $request)
     {
         try {
+            $user = User::find(DB::table('password_reset_tokens')->where('token',$request->token)->first()?->user_id);
+            if(!$user){
+                return $this->apiResponse(404, 'لم يتم العثور على المستخدم بهذه البيانات');
+            }
             $code=1234;
-            # TODO : Check OTP depend on the method
+            # TODO : Delete Token
             $checkOTP=($code==$request->otp);
             if($checkOTP){
                 return $this->apiResponse(200, 'الكود المدخل صحيح');
@@ -228,28 +257,19 @@ class AuthController extends Controller
     public function changePassword(ChangePasswordRequest $request)
     {
         try {
-            if(isset($request->user_name)){
-                $user=User::where('user_name',$request->user_name)->first();
-
-            }
-            elseif(isset($request->phone)){
-                $user=User::where('phone',$request->country_code.$request->phone)->first();
-                }
-            elseif(isset($request->whatsapp)){
-                $user=User::where('phone',$request->country_code.$request->whatsapp)->first();
-                }
-            elseif(isset($request->email)){
-                $user=User::where('email',$request->email)->first();
+            $user = User::find(DB::table('password_reset_tokens')->where('token',$request->token)->first()?->user_id);
+            if(!$user){
+                return $this->apiResponse(404, 'هذا المستخدم غير موجود');
             }
 
-            if(isset($user)){
+            if($user){
                 $user->update([
                     'password'=>Hash::make($request->password),
                 ]);
                 return $this->apiResponse(200,'تم تغيير باسورد المستخدم.');
             }
             else{
-                return $this->apiResponse(404, 'لم يتم العثور على المستخدم بهذه البيانات');
+                return $this->apiResponse(404, 'هذا المستخدم غير موجود');
             }
 
             # TODO : Send OTP depend on the method
