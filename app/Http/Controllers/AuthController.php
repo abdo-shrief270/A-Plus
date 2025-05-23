@@ -228,7 +228,7 @@ class AuthController extends Controller
 
 
         } catch (\Exception $e) {
-            return $this->apiResponse(500,'Failed to reset user password');
+            return $this->apiResponse(500,$e);
         }
     }
 
