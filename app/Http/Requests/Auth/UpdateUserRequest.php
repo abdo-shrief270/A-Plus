@@ -3,8 +3,9 @@
 namespace App\Http\Requests\Auth;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
-class Register extends FormRequest
+class UpdateUserRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -19,30 +20,53 @@ class Register extends FormRequest
      *
      * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
      */
+
     public function rules(): array
     {
         return [
-            'name' => 'required|string|max:255',
-            'user_name' => 'string|unique:users,user_name|min:5|max:255',
-            'phone' => 'string|max:255|unique:users',
-            'email' => 'string|email|max:255|unique:users',
-            'exam_id' => 'exists:exams,id',
-            'exam_date' => 'date|after:today',
-            'id_number' => 'string|max:255|unique:students',
-            'password' => 'required|string|min:6|confirmed',
-            'type' => 'required|in:student,parent',
-            'gender' => 'required|in:male,female',
+            'name' => 'string|max:255',
+
+            'user_name' => [
+                'string',
+                'min:5',
+                'max:255',
+                Rule::unique('users', 'user_name')->ignore($this->user()->id),
+            ],
+
+            'phone' => [
+                'string',
+                'max:255',
+                Rule::unique('users', 'phone')->ignore($this->user()->id),
+            ],
+
+            'email' => [
+                'string',
+                'email',
+                'max:255',
+                Rule::unique('users', 'email')->ignore($this->user()->id),
+            ],
+
+            'exam_date' => 'nullable|date|after:today',
+
+            'id_number' => [
+                'string',
+                'max:255',
+                Rule::unique('students', 'id_number')->ignore($this->user()->id),
+            ],
+
+            'old_password' => 'required_with:password|string|min:6',
+
+            'password' => 'nullable|string|min:6|confirmed',
         ];
     }
+
 
     public function messages(): array
     {
         return [
-            'name.required' => 'يجب كتابة الاسم كامل.',
             'name.string' => 'الاسم لازم يكون نص.',
             'name.max' => 'الاسم طويل مره، خففه شوي.',
 
-            'user_name.required' => 'اسم المستخدم مطلوب.',
             'user_name.string' => 'اسم المستخدم لازم يكون نص.',
             'user_name.min' => 'اسم المستخدم لازم يكون ٦ حروف على الأقل.',
             'user_name.max' => 'اسم المستخدم طويل مره، خففه شوي.',
@@ -57,10 +81,6 @@ class Register extends FormRequest
             'email.max' => 'الإيميل طويل مره، حاول تختصر.',
             'email.unique' => 'الإيميل هذا مستخدم من قبل.',
 
-            'exam_id.required' => 'اختر الاختبار اللي بتسجل فيه.',
-            'exam_id.exists' => 'الاختبار هذا مو موجود.',
-
-            'exam_date.required' => 'حدد تاريخ الاختبار.',
             'exam_date.date' => 'تاريخ الاختبار غير صحيح.',
             'exam_date.after' => 'لازم تاريخ الاختبار يكون بعد اليوم.',
 
@@ -68,15 +88,14 @@ class Register extends FormRequest
             'id_number.max' => 'رقم الهوية طويل مره.',
             'id_number.unique' => 'رقم الهوية هذا مسجل من قبل.',
 
-            'password.required' => 'كلمة المرور مطلوبة.',
-            'password.string' => 'كلمة المرور لازم تكون نص.',
-            'password.min' => 'كلمة المرور لازم تكون ٦ حروف على الأقل.',
-            'password.max' => 'كلمة المرور طويل مره، خففه شوي.',
-            'password.confirmed' => 'تأكيد كلمة المرور غير مطابق.',
+            'old_password.required' => 'يجب إدخال كلمة المرور القديمة عند تغيير كلمة المرور.',
+            'old_password.string' => 'كلمة المرور القديمة يجب أن تكون نص.',
+            'old_password.min' => 'كلمة المرور القديمة يجب أن تكون ٦ حروف على الأقل.',
+            'old_password.required_with' => 'يجب إدخال كلمة المرور القديمة عند تغيير كلمة المرور.',
 
-            'gender.required' => 'نوع المستخدم مطلوب.',
-            'type.required' => 'نوع المستخدم مطلوب.',
+            'password.string' => 'كلمة المرور يجب أن تكون نص.',
+            'password.min' => 'كلمة المرور يجب أن تكون ٦ حروف على الأقل.',
+            'password.confirmed' => 'تأكيد كلمة المرور غير مطابق.',
         ];
     }
-
 }

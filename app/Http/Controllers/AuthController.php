@@ -2,9 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\Auth\CheckOTPRequest;
 use App\Http\Requests\Auth\CheckUserNameRequest;
 use App\Http\Requests\Auth\LoginRequest;
 use App\Http\Requests\Auth\Register;
+use App\Http\Requests\Auth\resetPasswordRequest;
+use App\Http\Requests\Auth\UpdateUserRequest;
 use App\Models\Student;
 use App\Models\User;
 use App\Traits\ApiResponse;
@@ -15,6 +18,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 use Tymon\JWTAuth\Exceptions\JWTException;
 use Tymon\JWTAuth\Facades\JWTAuth;
+use function PHPUnit\Framework\isEmpty;
 
 class AuthController extends Controller
 {
@@ -24,7 +28,12 @@ class AuthController extends Controller
         DB::beginTransaction();
 
         try {
-            $user_name =$this->generateUniqueUserName($request->name);
+            if(isset($request->user_name)){
+                $user_name =$request->user_name;
+            }else{
+                $user_name =$this->generateUniqueUserName($request->name);
+            }
+
             $user = User::create([
                 'name'      => $request->name,
                 'user_name' => $user_name,
@@ -55,7 +64,7 @@ class AuthController extends Controller
             DB::commit();
 
 
-            $userData = $user->makeHidden(['id','created_at', 'updated_at'])->toArray();
+            $userData = $user->makeHidden(['id','created_at', 'updated_at','password'])->toArray();
 
             if ($studentData) {
                 $userData = array_merge($userData,$studentData);
@@ -99,38 +108,39 @@ class AuthController extends Controller
         }
     }
 
-    public function logout()
-    {
-        try {
-            JWTAuth::invalidate(JWTAuth::getToken());
-        } catch (JWTException $e) {
-            return response()->json(['error' => 'Failed to logout, please try again'], 500);
-        }
-
-        return response()->json(['message' => 'Successfully logged out']);
-    }
 
     public function getUser()
     {
         try {
             $user = Auth::user();
             if (!$user) {
-                return response()->json(['error' => 'User not found'], 404);
+                return $this->apiResponse(404,'User not found');
             }
-            return response()->json($user);
+            return $this->apiResponse(200,'User Data Retrieved Successfully',null,[
+                'data' => $user->makeHidden(['id','created_at', 'updated_at','remember_token','password'])->toArray(),
+            ]);
         } catch (JWTException $e) {
-            return response()->json(['error' => 'Failed to fetch user profile'], 500);
+            return $this->apiResponse(404,'Failed to fetch user profile');
         }
     }
 
-    public function updateUser(Request $request)
+    public function updateUser(UpdateUserRequest $request)
     {
         try {
             $user = Auth::user();
-            $user->update($request->only(['name', 'email']));
-            return response()->json($user);
+            if (!$user) {
+                return $this->apiResponse(404,'User not found');
+            }
+            if (!Hash::check($request->old_password, $user->password)) {
+                return $this->apiResponse(403,'Validation Error',['old_password' => 'كلمة المرور القديمة غير صحيحة.']);
+            }
+
+            $user->update($request->all());
+            return $this->apiResponse(200,'User Profile Updated Successfully',null,[
+                'data' => $user->makeHidden(['id','created_at', 'updated_at','remember_token','password'])->toArray(),
+            ]);
         } catch (JWTException $e) {
-            return response()->json(['error' => 'Failed to update user'], 500);
+            return $this->apiResponse(500,'Failed to update user profile');
         }
     }
 
@@ -158,5 +168,77 @@ class AuthController extends Controller
         } while (User::where('user_name', $username)->exists());
 
         return $username;
+    }
+
+    public function resetPassword(resetPasswordRequest $request)
+    {
+        try {
+            if(isset($request->user_name)){
+                $user=User::where('user_name',$request->user_name)->first();
+                if(isset($user->phone)){
+                    return $this->apiResponse(200,'OTP is sent check your sms inbox!',null,['otpMethod'=>'phone']);
+                }elseif(isset($user->email)){
+                    return $this->apiResponse(200,'OTP is sent check your email inbox!',null,['otpMethod'=>'email']);
+                }else{
+                    return $this->apiResponse(404, 'لم يتم العثور على المستخدم بهذه البيانات');
+                }
+            }
+            elseif(isset($request->phone)){
+                $user=User::where('phone',$request->phone)->first();
+                return $this->apiResponse(200,'OTP is sent check your sms inbox!',null,['otpMethod'=>'phone']);
+            }
+            elseif(isset($request->whatsapp)){
+                $user=User::where('phone',$request->whatsapp)->first();
+                return $this->apiResponse(200,'OTP is sent check your whatsapp inbox!',null,['otpMethod'=>'whatsapp']);
+            }
+            elseif(isset($request->email)){
+                $user=User::where('email',$request->email)->first();
+                return $this->apiResponse(200,'OTP is sent check your email inbox!',null,['otpMethod'=>'email']);
+            }else{
+                return $this->apiResponse(404, 'لم يتم العثور على المستخدم بهذه البيانات');
+            }
+
+            # TODO : Send OTP depend on the method
+
+
+        } catch (\Exception $e) {
+            return $this->apiResponse(500,'Failed to reset user password');
+        }
+    }
+
+    public function checkOTP(CheckOTPRequest $request)
+    {
+        try {
+            if(isset($request->user_name)){
+                $user=User::where('user_name',$request->user_name)->first();
+                if(isset($user->phone)){
+                    return $this->apiResponse(200,'OTP is sent check your sms inbox!',null,['otpMethod'=>'phone']);
+                }elseif(isset($user->email)){
+                    return $this->apiResponse(200,'OTP is sent check your email inbox!',null,['otpMethod'=>'email']);
+                }else{
+                    return $this->apiResponse(404, 'لم يتم العثور على المستخدم بهذه البيانات');
+                }
+            }
+            elseif(isset($request->phone)){
+                $user=User::where('phone',$request->phone)->first();
+                return $this->apiResponse(200,'OTP is sent check your sms inbox!',null,['otpMethod'=>'phone']);
+            }
+            elseif(isset($request->whatsapp)){
+                $user=User::where('phone',$request->whatsapp)->first();
+                return $this->apiResponse(200,'OTP is sent check your whatsapp inbox!',null,['otpMethod'=>'whatsapp']);
+            }
+            elseif(isset($request->email)){
+                $user=User::where('email',$request->email)->first();
+                return $this->apiResponse(200,'OTP is sent check your email inbox!',null,['otpMethod'=>'email']);
+            }else{
+                return $this->apiResponse(404, 'لم يتم العثور على المستخدم بهذه البيانات');
+            }
+
+            # TODO : Check OTP depend on the method
+
+
+        } catch (\Exception $e) {
+            return $this->apiResponse(500,'Failed to check user otp');
+        }
     }
 }
