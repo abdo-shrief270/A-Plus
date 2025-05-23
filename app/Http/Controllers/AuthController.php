@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\Auth\ChangePasswordRequest;
 use App\Http\Requests\Auth\CheckOTPRequest;
 use App\Http\Requests\Auth\CheckUserNameRequest;
 use App\Http\Requests\Auth\LoginRequest;
@@ -223,4 +224,40 @@ class AuthController extends Controller
             return $this->apiResponse(500,'Failed to check user otp');
         }
     }
+
+    public function changePassword(ChangePasswordRequest $request)
+    {
+        try {
+            if(isset($request->user_name)){
+                $user=User::where('user_name',$request->user_name)->first();
+
+            }
+            elseif(isset($request->phone)){
+                $user=User::where('phone',$request->country_code.$request->phone)->first();
+                }
+            elseif(isset($request->whatsapp)){
+                $user=User::where('phone',$request->country_code.$request->whatsapp)->first();
+                }
+            elseif(isset($request->email)){
+                $user=User::where('email',$request->email)->first();
+            }
+
+            if(isset($user)){
+                $user->update([
+                    'password'=>Hash::make($request->password),
+                ]);
+                return $this->apiResponse(200,'تم تغيير باسورد المستخدم.');
+            }
+            else{
+                return $this->apiResponse(404, 'لم يتم العثور على المستخدم بهذه البيانات');
+            }
+
+            # TODO : Send OTP depend on the method
+
+
+        } catch (\Exception $e) {
+            return $this->apiResponse(500,'Failed to change user password');
+        }
+    }
+
 }

@@ -30,6 +30,7 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
             Route::get('/', [AuthController::class, 'getUser']);
             Route::post('/update', [AuthController::class, 'updateUser']);
             Route::post('/reset-password', [AuthController::class, 'resetPassword']);
+            Route::post('/change-password', [AuthController::class, 'changePassword']);
             Route::post('/checkOTP', [AuthController::class, 'checkOTP']);
         });
 
