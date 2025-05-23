@@ -25,6 +25,7 @@ class Register extends FormRequest
             'name' => 'required|string|max:255',
             'user_name' => 'string|unique:users,user_name|min:5|max:255',
             'phone' => 'string|max:255|unique:users',
+            'country_code' => 'nullable|string',
             'email' => 'string|email|max:255|unique:users',
             'exam_id' => 'exists:exams,id',
             'exam_date' => 'date|after:today',
@@ -51,6 +52,8 @@ class Register extends FormRequest
             'phone.string' => 'رقم الجوال لازم يكون نص.',
             'phone.max' => 'رقم الجوال طويل، تأكد منه.',
             'phone.unique' => 'الرقم هذا مسجل من قبل.',
+
+            'country_code' => 'nullable|string',
 
             'email.string' => 'الإيميل لازم يكون نص.',
             'email.email' => 'الإيميل غير صحيح، تأكد من كتابته.',

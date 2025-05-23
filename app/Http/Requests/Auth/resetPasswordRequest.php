@@ -26,6 +26,7 @@ class resetPasswordRequest extends FormRequest
             'whatsapp' => 'string|exists:users,phone',
             'phone' => 'string|exists:users,phone',
             'email' => 'string|email|exists:users,email',
+            'country_code' => 'nullable|string',
         ];
     }
 
@@ -41,10 +42,20 @@ class resetPasswordRequest extends FormRequest
             'whatsapp.string' => 'رقم الواتساب لازم يكون نص.',
             'whatsapp.exists' => 'رقم الواتساب غير مسجل من قبل.',
 
+            'country_code.string' => 'كود الدولة لازم يكون نص.',
+
             'email.string' => 'الإيميل لازم يكون نص.',
             'email.email' => 'الإيميل غير صحيح، تأكد من كتابته.',
             'email.exists' => 'الإيميل غير مستخدم من قبل.',
 
         ];
+    }
+    public function withValidator($validator)
+    {
+        $validator->after(function ($validator) {
+            if (!$this->filled('user_name') && !$this->filled('phone') && !$this->filled('whatsapp') && !$this->filled('email')) {
+                $validator->errors()->add('contact', 'يجب إدخال طريقة تواصل واحدة على الأقل.');
+            }
+        });
     }
 }

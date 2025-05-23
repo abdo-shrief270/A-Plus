@@ -39,6 +39,8 @@ class UpdateUserRequest extends FormRequest
                 Rule::unique('users', 'phone')->ignore($this->user()->id),
             ],
 
+            'country_code' => 'nullable|string',
+
             'email' => [
                 'string',
                 'email',
@@ -75,6 +77,8 @@ class UpdateUserRequest extends FormRequest
             'phone.string' => 'رقم الجوال لازم يكون نص.',
             'phone.max' => 'رقم الجوال طويل، تأكد منه.',
             'phone.unique' => 'الرقم هذا مسجل من قبل.',
+
+            'country_code.string' => 'كود الدولة لازم يكون نص.',
 
             'email.string' => 'الإيميل لازم يكون نص.',
             'email.email' => 'الإيميل غير صحيح، تأكد من كتابته.',
