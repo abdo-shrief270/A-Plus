@@ -53,15 +53,19 @@ class CheckOTPRequest extends FormRequest
 
             'phone.string' => 'رقم الجوال لازم يكون نص.',
             'phone.exists' => 'رقم الجوال غير مسجل من قبل.',
+            'phone.required_if' => 'رقم الجوال مطلوب.',
 
             'whatsapp.string' => 'رقم الواتساب لازم يكون نص.',
             'whatsapp.exists' => 'رقم الواتساب غير مسجل من قبل.',
+            'whatsapp.required_if' => 'رقم الواتساب مطلوب.',
 
             'country_code.string' => 'كود الدولة لازم يكون نص.',
 
             'email.string' => 'الإيميل لازم يكون نص.',
             'email.email' => 'الإيميل غير صحيح، تأكد من كتابته.',
             'email.exists' => 'الإيميل غير مستخدم من قبل.',
+            'email.required_if' => 'الإيميل مطلوب.',
+
 
         ];
     }
