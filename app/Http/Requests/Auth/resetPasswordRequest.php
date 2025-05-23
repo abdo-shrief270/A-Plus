@@ -50,12 +50,4 @@ class resetPasswordRequest extends FormRequest
 
         ];
     }
-    public function withValidator($validator)
-    {
-        $validator->after(function ($validator) {
-            if (!$this->filled('user_name') && !$this->filled('phone') && !$this->filled('whatsapp') && !$this->filled('email')) {
-                $validator->errors()->add('contact', 'يجب إدخال طريقة تواصل واحدة على الأقل.');
-            }
-        });
-    }
 }
