@@ -132,8 +132,10 @@ class AuthController extends Controller
             if (!$user) {
                 return $this->apiResponse(404,'User not found');
             }
-            if (!Hash::check($request->old_password, $user->password)) {
-                return $this->apiResponse(403,'Validation Error',['old_password' => 'كلمة المرور القديمة غير صحيحة.']);
+            if($request->password){
+                if (!Hash::check($request->old_password, $user->password)) {
+                    return $this->apiResponse(403,'Validation Error',['old_password' => 'كلمة المرور القديمة غير صحيحة.']);
+                }
             }
 
             $user->update($request->all());
