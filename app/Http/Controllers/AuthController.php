@@ -115,6 +115,9 @@ class AuthController extends Controller
         try {
             $user = Auth::user();
             if (!$user) {
+                $user = Auth::guard('schools')->user();
+            }
+            if(!$user){
                 return $this->apiResponse(404,'User not found');
             }
             return $this->apiResponse(200,'User Data Retrieved Successfully',null,[
