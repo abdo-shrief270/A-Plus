@@ -9,5 +9,5 @@ use Spatie\Permission\Traits\HasRoles;
 class Admin extends Authenticatable
 {
     use HasRoles;
-    protected $fillable =['name','user_name','email','password'];
+    protected $fillable =['name','email','password'];
 }
