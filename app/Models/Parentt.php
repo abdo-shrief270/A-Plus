@@ -6,5 +6,5 @@ use Illuminate\Database\Eloquent\Model;
 
 class Parentt extends User
 {
-    //
+    protected $table='users';
 }
