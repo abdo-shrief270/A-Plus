@@ -6,7 +6,7 @@ use App\Models\Admin;
 use App\Models\User;
 use Illuminate\Auth\Access\HandlesAuthorization;
 
-class ParentPolicy
+class ParenttPolicy
 {
     use HandlesAuthorization;
 
