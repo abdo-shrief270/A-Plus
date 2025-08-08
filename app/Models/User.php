@@ -53,4 +53,30 @@ class User extends Authenticatable implements JWTSubject
     {
         return [];
     }
+
+
+    public function student()
+    {
+        return $this->hasOne(Student::class,'user_id','id');
+    }
+
+    public function studentParent()
+    {
+        return $this->hasMany(StudentParent::class,'parent_id','id');
+    }
+
+    public function scopeIsParent($query)
+    {
+        return $query->whereHas('studentParent');
+    }
+
+    public function scopeIsSchool($query)
+    {
+        return $query->whereHas('studentSchool');
+    }
+
+    public function scopeIsStudent($query)
+    {
+        return $query->whereHas('student');
+    }
 }

@@ -23,6 +23,7 @@ return new class extends Migration
             $table->enum('type',['parent','student'])->default('student');
             $table->enum('gender',['male','female'])->default('male');
             $table->boolean('2fa')->default(false);
+            $table->boolean('active')->default(true);
             $table->rememberToken();
             $table->timestamps();
         });

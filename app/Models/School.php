@@ -12,7 +12,7 @@ class School extends Authenticatable implements JWTSubject
 {
     protected $fillable =['name','user_name','password'];
 
-    public function studentSchools() : HasMany
+    public function studentSchool() : HasMany
     {
         return $this->hasMany(StudentSchool::class,'school_id','id');
     }

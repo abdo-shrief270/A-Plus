@@ -14,12 +14,12 @@ class CreateSchool extends CreateRecord
 
     protected function mutateFormDataBeforeCreate(array $data): array
     {
-        if(!isset($data['password']))
-        {
-            $data['password'] = Hash::make('12345678');
-        }else{
-            $data['password'] = Hash::make($data['password']);
-        }
+        $data['password'] = $data['user_name'];
         return $data;
+    }
+
+    protected function getRedirectUrl(): string
+    {
+        return $this->getResource()::getUrl('index');
     }
 }

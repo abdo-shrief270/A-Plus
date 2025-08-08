@@ -3,6 +3,7 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\SchoolResource\Pages;
+use App\Filament\Resources\SchoolResource\RelationManagers\SchoolStudentsRelationManager;
 use App\Models\School;
 use Filament\Forms;
 use Filament\Forms\Form;
@@ -16,7 +17,8 @@ class SchoolResource extends Resource
 {
     protected static ?string $model = School::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?int $navigationSort = 2;
+    protected static ?string $navigationIcon = 'heroicon-o-user-group';
 
     public static function form(Form $form): Form
     {
@@ -24,11 +26,35 @@ class SchoolResource extends Resource
             ->schema([
                 Forms\Components\TextInput::make('name')
                     ->label('اسم المدرسة'),
+
                 Forms\Components\TextInput::make('user_name')
-                    ->label('كود المدرسة'),
-                Forms\Components\TextInput::make('password')
-                    ->nullable()
-                    ->label('كلمة السر الخاصة بالمدرسة'),
+                    ->label('كود المدرسة')
+                    ->maxLength(255)
+                    ->required()
+                    ->live(debounce: 100)
+                    ->helperText(function ($state, callable $get) {
+                        if (!$state) {
+                            return null;
+                        }
+
+                        if (strlen($state) < 5) {
+                            return 'كود المدرسة يجب أن يكون 5 حروف على الأقل ❌';
+                        }
+
+                        // Get the current record ID if editing
+                        $currentId = $get('id'); // This works in edit mode
+
+                        $query = \App\Models\School::where('user_name', $state);
+                        if ($currentId) {
+                            $query->where('id', '!=', $currentId); // Ignore current record
+                        }
+
+                        if ($query->exists()) {
+                            return 'كود المدرسة مستخدم بالفعل ❌';
+                        }
+
+                        return 'كود المدرسة متاح ✅';
+                    }),
             ]);
     }
 
@@ -36,19 +62,34 @@ class SchoolResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('user_name')
-                    ->label('كود المدرسة')
-                    ->copyable()
-                    ->sortable()
-                    ->searchable(),
                 Tables\Columns\TextColumn::make('name')
-                    ->label('اسم المدرسة')
-                    ->sortable()
-                    ->searchable(),
-                Tables\Columns\TextColumn::make('student_schools_count')
+                    ->label('الاسم الكامل')
+                    ->searchable()
+                    ->sortable(),
+
+                Tables\Columns\TextColumn::make('user_name')
+                    ->label('اسم المستخدم')
+                    ->searchable()
+                    ->sortable(),
+                Tables\Columns\TextColumn::make('student_school_count')
                     ->label('عدد الطلاب')
                     ->sortable()
                     ->searchable(),
+
+                Tables\Columns\ToggleColumn::make('active')
+                    ->label('نشط')
+                    ->sortable(),
+
+                Tables\Columns\TextColumn::make('created_at')
+                    ->label('تاريخ الاضافة')
+                    ->dateTime()
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
+                Tables\Columns\TextColumn::make('updated_at')
+                    ->label('تاريخ اخر تعديل')
+                    ->dateTime()
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
                 //
@@ -66,13 +107,18 @@ class SchoolResource extends Resource
     public static function getRelations(): array
     {
         return [
-            //
+            SchoolStudentsRelationManager::class,
         ];
     }
+    public static function getNavigationBadge(): ?string
+    {
+        return static::getModel()::count();
+    }
+
     public static function getEloquentQuery(): Builder
     {
         return parent::getEloquentQuery()
-            ->withCount('studentSchools'); // eager load count
+            ->withCount('studentSchool'); // eager load count
     }
 
     public static function getPages(): array
@@ -103,6 +149,6 @@ class SchoolResource extends Resource
     }
     public static function getNavigationGroup(): string
     {
-        return 'المدراس';
+        return 'المستخدمين';
     }
 }

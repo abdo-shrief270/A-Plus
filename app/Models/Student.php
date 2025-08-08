@@ -20,4 +20,18 @@ class Student extends Model
     {
         return $this->belongsTo(User::class,'user_id','id');
     }
+
+    public function exam() :BelongsTo
+    {
+        return $this->belongsTo(Exam::class,'exam_id','id');
+    }
+
+    public function studentSchool()
+    {
+        return $this->hasOne(StudentSchool::class,'student_id','id');
+    }
+    public function studentParent()
+    {
+        return $this->hasOne(StudentParent::class,'student_id','id');
+    }
 }
