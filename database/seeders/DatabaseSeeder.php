@@ -2,9 +2,12 @@
 
 namespace Database\Seeders;
 
-use App\Models\User;
-// use Illuminate\Database\Console\Seeds\WithoutModelEvents;
+use App\Models\Admin;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\Hash;
+use Spatie\Permission\Models\Permission;
+use Spatie\Permission\Models\Role;
 
 class DatabaseSeeder extends Seeder
 {
@@ -13,11 +16,30 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // User::factory(10)->create();
+        Artisan::call('shield:install admin');
+        Artisan::call('shield:generate --all --panel=admin');
+        $this->command->info("Shield Installation is completed successfully");
 
-        User::factory()->create([
-            'name' => 'Test User',
-            'email' => 'test@example.com',
+
+        $superAdminRole = Role::where('name' , 'مدير النظام')->first();
+        $adminRole = Role::create(['name' => 'المدير', 'guard_name' => 'web']);
+        $dataEntryRole = Role::create(['name' => 'مدخل بيانات', 'guard_name' => 'web']);
+        $salesRole = Role::create(['name' => 'مبيعات', 'guard_name' => 'web']);
+        $this->command->info("Roles Has Created successfully");
+
+        $permissions = Permission::all();
+        $superAdminRole->syncPermissions($permissions);
+        $this->command->info("Permissions assigned to roles successfully");
+
+        Admin::create([
+            'name' => 'Abdo Shrief',
+            'email' => 'abdo.shrief270@gmail.com',
+            'password' => Hash::make('954816899'),
+            'active' => true
         ]);
+
+        Artisan::call('shield:super-admin --user=1 --panel=admin');
+        $this->command->info("Admins Has Created successfully");
+
     }
 }

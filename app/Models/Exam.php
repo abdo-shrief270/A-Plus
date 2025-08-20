@@ -3,8 +3,19 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Exam extends Model
 {
     protected $fillable =['name'];
+
+    public function sections() :HasMany
+    {
+        return $this->hasMany(ExamSection::class,'exam_id','id');
+    }
+
+    public function subjects() :HasMany
+    {
+        return $this->hasMany(ExamSubject::class,'exam_id','id');
+    }
 }

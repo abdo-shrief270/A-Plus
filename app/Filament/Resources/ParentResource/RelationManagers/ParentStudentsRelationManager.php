@@ -43,7 +43,7 @@ class ParentStudentsRelationManager extends RelationManager
     {
         return $table
             ->modifyQueryUsing(fn (Builder $query) =>
-                $query->with(['student.user', 'student.exam'])
+            $query->with(['student.user', 'student.exam'])
             )
             ->columns([
                 Tables\Columns\TextColumn::make('student.user.name')

@@ -13,6 +13,9 @@ return new class extends Migration
     {
         Schema::create('section_categories', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('exam_section_id')->constrained('exam_sections','id')->cascadeOnDelete();
+            $table->string('name');
+            $table->text('description');
             $table->timestamps();
         });
     }

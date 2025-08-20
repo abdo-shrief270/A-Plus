@@ -3,10 +3,10 @@
 namespace App\Policies;
 
 use App\Models\Admin;
-use App\Models\Parentt;
+use App\Models\ExamSection;
 use Illuminate\Auth\Access\HandlesAuthorization;
 
-class ParenttPolicy
+class ExamSectionPolicy
 {
     use HandlesAuthorization;
 
@@ -15,15 +15,15 @@ class ParenttPolicy
      */
     public function viewAny(Admin $admin): bool
     {
-        return $admin->can('view_any_parent');
+        return $admin->can('view_any_exam::section');
     }
 
     /**
      * Determine whether the admin can view the model.
      */
-    public function view(Admin $admin, Parentt $parentt): bool
+    public function view(Admin $admin, ExamSection $examSection): bool
     {
-        return $admin->can('view_parent');
+        return $admin->can('view_exam::section');
     }
 
     /**
@@ -31,23 +31,23 @@ class ParenttPolicy
      */
     public function create(Admin $admin): bool
     {
-        return $admin->can('create_parent');
+        return $admin->can('create_exam::section');
     }
 
     /**
      * Determine whether the admin can update the model.
      */
-    public function update(Admin $admin, Parentt $parentt): bool
+    public function update(Admin $admin, ExamSection $examSection): bool
     {
-        return $admin->can('update_parent');
+        return $admin->can('update_exam::section');
     }
 
     /**
      * Determine whether the admin can delete the model.
      */
-    public function delete(Admin $admin, Parentt $parentt): bool
+    public function delete(Admin $admin, ExamSection $examSection): bool
     {
-        return $admin->can('delete_parent');
+        return $admin->can('delete_exam::section');
     }
 
     /**
@@ -55,13 +55,13 @@ class ParenttPolicy
      */
     public function deleteAny(Admin $admin): bool
     {
-        return $admin->can('delete_any_parent');
+        return $admin->can('delete_any_exam::section');
     }
 
     /**
      * Determine whether the admin can permanently delete.
      */
-    public function forceDelete(Admin $admin, Parentt $parentt): bool
+    public function forceDelete(Admin $admin, ExamSection $examSection): bool
     {
         return $admin->can('{{ ForceDelete }}');
     }
@@ -77,7 +77,7 @@ class ParenttPolicy
     /**
      * Determine whether the admin can restore.
      */
-    public function restore(Admin $admin, Parentt $parentt): bool
+    public function restore(Admin $admin, ExamSection $examSection): bool
     {
         return $admin->can('{{ Restore }}');
     }
@@ -93,7 +93,7 @@ class ParenttPolicy
     /**
      * Determine whether the admin can replicate.
      */
-    public function replicate(Admin $admin, Parentt $parentt): bool
+    public function replicate(Admin $admin, ExamSection $examSection): bool
     {
         return $admin->can('{{ Replicate }}');
     }

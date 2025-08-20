@@ -3,8 +3,19 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class ExamSection extends Model
 {
-    //
+    protected $fillable = ['exam_id','name'];
+
+    public function categories() :HasMany
+    {
+        return $this->hasMany(SectionCategory::class,'exam_section_id','id');
+    }
+    public function exam() :BelongsTo
+    {
+        return $this->belongsTo(Exam::class,'exam_id','id');
+    }
 }

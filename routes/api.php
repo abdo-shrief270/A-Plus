@@ -3,9 +3,7 @@
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ExamController;
 use App\Http\Controllers\HomeController;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
-use App\Traits\ApiResponse;
 
 Route::prefix('v1')->name('api.v1.')->group(function () {
     Route::middleware('jwt')->get('/', function () {

@@ -64,10 +64,10 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->authGuard('web')
             ->maxContentWidth(MaxWidth::Full)
-            ->sidebarFullyCollapsibleOnDesktop()
             ->spa()
             ->defaultThemeMode(ThemeMode::System)
             ->darkMode()
+            ->topNavigation()
             ->authMiddleware([
                 Authenticate::class,
             ]);

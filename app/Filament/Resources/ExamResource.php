@@ -17,7 +17,9 @@ class ExamResource extends Resource
 {
     protected static ?string $model = Exam::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?string $navigationIcon = 'heroicon-o-academic-cap';
+
+    protected static ?int $navigationSort = 0;
 
     public static function form(Form $form): Form
     {
@@ -54,11 +56,32 @@ class ExamResource extends Resource
             ]);
     }
 
+    public static function getEloquentQuery(): Builder
+    {
+        return parent::getEloquentQuery();
+    }
     public static function getRelations(): array
     {
-        return [
-            //
-        ];
+//        $record = request()->route('record');
+//
+//        if (!$record) {
+//            return [];
+//        }
+//        $exam = static::getModel()::withCount('subjects')->withCount('sections')->find($record);
+//        if($exam->sections_count > 0)
+//        {
+//            return [RelationManagers\SectionsRelationManager::class];
+//        }elseif ($exam->subjects_count > 0)
+//        {
+//            return [RelationManagers\SubjectsRelationManager::class];
+//        }else
+//        {
+            return [
+                RelationManagers\SectionsRelationManager::class,
+                RelationManagers\SubjectsRelationManager::class,
+            ];
+//        }
+
     }
 
     public static function getNavigationBadge(): ?string
@@ -70,6 +93,7 @@ class ExamResource extends Resource
     {
         return [
             'index' => Pages\ListExams::route('/'),
+            'edit' => Pages\EditExam::route('/{record}/edit'),
         ];
     }
 
@@ -86,10 +110,6 @@ class ExamResource extends Resource
         return 'اختبارات';
     }
     public static function getTitleCasePluralModelLabel(): string
-    {
-        return 'الأختبارات';
-    }
-    public static function getNavigationGroup(): string
     {
         return 'الأختبارات';
     }

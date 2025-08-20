@@ -3,8 +3,14 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Question extends Model
 {
-    //
+    protected $fillable = ['text','image_path','explanation_text','explanation_text_image_path','explanation_video_url'];
+
+    public function answers():HasMany
+    {
+        return $this->hasMany(Answer::class,'question_id','id');
+    }
 }

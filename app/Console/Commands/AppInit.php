@@ -28,11 +28,6 @@ class AppInit extends Command
      */
     public function handle()
     {
-        Admin::create([
-            'name'=>'Abdo Shrief',
-            'user_name'=>'abdo_shrief',
-            'email'=>'abdo.shrief270@gmail.com',
-            'password'=>Hash::make('12345678')
-        ]);
+        Artisan::call('migrate:fresh --seed');
     }
 }
