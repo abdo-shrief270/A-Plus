@@ -33,6 +33,9 @@ class ExamResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
+            ->modifyQueryUsing(fn (Builder $query) =>
+            $query->withCount('sections')->withCount('subjects')
+            )
             ->columns([
                 Tables\Columns\TextColumn::make('id')
                     ->label('كود الأختبار')
@@ -40,6 +43,14 @@ class ExamResource extends Resource
                     ->searchable(),
                 Tables\Columns\TextColumn::make('name')
                     ->label('اسم الأختبار')
+                    ->sortable()
+                    ->searchable(),
+                Tables\Columns\TextColumn::make('sections_count')
+                    ->label('عدد الأقسام')
+                    ->sortable()
+                    ->searchable(),
+                Tables\Columns\TextColumn::make('subjects_count')
+                    ->label('عدد المواد')
                     ->sortable()
                     ->searchable(),
             ])
