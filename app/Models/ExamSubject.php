@@ -16,8 +16,8 @@ class ExamSubject extends Model
     {
         return $this->belongsToMany(
             Question::class,             // related model
-            'category_questions',        // pivot table name
-            'section_category_id',       // foreign key on pivot for this model
+            'subject_questions',        // pivot table name
+            'exam_subject_id',       // foreign key on pivot for this model
             'question_id'                // foreign key on pivot for related model
         )->orderBy('questions.created_at', 'desc');
     }
