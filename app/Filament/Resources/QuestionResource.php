@@ -68,10 +68,10 @@ class QuestionResource extends Resource
                     ->afterStateUpdated(function ($state, callable $set) {
                         if ($state) {
                             $set('answers', [
-                                ['text' => 'الإجابة الأولى','is_correct'=>false,'order'=>1],
-                                ['text' => 'الإجابة الثانية','is_correct'=>false,'order'=>2],
-                                ['text' => 'الإجابة الثالثة','is_correct'=>false,'order'=>3],
-                                ['text' => 'الإجابة الرابعة','is_correct'=>false,'order'=>4],
+                                ['text' => 'القيمة الأولي أكبر','is_correct'=>false,'order'=>1],
+                                ['text' => 'القيمة الثانية أكبر','is_correct'=>false,'order'=>2],
+                                ['text' => 'المعطيات غير كافية','is_correct'=>false,'order'=>3],
+                                ['text' => 'القيمتان متساويتان','is_correct'=>false,'order'=>4],
                             ]);
                         } else {
                             $set('answers', []); // clear if disabled
