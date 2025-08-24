@@ -38,8 +38,9 @@ class QuestionResource extends Resource
                     ->directory('question_images')
                     ->disk('public')
                     ->imageEditorEmptyFillColor('#000000')
-                    ->previewable(false)
-                    ->moveFiles(),
+                    ->previewable(true)
+                    ->moveFiles()
+                    ->formatStateUsing(fn ($state, $record) => $record?->getRawOriginal('image_path') ? [$record->getRawOriginal('image_path')] : null),
 
                 Forms\Components\Textarea::make('explanation_text')
                     ->label('شرح السؤال')
@@ -52,8 +53,9 @@ class QuestionResource extends Resource
                     ->disk('public')
                     ->imageEditorEmptyFillColor('#000000')
                     ->moveFiles()
-                    ->previewable(false)
-                    ->directory('question_explanation_images'),
+                    ->previewable(true)
+                    ->directory('question_explanation_images')
+                    ->formatStateUsing(fn ($state, $record) => $record?->getRawOriginal('explanation_text_image_path') ? [$record->getRawOriginal('explanation_text_image_path')] : null),
 
                 Forms\Components\TextInput::make('explanation_video_url')
                     ->label('فيديو شرح السؤال')
@@ -148,7 +150,7 @@ class QuestionResource extends Resource
 
                 Tables\Columns\TextColumn::make('image_path')
                     ->label('صورة مرفقة')
-                    ->formatStateUsing(fn ($state) => $state ? '<img src="' . Storage::url($state) . '" style="max-height: 50px; max-width: 50px;">' : 'No Image')
+                    ->formatStateUsing(fn ($state) => $state ? '<img src="' . $state . '" style="max-height: 50px; max-width: 50px;">' : 'No Image')
                     ->html()
                     ->searchable()
                     ->sortable()
@@ -163,7 +165,7 @@ class QuestionResource extends Resource
 
                 Tables\Columns\TextColumn::make('explanation_text_image_path')
                     ->label('صورة مرفقة لشرح السؤال')
-                    ->formatStateUsing(fn ($state) => $state ? '<img src="' . Storage::url($state) . '" style="max-height: 50px; max-width: 50px;">' : 'No Image')
+                    ->formatStateUsing(fn ($state) => $state ? '<img src="' . $state . '" style="max-height: 50px; max-width: 50px;">' : 'No Image')
                     ->html()
                     ->searchable()
                     ->sortable()

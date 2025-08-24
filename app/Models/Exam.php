@@ -14,8 +14,18 @@ class Exam extends Model
         return $this->hasMany(ExamSection::class,'exam_id','id');
     }
 
+    public function sectionsData() :HasMany
+    {
+        return $this->hasMany(ExamSection::class,'exam_id','id')->select('id','name','exam_id')->with('categoriesData');
+    }
+
     public function subjects() :HasMany
     {
         return $this->hasMany(ExamSubject::class,'exam_id','id');
+    }
+
+    public function subjectsData() :HasMany
+    {
+        return $this->hasMany(ExamSubject::class,'exam_id','id')->with('questions');
     }
 }

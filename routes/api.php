@@ -16,6 +16,7 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
 
     Route::prefix('exams')->group(function () {
         Route::get('/', [ExamController::class, 'index']);
+        Route::get('/{exam}', [ExamController::class, 'questions']);
     });
 
     Route::prefix('auth')->group(function () {
