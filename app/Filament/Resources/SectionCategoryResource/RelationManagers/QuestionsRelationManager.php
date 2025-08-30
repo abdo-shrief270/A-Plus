@@ -148,7 +148,7 @@ class QuestionsRelationManager extends RelationManager
 
                 Tables\Columns\TextColumn::make('image_path')
                     ->label('صورة مرفقة')
-                    ->formatStateUsing(fn ($state) => $state ? '<img src="' . Storage::url($state) . '" style="max-height: 50px; max-width: 50px;">' : 'No Image')
+                    ->formatStateUsing(fn ($state) => $state ? '<img src="' . $state . '" style="max-height: 50px; max-width: 50px;">' : 'No Image')
                     ->html()
                     ->searchable()
                     ->sortable()
@@ -163,7 +163,7 @@ class QuestionsRelationManager extends RelationManager
 
                 Tables\Columns\TextColumn::make('explanation_text_image_path')
                     ->label('صورة مرفقة لشرح السؤال')
-                    ->formatStateUsing(fn ($state) => $state ? '<img src="' . Storage::url($state) . '" style="max-height: 50px; max-width: 50px;">' : 'No Image')
+                    ->formatStateUsing(fn ($state) => $state ? '<img src="' . $state . '" style="max-height: 50px; max-width: 50px;">' : 'No Image')
                     ->html()
                     ->searchable()
                     ->sortable()
