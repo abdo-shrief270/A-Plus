@@ -6,7 +6,9 @@ use App\Models\Exam;
 use App\Models\ExamSection;
 use App\Models\ExamSubject;
 use App\Models\SectionCategory;
+use App\Models\User;
 use App\Traits\ApiResponse;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
 class ExamController extends Controller
@@ -26,10 +28,10 @@ class ExamController extends Controller
     }
 
 
-    public function categories($exam_id)
+    public function categories()
     {
         try {
-            $exam=Exam::find($exam_id);
+            $exam = Auth::user()?->student?->exam;
             if($exam->subjects->count()>0 && $exam->sections->count()>0  ){
                 return $this->apiResponse(200, 'Exam Data Returned Successfully', null, [
                     'subjects'=>$exam->subjects,

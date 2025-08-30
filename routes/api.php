@@ -19,7 +19,7 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
         Route::get('/', [ExamController::class, 'index']);
         Route::get('/categories/{category}', [ExamController::class, 'categoryData']);
         Route::get('/subjects/{subject}', [ExamController::class, 'subjectData']);
-        Route::get('/{exam}', [ExamController::class, 'categories']);
+        Route::get('/data', [ExamController::class, 'categories'])->middleware('jwt');
     });
 
 //    Route::prefix('questions')->group(function () {
