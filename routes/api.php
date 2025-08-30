@@ -3,6 +3,7 @@
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ExamController;
 use App\Http\Controllers\HomeController;
+use App\Http\Controllers\QuestionController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('v1')->name('api.v1.')->group(function () {
@@ -16,8 +17,14 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
 
     Route::prefix('exams')->group(function () {
         Route::get('/', [ExamController::class, 'index']);
-        Route::get('/{exam}', [ExamController::class, 'questions']);
+        Route::get('/categories/{category}', [ExamController::class, 'categoryData']);
+        Route::get('/subjects/{subject}', [ExamController::class, 'subjectData']);
+        Route::get('/{exam}', [ExamController::class, 'categories']);
     });
+
+//    Route::prefix('questions')->group(function () {
+//        Route::get('/{question}', [QuestionController::class, 'questionData']);
+//    });
 
     Route::prefix('auth')->group(function () {
         Route::post('/register', [AuthController::class, 'register']);
