@@ -24,9 +24,9 @@ class CreateStudent extends CreateRecord
             return;
         }
         // Create the Student record linked to the new User
-        $student=\App\Models\Student::create([
+        \App\Models\Student::create([
             'user_id'    => $this->record->id,
-            'exam_id'    => $data['exam_id'] ?? null,
+            'exam_id'    => $data['exam_id'],
             'exam_date'  => $data['exam_date'] ?? null,
             'id_number'  => $data['id_number'] ?? null,
         ]);
