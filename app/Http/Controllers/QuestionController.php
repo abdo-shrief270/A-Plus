@@ -17,12 +17,12 @@ class QuestionController extends Controller
     public function questionData(Question $question)
     {
         try {
-            return $this->apiResponse(200, 'Exam Data Returned Successfully', null, [
+            return $this->apiResponse(200, 'Question Data Returned Successfully', null, [
                 'question'  =>$question->setHidden(['answers']),
                 'answers'   =>$question->answers->select('order','text')
             ]);
         } catch (\Exception $e) {
-            return $this->apiResponse(500, 'Exams Returning failed: ' . $e->getMessage());
+            return $this->apiResponse(500, 'Question Data Returning failed: ' . $e->getMessage());
         }
     }
 
