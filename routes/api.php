@@ -22,9 +22,9 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
         Route::get('/data', [ExamController::class, 'categories'])->middleware('jwt');
     });
 
-//    Route::prefix('questions')->group(function () {
-//        Route::get('/{question}', [QuestionController::class, 'questionData']);
-//    });
+    Route::prefix('questions')->group(function () {
+        Route::get('/{question}', [QuestionController::class, 'questionData']);
+    });
 
     Route::prefix('auth')->group(function () {
         Route::post('/register', [AuthController::class, 'register']);
