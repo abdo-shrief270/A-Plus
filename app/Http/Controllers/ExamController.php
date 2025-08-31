@@ -56,7 +56,7 @@ class ExamController extends Controller
 
         try {
             return $this->apiResponse(200, 'Questions Returned Successfully', null, [
-                'questions'=>$subject->questions
+                'questions'=>$subject->questions->select('id','text','image_path')
             ]);
         } catch (\Exception $e) {
             return $this->apiResponse(500, 'Questions Returning failed: ' . $e->getMessage());
@@ -68,7 +68,7 @@ class ExamController extends Controller
 
         try {
             return $this->apiResponse(200, 'Questions Returned Successfully', null, [
-                'questions'=>$category->questions
+                'questions'=>$category->questions->select('id','text','image_path')
             ]);
         } catch (\Exception $e) {
             return $this->apiResponse(500, 'Questions Returning failed: ' . $e->getMessage());
