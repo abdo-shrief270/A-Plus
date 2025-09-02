@@ -58,10 +58,10 @@ class resetPasswordRequest extends FormRequest
         // change 422 to whatever code you want, e.g. 400
         throw new HttpResponseException(
             response()->json([
-                'status'  => false,
+                'status'  => 400,
                 'message' => 'Validation Failed',
                 'errors'  => $validator->errors(),
-            ], 422)
+            ], 400)
         );
     }
 }
