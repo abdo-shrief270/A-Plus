@@ -4,6 +4,7 @@ namespace App\Http\Requests\Auth;
 
 use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Http\Exceptions\HttpResponseException;
 
 class resetPasswordRequest extends FormRequest
 {
@@ -55,7 +56,7 @@ class resetPasswordRequest extends FormRequest
     protected function failedValidation(Validator $validator)
     {
         // change 422 to whatever code you want, e.g. 400
-        throw new \HttpResponseException(
+        throw new HttpResponseException(
             response()->json([
                 'status'  => false,
                 'message' => 'Validation Failed',
