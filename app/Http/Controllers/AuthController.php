@@ -7,6 +7,7 @@ use App\Http\Requests\Auth\CheckOTPRequest;
 use App\Http\Requests\Auth\CheckUserNameRequest;
 use App\Http\Requests\Auth\LoginRequest;
 use App\Http\Requests\Auth\Register;
+use App\Http\Requests\Auth\ResendOTPRequest;
 use App\Http\Requests\Auth\resetPasswordRequest;
 use App\Http\Requests\Auth\UpdateUserRequest;
 use App\Models\Student;
@@ -189,9 +190,9 @@ class AuthController extends Controller
                     'created_at' => now(),
                 ]);
                 if(isset($user->phone)){
-                    return $this->apiResponse(200,'OTP is sent check your sms inbox!',null,['token'=>$token]);
+                    return $this->apiResponse(200,'OTP is sent check your sms inbox!',null,['token'=>$token,'type'=>'phone','phone'=>$user->phone]);
                 }elseif(isset($user->email)){
-                    return $this->apiResponse(200,'OTP is sent check your email inbox!',null,['token'=>$token]);
+                    return $this->apiResponse(200,'OTP is sent check your email inbox!',null,['token'=>$token,'type'=>'email','email'=>$user->email]);
                 }else{
                     return $this->apiResponse(404, 'لم يتم العثور على المستخدم بهذه البيانات');
                 }
@@ -204,7 +205,7 @@ class AuthController extends Controller
                     'token' => $token,
                     'created_at' => now(),
                 ]);
-                return $this->apiResponse(200,'OTP is sent check your sms inbox!',null,['token'=>$token]);
+                return $this->apiResponse(200,'OTP is sent check your sms inbox!',null,['token'=>$token,'type'=>'phone','phone'=>$user->phone]);
             }
             elseif(isset($request->whatsapp)){
                 $user=User::where('phone',$request->country_code.$request->whatsapp)->first();
@@ -214,7 +215,7 @@ class AuthController extends Controller
                     'token' => $token,
                     'created_at' => now(),
                 ]);
-                return $this->apiResponse(200,'OTP is sent check your whatsapp inbox!',null,['token'=>$token]);
+                return $this->apiResponse(200,'OTP is sent check your whatsapp inbox!',null,['token'=>$token,'type'=>'whatsapp','whatsapp'=>$user->phone]);
             }
             elseif(isset($request->email)){
                 $user=User::where('email',$request->email)->first();
@@ -224,7 +225,7 @@ class AuthController extends Controller
                     'token' => $token,
                     'created_at' => now(),
                 ]);
-                return $this->apiResponse(200,'OTP is sent check your email inbox!',null,['token'=>$token]);
+                return $this->apiResponse(200,'OTP is sent check your email inbox!',null,['token'=>$token,'type'=>'email','email'=>$user->email]);
             }else{
                 return $this->apiResponse(404, 'لم يتم العثور على المستخدم بهذه البيانات');
             }
@@ -258,6 +259,49 @@ class AuthController extends Controller
             return $this->apiResponse(500,'Failed to check user otp');
         }
     }
+//    public function resendOTP(ResendOTPRequest $request)
+//    {
+//        try {
+//
+//            // find reset record
+//            $resetRecord = DB::table('password_reset_tokens')->where('token', $request->token)->first();
+//
+//            // find user
+//
+//
+//            // delete old token
+//            DB::table('password_reset_tokens')->where('user_id', $user->id)->delete();
+//
+//            // generate new token + otp
+//            $newToken = Str::random(100);
+//            $otp = rand(1000, 9999); // generate 4-digit OTP
+//
+//            DB::table('password_reset_tokens')->insert([
+//                'user_id' => $user->id,
+//                'token' => $newToken,
+//                'otp' => $otp, // you should add this column to your table if not already there
+//                'created_at' => now(),
+//            ]);
+//
+//            // Send OTP (SMS, WhatsApp, Email, etc. depending on user info)
+//            if ($user->phone) {
+//                // integrate with SMS service here
+//                return $this->apiResponse(200, 'تم إرسال OTP جديد عبر SMS', null, [
+//                    'token' => $newToken,
+//                ]);
+//            } elseif ($user->email) {
+//                // integrate with mail here
+//                return $this->apiResponse(200, 'تم إرسال OTP جديد عبر البريد الإلكتروني', null, [
+//                    'token' => $newToken,
+//                ]);
+//            }
+//
+//            return $this->apiResponse(400, 'لا يوجد وسيلة اتصال لإرسال OTP');
+//
+//        } catch (\Exception $e) {
+//            return $this->apiResponse(500, 'فشل في إعادة إرسال OTP: ' . $e->getMessage());
+//        }
+//    }
 
     public function changePassword(ChangePasswordRequest $request)
     {
