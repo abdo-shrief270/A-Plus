@@ -40,6 +40,10 @@ class SectionCategoryResource extends Resource
                 Forms\Components\TextInput::make('name')
                     ->label('اسم الفئة')
                     ->required(),
+
+                Forms\Components\Textarea::make('description')
+                    ->label('الوصف')
+                    ->rows(5),
             ]);
     }
 
@@ -52,6 +56,13 @@ class SectionCategoryResource extends Resource
             ->columns([
                 Tables\Columns\TextColumn::make('name')
                     ->label('الفئة')
+                    ->searchable()
+                    ->sortable()
+                    ->toggleable(),
+
+                Tables\Columns\TextColumn::make('description')
+                    ->label('الوصف')
+                    ->limit(50)
                     ->searchable()
                     ->sortable()
                     ->toggleable(),
