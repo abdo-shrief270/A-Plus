@@ -14,7 +14,7 @@ class CreateSchool extends CreateRecord
 
     protected function mutateFormDataBeforeCreate(array $data): array
     {
-        $data['password'] = $data['user_name'];
+        $data['password'] = Hash::make($data['user_name']);
         return $data;
     }
 
