@@ -43,7 +43,7 @@ class SchoolResource extends Resource
 
                         // Get the current record ID if editing
                         $currentId = $get('id'); // This works in edit mode
-
+            
                         $query = \App\Models\School::where('user_name', $state);
                         if ($currentId) {
                             $query->where('id', '!=', $currentId); // Ignore current record
@@ -92,15 +92,23 @@ class SchoolResource extends Resource
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
-                //
+                Tables\Filters\SelectFilter::make('active')
+                    ->label('الحالة')
+                    ->options([
+                        '1' => 'نشط',
+                        '0' => 'غير نشط',
+                    ]),
             ])
             ->actions([
-                Tables\Actions\EditAction::make(),
+                Tables\Actions\ActionGroup::make([
+                    Tables\Actions\EditAction::make(),
+                    Tables\Actions\DeleteAction::make(),
+                ]),
             ])
             ->bulkActions([
-//                Tables\Actions\BulkActionGroup::make([
-//                    Tables\Actions\DeleteBulkAction::make(),
-//                ]),
+                Tables\Actions\BulkActionGroup::make([
+                    Tables\Actions\DeleteBulkAction::make(),
+                ]),
             ]);
     }
 

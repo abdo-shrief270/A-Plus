@@ -46,7 +46,7 @@ class StudentResource extends Resource
 
                         // Get the current record ID if editing
                         $currentId = $get('id'); // This works in edit mode
-
+            
                         $query = \App\Models\User::where('user_name', $state);
                         if ($currentId) {
                             $query->where('id', '!=', $currentId); // Ignore current record
@@ -62,7 +62,7 @@ class StudentResource extends Resource
                 Forms\Components\TextInput::make('phone')
                     ->label('رقم الجوال')
                     ->tel()
-                    ->unique('users','phone',ignoreRecord: true)
+                    ->unique('users', 'phone', ignoreRecord: true)
                     ->maxLength(20)
                     ->live()
                     ->required(),
@@ -84,7 +84,7 @@ class StudentResource extends Resource
 
                 Forms\Components\Select::make('exam_id')
                     ->label('نوع الاختبار')
-                    ->options(Exam::get()->pluck('name','id'))
+                    ->options(Exam::get()->pluck('name', 'id'))
                     ->default(null),
 
                 Forms\Components\DatePicker::make('exam_date')
@@ -122,10 +122,10 @@ class StudentResource extends Resource
 
                 Tables\Columns\TextColumn::make('gender')
                     ->label('الجنس')
-                    ->formatStateUsing(fn ($state) => $state === 'male' ? 'ذكر' : 'أنثى'),
+                    ->formatStateUsing(fn($state) => $state === 'male' ? 'ذكر' : 'أنثى'),
 
                 Tables\Columns\TextColumn::make('student.exam.name')
-                ->label('نوع الاختبار')
+                    ->label('نوع الاختبار')
                     ->sortable(),
 
                 Tables\Columns\TextColumn::make('student.exam_date')
@@ -151,10 +151,43 @@ class StudentResource extends Resource
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
-                //
+                Tables\Filters\SelectFilter::make('active')
+                    ->label('الحالة')
+                    ->options([
+                        '1' => 'نشط',
+                        '0' => 'غير نشط',
+                    ]),
+                Tables\Filters\SelectFilter::make('gender')
+                    ->label('الجنس')
+                    ->options([
+                        'male' => 'ذكر',
+                        'female' => 'أنثى',
+                    ]),
+                Tables\Filters\SelectFilter::make('exam_id')
+                    ->label('نوع الاختبار')
+                    ->relationship('student.exam', 'name'),
+                Tables\Filters\Filter::make('created_at')
+                    ->form([
+                        Forms\Components\DatePicker::make('created_from')->label('تاريخ التسجيل من'),
+                        Forms\Components\DatePicker::make('created_until')->label('تاريخ التسجيل إلى'),
+                    ])
+                    ->query(function (Builder $query, array $data): Builder {
+                        return $query
+                            ->when(
+                                $data['created_from'],
+                                fn(Builder $query, $date): Builder => $query->whereDate('created_at', '>=', $date),
+                            )
+                            ->when(
+                                $data['created_until'],
+                                fn(Builder $query, $date): Builder => $query->whereDate('created_at', '<=', $date),
+                            );
+                    }),
             ])
             ->actions([
-                Tables\Actions\EditAction::make(),
+                Tables\Actions\ActionGroup::make([
+                    Tables\Actions\EditAction::make(),
+                    Tables\Actions\DeleteAction::make(),
+                ]),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
@@ -172,13 +205,13 @@ class StudentResource extends Resource
 
     public static function getNavigationBadge(): ?string
     {
-        return static::getModel()::where('type','student')->count();
+        return static::getModel()::where('type', 'student')->count();
     }
 
     public static function getEloquentQuery(): Builder
     {
         return parent::getEloquentQuery()
-            ->where('type','student');
+            ->where('type', 'student');
     }
 
     public static function getPages(): array
