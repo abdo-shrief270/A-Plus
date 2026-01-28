@@ -19,6 +19,12 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        //
+        \Filament\Actions\Exports\Models\Export::polymorphicUserRelationship();
+        \Filament\Actions\Imports\Models\Import::polymorphicUserRelationship();
+
+        \Illuminate\Database\Eloquent\Relations\Relation::morphMap([
+            'App\Models\User' => \App\Models\User::class,
+            'App\Models\Admin' => \App\Models\Admin::class,
+        ]);
     }
 }
