@@ -16,4 +16,11 @@ class ListLessons extends ListRecords
             Actions\CreateAction::make(),
         ];
     }
+
+    protected function getHeaderWidgets(): array
+    {
+        return [
+            LessonResource\Widgets\LessonStatsOverview::class,
+        ];
+    }
 }

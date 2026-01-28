@@ -2,7 +2,7 @@
 
 namespace App\Filament\Resources\StudentResource\Widgets;
 
-use App\Models\User;
+use App\Models\Student;
 use Filament\Widgets\StatsOverviewWidget as BaseWidget;
 use Filament\Widgets\StatsOverviewWidget\Stat;
 
@@ -10,15 +10,33 @@ class StudentStatsOverview extends BaseWidget
 {
     protected function getStats(): array
     {
+        $totalStudents = Student::count();
+        $activeStudents = Student::whereHas('exam')->count();
+        $maleStudents = Student::where('gender', 'male')->count();
+        $femaleStudents = Student::where('gender', 'female')->count();
+
         return [
-            Stat::make('إجمالي الطلاب', User::where('type', 'student')->count())
-                ->description('الطلاب المسجلين')
-                ->descriptionIcon('heroicon-m-user-group')
-                ->color('success'),
-            Stat::make('الذكور', User::where('type', 'student')->where('gender', 'male')->count())
+            Stat::make('إجمالي الطلاب', $totalStudents)
+                ->description('العدد الكلي للطلاب المسجلين')
+                ->descriptionIcon('heroicon-m-users')
+                ->color('success')
+                ->chart([7, 12, 18, 25, 30, 35, $totalStudents]),
+
+            Stat::make('الطلاب النشطون', $activeStudents)
+                ->description('الطلاب المسجلون في امتحانات')
+                ->descriptionIcon('heroicon-m-academic-cap')
+                ->color('primary')
+                ->chart([5, 10, 15, 20, 25, $activeStudents]),
+
+            Stat::make('الطلاب الذكور', $maleStudents)
+                ->description(round(($maleStudents / max($totalStudents, 1)) * 100, 1) . '% من الإجمالي')
+                ->descriptionIcon('heroicon-m-user')
                 ->color('info'),
-            Stat::make('الإناث', User::where('type', 'student')->where('gender', 'female')->count())
-                ->color('danger'),
+
+            Stat::make('الطالبات', $femaleStudents)
+                ->description(round(($femaleStudents / max($totalStudents, 1)) * 100, 1) . '% من الإجمالي')
+                ->descriptionIcon('heroicon-m-user')
+                ->color('warning'),
         ];
     }
 }

@@ -11,8 +11,11 @@ class Question extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['text', 'image_path', 'explanation_text', 'explanation_text_image_path', 'explanation_video_url'];
+    protected $fillable = ['text', 'image_path', 'explanation_text', 'explanation_text_image_path', 'explanation_video_url', 'difficulty'];
     protected $hidden = ['pivot'];
+    protected $casts = [
+        'difficulty' => 'string',
+    ];
 
     public function answers(): HasMany
     {

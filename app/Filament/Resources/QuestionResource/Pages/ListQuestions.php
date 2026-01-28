@@ -16,4 +16,11 @@ class ListQuestions extends ListRecords
             Actions\CreateAction::make(),
         ];
     }
+
+    protected function getHeaderWidgets(): array
+    {
+        return [
+            QuestionResource\Widgets\QuestionStatsOverview::class,
+        ];
+    }
 }
