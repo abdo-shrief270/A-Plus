@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Casts\Attribute;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
@@ -10,11 +11,13 @@ use Tymon\JWTAuth\Contracts\JWTSubject;
 
 class School extends Authenticatable implements JWTSubject
 {
-    protected $fillable =['name','user_name','password'];
+    use HasFactory;
 
-    public function studentSchool() : HasMany
+    protected $fillable = ['name', 'user_name', 'password'];
+
+    public function studentSchool(): HasMany
     {
-        return $this->hasMany(StudentSchool::class,'school_id','id');
+        return $this->hasMany(StudentSchool::class, 'school_id', 'id');
     }
 
 

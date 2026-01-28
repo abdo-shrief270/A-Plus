@@ -29,12 +29,13 @@ class AdminPanelProvider extends PanelProvider
             ->id('admin')
             ->path('/')
             ->login()
+            ->profile()
+            ->font('Cairo')
             ->colors([
                 'danger' => Color::Rose,
-                'gray' => Color::Gray,
+                'gray' => Color::Slate,
                 'info' => Color::Blue,
-//                'primary' => Color::Indigo,
-                'primary' => Color::Amber,
+                'primary' => Color::Emerald,
                 'success' => Color::Emerald,
                 'warning' => Color::Orange,
             ])
@@ -45,8 +46,8 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\\Filament\\Widgets')
             ->widgets([
-//                Widgets\AccountWidget::class,
-//                Widgets\FilamentInfoWidget::class,
+                // Widgets\AccountWidget::class,
+                // Widgets\FilamentInfoWidget::class,
             ])
             ->middleware([
                 EncryptCookies::class,
@@ -68,6 +69,7 @@ class AdminPanelProvider extends PanelProvider
             ->defaultThemeMode(ThemeMode::System)
             ->darkMode()
             ->topNavigation()
+            ->sidebarCollapsibleOnDesktop()
             ->authMiddleware([
                 Authenticate::class,
             ]);

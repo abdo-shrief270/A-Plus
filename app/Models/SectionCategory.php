@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -9,7 +10,9 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class SectionCategory extends Model
 {
-    protected $fillable = ['exam_section_id','name','description'];
+    use HasFactory;
+
+    protected $fillable = ['exam_section_id', 'name', 'description'];
 
     public function questions(): BelongsToMany
     {
@@ -21,8 +24,8 @@ class SectionCategory extends Model
         );
     }
 
-    public function section():BelongsTo
+    public function section(): BelongsTo
     {
-        return $this->belongsTo(ExamSection::class,'exam_section_id','id');
+        return $this->belongsTo(ExamSection::class, 'exam_section_id', 'id');
     }
 }

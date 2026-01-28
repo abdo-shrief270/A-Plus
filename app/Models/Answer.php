@@ -2,11 +2,14 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Answer extends Model
 {
+    use HasFactory;
+
     protected $fillable = ['question_id', 'text', 'image_path', 'is_correct', 'order'];
 
     public function question(): BelongsTo
@@ -23,6 +26,4 @@ class Answer extends Model
             }
         });
     }
-
-
 }

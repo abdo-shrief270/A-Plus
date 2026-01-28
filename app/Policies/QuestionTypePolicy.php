@@ -3,10 +3,10 @@
 namespace App\Policies;
 
 use App\Models\Admin;
-use App\Models\Question;
+use App\Models\QuestionType;
 use Illuminate\Auth\Access\HandlesAuthorization;
 
-class QuestionPolicy
+class QuestionTypePolicy
 {
     use HandlesAuthorization;
 
@@ -15,15 +15,15 @@ class QuestionPolicy
      */
     public function viewAny(Admin $admin): bool
     {
-        return $admin->can('view_any_question');
+        return $admin->can('view_any_question::type');
     }
 
     /**
      * Determine whether the admin can view the model.
      */
-    public function view(Admin $admin, Question $question): bool
+    public function view(Admin $admin, QuestionType $questionType): bool
     {
-        return $admin->can('view_question');
+        return $admin->can('view_question::type');
     }
 
     /**
@@ -31,23 +31,23 @@ class QuestionPolicy
      */
     public function create(Admin $admin): bool
     {
-        return $admin->can('create_question');
+        return $admin->can('create_question::type');
     }
 
     /**
      * Determine whether the admin can update the model.
      */
-    public function update(Admin $admin, Question $question): bool
+    public function update(Admin $admin, QuestionType $questionType): bool
     {
-        return $admin->can('update_question');
+        return $admin->can('update_question::type');
     }
 
     /**
      * Determine whether the admin can delete the model.
      */
-    public function delete(Admin $admin, Question $question): bool
+    public function delete(Admin $admin, QuestionType $questionType): bool
     {
-        return $admin->can('delete_question');
+        return $admin->can('delete_question::type');
     }
 
     /**
@@ -55,13 +55,13 @@ class QuestionPolicy
      */
     public function deleteAny(Admin $admin): bool
     {
-        return $admin->can('delete_any_question');
+        return $admin->can('delete_any_question::type');
     }
 
     /**
      * Determine whether the admin can permanently delete.
      */
-    public function forceDelete(Admin $admin, Question $question): bool
+    public function forceDelete(Admin $admin, QuestionType $questionType): bool
     {
         return $admin->can('{{ ForceDelete }}');
     }
@@ -77,7 +77,7 @@ class QuestionPolicy
     /**
      * Determine whether the admin can restore.
      */
-    public function restore(Admin $admin, Question $question): bool
+    public function restore(Admin $admin, QuestionType $questionType): bool
     {
         return $admin->can('{{ Restore }}');
     }
@@ -93,7 +93,7 @@ class QuestionPolicy
     /**
      * Determine whether the admin can replicate.
      */
-    public function replicate(Admin $admin, Question $question): bool
+    public function replicate(Admin $admin, QuestionType $questionType): bool
     {
         return $admin->can('{{ Replicate }}');
     }

@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -9,7 +10,9 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class ExamSubject extends Model
 {
-    protected $fillable = ['exam_id','name','description'];
+    use HasFactory;
+
+    protected $fillable = ['exam_id', 'name', 'description'];
 
 
     public function questions(): BelongsToMany
@@ -22,8 +25,8 @@ class ExamSubject extends Model
         )->orderBy('questions.created_at', 'desc');
     }
 
-    public function exam() :BelongsTo
+    public function exam(): BelongsTo
     {
-        return $this->belongsTo(Exam::class,'exam_id','id');
+        return $this->belongsTo(Exam::class, 'exam_id', 'id');
     }
 }
