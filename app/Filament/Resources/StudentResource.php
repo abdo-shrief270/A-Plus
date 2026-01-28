@@ -14,6 +14,12 @@ use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use App\Filament\Exports\UserExporter;
+use App\Filament\Imports\UserImporter;
+use Filament\Tables\Actions\ExportAction;
+use Filament\Tables\Actions\ImportAction;
+use Filament\Resources\Components\Tab;
+use App\Filament\Resources\StudentResource\Widgets\StudentStatsOverview;
 
 class StudentResource extends Resource
 {
@@ -101,6 +107,10 @@ class StudentResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
+            ->headerActions([
+                ExportAction::make()->exporter(UserExporter::class),
+                ImportAction::make()->importer(UserImporter::class),
+            ])
             ->columns([
                 Tables\Columns\TextColumn::make('name')
                     ->label('الاسم الكامل')

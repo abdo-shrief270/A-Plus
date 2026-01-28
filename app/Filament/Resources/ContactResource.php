@@ -2,13 +2,19 @@
 
 namespace App\Filament\Resources;
 
+use App\Filament\Exports\ContactExporter;
 use App\Filament\Resources\ContactResource\Pages;
+use App\Filament\Resources\ContactResource\Widgets\ContactStatsOverview;
 use App\Models\Contact;
 use Filament\Forms;
 use Filament\Forms\Form;
+use Filament\Resources\Components\Tab;
 use Filament\Resources\Resource;
 use Filament\Tables;
+use Filament\Tables\Actions\ExportAction;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\SoftDeletingScope;
 
 class ContactResource extends Resource
 {
@@ -41,6 +47,9 @@ class ContactResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
+            ->headerActions([
+                ExportAction::make()->exporter(ContactExporter::class),
+            ])
             ->columns([
                 Tables\Columns\TextColumn::make('name')
                     ->label('الاسم')
@@ -89,5 +98,21 @@ class ContactResource extends Resource
     public static function getPluralLabel(): ?string
     {
         return 'رسائل التواصل';
+    }
+
+    public static function getHeaderWidgets(): array
+    {
+        return [
+            ContactStatsOverview::class,
+        ];
+    }
+
+    public function getTabs(): array
+    {
+        return [
+            'all' => Tab::make('الكل'),
+            'recent' => Tab::make('اليوم')
+                ->modifyQueryUsing(fn(Builder $query) => $query->whereDate('created_at', today())),
+        ];
     }
 }

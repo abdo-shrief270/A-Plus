@@ -12,6 +12,12 @@ use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use App\Filament\Exports\ExamExporter;
+use App\Filament\Imports\ExamImporter;
+use Filament\Tables\Actions\ExportAction;
+use Filament\Tables\Actions\ImportAction;
+use Filament\Resources\Components\Tab;
+use App\Filament\Resources\ExamResource\Widgets\ExamStatsOverview;
 
 class ExamResource extends Resource
 {
@@ -33,9 +39,14 @@ class ExamResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
-            ->modifyQueryUsing(fn (Builder $query) =>
-            $query->withCount('sections')->withCount('subjects')
+            ->modifyQueryUsing(
+                fn(Builder $query) =>
+                $query->withCount('sections')->withCount('subjects')
             )
+            ->headerActions([
+                ExportAction::make()->exporter(ExamExporter::class),
+                ImportAction::make()->importer(ExamImporter::class),
+            ])
             ->columns([
                 Tables\Columns\TextColumn::make('id')
                     ->label('كود الأختبار')
@@ -61,7 +72,7 @@ class ExamResource extends Resource
                 Tables\Actions\EditAction::make(),
             ])
             ->bulkActions([
-//                Tables\Actions\BulkActionGroup::make([
+                //                Tables\Actions\BulkActionGroup::make([
 //                    Tables\Actions\DeleteBulkAction::make(),
 //                ]),
             ]);
@@ -73,7 +84,7 @@ class ExamResource extends Resource
     }
     public static function getRelations(): array
     {
-//        $record = request()->route('record');
+        //        $record = request()->route('record');
 //
 //        if (!$record) {
 //            return [];
@@ -87,11 +98,11 @@ class ExamResource extends Resource
 //            return [RelationManagers\SubjectsRelationManager::class];
 //        }else
 //        {
-            return [
-                RelationManagers\SectionsRelationManager::class,
-                RelationManagers\SubjectsRelationManager::class,
-            ];
-//        }
+        return [
+            RelationManagers\SectionsRelationManager::class,
+            RelationManagers\SubjectsRelationManager::class,
+        ];
+        //        }
 
     }
 
@@ -123,5 +134,21 @@ class ExamResource extends Resource
     public static function getTitleCasePluralModelLabel(): string
     {
         return 'الأختبارات';
+    }
+
+    public static function getHeaderWidgets(): array
+    {
+        return [
+            ExamStatsOverview::class,
+        ];
+    }
+
+    public function getTabs(): array
+    {
+        return [
+            'all' => Tab::make('الكل'),
+            'recent' => Tab::make('أضيف حديثاً')
+                ->modifyQueryUsing(fn(Builder $query) => $query->where('created_at', '>=', now()->subDays(7))),
+        ];
     }
 }

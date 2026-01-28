@@ -14,6 +14,12 @@ use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Illuminate\Support\Facades\Storage;
+use App\Filament\Exports\QuestionExporter;
+use App\Filament\Imports\QuestionImporter;
+use Filament\Tables\Actions\ExportAction;
+use Filament\Tables\Actions\ImportAction;
+use Filament\Resources\Components\Tab;
+use App\Filament\Resources\QuestionResource\Widgets\QuestionStatsOverview;
 
 class QuestionResource extends Resource
 {
@@ -155,6 +161,10 @@ class QuestionResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
+            ->headerActions([
+                ExportAction::make()->exporter(QuestionExporter::class),
+                ImportAction::make()->importer(QuestionImporter::class),
+            ])
             ->columns([
                 Tables\Columns\TextColumn::make('id')
                     ->label('رقم السؤال')
@@ -258,6 +268,27 @@ class QuestionResource extends Resource
     public static function getPluralModelLabel(): string
     {
         return 'أسئلة';
+    }
+
+    public static function getHeaderWidgets(): array
+    {
+        return [
+            QuestionStatsOverview::class,
+        ];
+    }
+
+    public function getTabs(): array
+    {
+        return [
+            'all' => Tab::make('الكل'),
+
+            'text' => Tab::make('نصي')
+                ->modifyQueryUsing(fn(Builder $query) => $query->whereHas('type', fn($q) => $q->where('name', 'نصي'))),
+            'image' => Tab::make('صوري')
+                ->modifyQueryUsing(fn(Builder $query) => $query->whereHas('type', fn($q) => $q->where('name', 'صوري'))),
+            'comparison' => Tab::make('مقارنة')
+                ->modifyQueryUsing(fn(Builder $query) => $query->whereHas('type', fn($q) => $q->where('name', 'مقارنة'))),
+        ];
     }
 
     public static function getPluralLabel(): string
