@@ -165,7 +165,13 @@ class StudentResource extends Resource
                     ]),
                 Tables\Filters\SelectFilter::make('exam_id')
                     ->label('نوع الاختبار')
-                    ->relationship('student.exam', 'name'),
+                    ->options(Exam::pluck('name', 'id'))
+                    ->query(function (Builder $query, array $data) {
+                        return $query->when(
+                            $data['value'],
+                            fn(Builder $query, $value) => $query->whereHas('student', fn($q) => $q->where('exam_id', $value))
+                        );
+                    }),
                 Tables\Filters\Filter::make('created_at')
                     ->form([
                         Forms\Components\DatePicker::make('created_from')->label('تاريخ التسجيل من'),

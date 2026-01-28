@@ -38,6 +38,25 @@ class QuestionResource extends Resource
                                             ->get()
                                             ->pluck('name', 'id');
                                     })
+                                    ->live()
+                                    ->afterStateUpdated(function ($state, callable $set) {
+                                        $type = QuestionType::find($state);
+                                        if ($type && $type->name == 'مقارنة') {
+                                            $set('answers', [
+                                                ['text' => 'القيمة الأولى أكبر', 'is_correct' => false, 'order' => 1],
+                                                ['text' => 'القيمة الثانية أكبر', 'is_correct' => false, 'order' => 2],
+                                                ['text' => 'القيمتان متساويتان', 'is_correct' => false, 'order' => 3],
+                                                ['text' => 'المعطيات غير كافية', 'is_correct' => false, 'order' => 4],
+                                            ]);
+                                        } elseif ($type && ($type->name == 'نصي' || $type->name == 'صوري')) {
+                                            $set('answers', [
+                                                ['text' => '', 'is_correct' => false, 'order' => 1],
+                                                ['text' => '', 'is_correct' => false, 'order' => 2],
+                                                ['text' => '', 'is_correct' => false, 'order' => 3],
+                                                ['text' => '', 'is_correct' => false, 'order' => 4],
+                                            ]);
+                                        }
+                                    })
                                     ->required(),
                                 Forms\Components\Textarea::make('text')
                                     ->label('نص السؤال')
@@ -76,22 +95,6 @@ class QuestionResource extends Resource
                             ]),
                         Forms\Components\Tabs\Tab::make('الإجابات')
                             ->schema([
-                                Forms\Components\Toggle::make('auto_fill_answers')
-                                    ->label('سؤال مقارنات')
-                                    ->inline(false)
-                                    ->reactive()
-                                    ->afterStateUpdated(function ($state, callable $set) {
-                                        if ($state) {
-                                            $set('answers', [
-                                                ['text' => 'القيمة الأولي أكبر', 'is_correct' => false, 'order' => 1],
-                                                ['text' => 'القيمة الثانية أكبر', 'is_correct' => false, 'order' => 2],
-                                                ['text' => 'المعطيات غير كافية', 'is_correct' => false, 'order' => 3],
-                                                ['text' => 'القيمتان متساويتان', 'is_correct' => false, 'order' => 4],
-                                            ]);
-                                        } else {
-                                            $set('answers', []); // clear if disabled
-                                        }
-                                    }),
                                 Forms\Components\Repeater::make('answers')
                                     ->label('الإجابات')
                                     ->relationship('answers')
@@ -101,8 +104,20 @@ class QuestionResource extends Resource
                                             ->columnSpan(2)
                                             ->distinct()
                                             ->live()
-                                            ->helperText('تكرار الأجابة غير مسموح')
-                                            ->required(),
+                                            ->visible(fn(Forms\Get $get) => QuestionType::find($get('../../question_type_id'))?->name == 'نصي' || QuestionType::find($get('../../question_type_id'))?->name == 'مقارنة')
+                                            ->disabled(fn(Forms\Get $get) => QuestionType::find($get('../../question_type_id'))?->name == 'مقارنة')
+                                            ->required(fn(Forms\Get $get) => QuestionType::find($get('../../question_type_id'))?->name == 'نصي'),
+
+                                        Forms\Components\FileUpload::make('image_path')
+                                            ->label('صورة الإجابة')
+                                            ->image()
+                                            ->imageEditor()
+                                            ->directory('answer_images')
+                                            ->disk('public')
+                                            ->columnSpan(2)
+                                            ->visible(fn(Forms\Get $get) => QuestionType::find($get('../../question_type_id'))?->name == 'صوري')
+                                            ->required(fn(Forms\Get $get) => QuestionType::find($get('../../question_type_id'))?->name == 'صوري'),
+
                                         Forms\Components\Toggle::make('is_correct')
                                             ->label('الإجابة صحيحة؟')
                                             ->inline(false)
@@ -129,6 +144,8 @@ class QuestionResource extends Resource
                                     ->defaultItems(4)
                                     ->minItems(4)
                                     ->maxItems(4)
+                                    ->addable(fn(Forms\Get $get) => QuestionType::find($get('../question_type_id'))?->name != 'مقارنة')
+                                    ->deletable(fn(Forms\Get $get) => QuestionType::find($get('../question_type_id'))?->name != 'مقارنة')
                                     ->columns(3),
                             ]),
                     ])->columnSpanFull(),

@@ -7,11 +7,11 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Answer extends Model
 {
-    protected $fillable =['question_id','text','is_correct','order'];
+    protected $fillable = ['question_id', 'text', 'image_path', 'is_correct', 'order'];
 
-    public function question():BelongsTo
+    public function question(): BelongsTo
     {
-        return $this->belongsTo(Question::class,'question_id','id');
+        return $this->belongsTo(Question::class, 'question_id', 'id');
     }
 
     protected static function booted()
@@ -24,5 +24,5 @@ class Answer extends Model
         });
     }
 
-    
+
 }
