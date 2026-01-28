@@ -15,7 +15,7 @@ class QuestionPolicy
      */
     public function viewAny(Admin $admin): bool
     {
-        return $admin->can('view_any_question');
+        return $admin->can('view_any_question::type');
     }
 
     /**
@@ -23,7 +23,7 @@ class QuestionPolicy
      */
     public function view(Admin $admin, Question $question): bool
     {
-        return $admin->can('view_question');
+        return $admin->can('view_question::type');
     }
 
     /**
@@ -31,7 +31,7 @@ class QuestionPolicy
      */
     public function create(Admin $admin): bool
     {
-        return $admin->can('create_question');
+        return $admin->can('create_question::type');
     }
 
     /**
@@ -39,7 +39,7 @@ class QuestionPolicy
      */
     public function update(Admin $admin, Question $question): bool
     {
-        return $admin->can('update_question');
+        return $admin->can('update_question::type');
     }
 
     /**
@@ -47,7 +47,7 @@ class QuestionPolicy
      */
     public function delete(Admin $admin, Question $question): bool
     {
-        return $admin->can('delete_question');
+        return $admin->can('delete_question::type');
     }
 
     /**
@@ -55,7 +55,7 @@ class QuestionPolicy
      */
     public function deleteAny(Admin $admin): bool
     {
-        return $admin->can('delete_any_question');
+        return $admin->can('delete_any_question::type');
     }
 
     /**

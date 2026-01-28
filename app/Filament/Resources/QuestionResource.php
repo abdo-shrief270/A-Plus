@@ -5,6 +5,7 @@ namespace App\Filament\Resources;
 use App\Filament\Resources\QuestionResource\Pages;
 use App\Filament\Resources\QuestionResource\RelationManagers;
 use App\Models\Question;
+use App\Models\QuestionType;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
@@ -20,12 +21,22 @@ class QuestionResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-sparkles';
 
-    protected static ?int $navigationSort = 4;
+    protected static ?int $navigationSort = 5;
 
     public static function form(Form $form): Form
     {
         return $form
             ->schema([
+
+                Forms\Components\Select::make('question_type_id')
+                    ->label('نوع السؤال')
+                    ->options(function () {
+                        return QuestionType::query()
+                            ->get()
+                            ->pluck('name', 'id');
+                    })
+                    ->required(),
+
                 Forms\Components\Textarea::make('text')
                     ->label('نص السؤال')
                     ->rows(5)
@@ -137,6 +148,12 @@ class QuestionResource extends Resource
             ->columns([
                 Tables\Columns\TextColumn::make('id')
                     ->label('رقم السؤال')
+                    ->searchable()
+                    ->sortable()
+                    ->toggleable(),
+
+                Tables\Columns\TextColumn::make('type.name')
+                    ->label('نوع السؤال')
                     ->searchable()
                     ->sortable()
                     ->toggleable(),

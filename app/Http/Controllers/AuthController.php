@@ -10,6 +10,7 @@ use App\Http\Requests\Auth\Register;
 use App\Http\Requests\Auth\ResendOTPRequest;
 use App\Http\Requests\Auth\resetPasswordRequest;
 use App\Http\Requests\Auth\UpdateUserRequest;
+use App\Http\Requests\LoginOTPRequest;
 use App\Models\Student;
 use App\Models\User;
 use App\Traits\ApiResponse;
@@ -109,6 +110,31 @@ class AuthController extends Controller
             return $this->apiResponse(500,'Could not create token');
         }
     }
+//
+//
+//    public function loginOTP(LoginOTPRequest $request)
+//    {
+//        $phone = $request->only('phone');
+//        try {
+//            if ($token = auth('api')->attempt($credentials)) {
+//                return $this->apiResponse(200,'User Logged In Successfully',null,[
+//                    'token' => $token,
+//                    'type' => \auth('api')->user()->type,
+//                    'expires_in' => auth('api')->factory()->getTTL() * 60,
+//                ]);
+//            }elseif($token = auth('schools')->attempt($credentials)){
+//                return $this->apiResponse(200,'User Logged In Successfully',null,[
+//                    'token' => $token,
+//                    'type' => 'school',
+//                    'expires_in' => auth('api')->factory()->getTTL() * 60,
+//                ]);
+//            }else{
+//                return $this->apiResponse(401,'Invalid credentials');
+//            }
+//        } catch (JWTException $e) {
+//            return $this->apiResponse(500,'Could not create token');
+//        }
+//    }
 
 
     public function getUser()
