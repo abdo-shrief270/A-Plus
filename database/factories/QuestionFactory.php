@@ -17,6 +17,7 @@ class QuestionFactory extends Factory
             'image_path' => null, // Can add random logic later if acceptable
             'explanation_text' => $this->faker->realText(200),
             'question_type_id' => QuestionType::inRandomOrder()->first()?->id ?? 1,
+            'difficulty' => $this->faker->randomElement(['easy', 'medium', 'hard']),
         ];
     }
 }

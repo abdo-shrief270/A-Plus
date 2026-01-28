@@ -12,12 +12,16 @@ class ExamSubjectChart extends ChartWidget
 
     protected static ?int $sort = 2;
 
+    protected int|string|array $columnSpan = 1;
+
+    protected static ?string $maxHeight = '300px';
+
     protected function getData(): array
     {
-        // Count subjects and their exams
+        // Count how many times each subject appears (across all exams)
         $subjectData = DB::table('exam_subjects')
-            ->select('exam_subjects.name', DB::raw('count(exam_subjects.id) as count'))
-            ->groupBy('exam_subjects.id', 'exam_subjects.name')
+            ->select('exam_subjects.name', DB::raw('count(*) as count'))
+            ->groupBy('exam_subjects.name')
             ->orderBy('count', 'desc')
             ->limit(10)
             ->get();
@@ -25,7 +29,7 @@ class ExamSubjectChart extends ChartWidget
         return [
             'datasets' => [
                 [
-                    'label' => 'عدد المواد',
+                    'label' => 'عدد المرات',
                     'data' => $subjectData->pluck('count')->toArray(),
                     'backgroundColor' => [
                         'rgb(59, 130, 246)',

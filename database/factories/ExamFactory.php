@@ -10,6 +10,7 @@ class ExamFactory extends Factory
     {
         return [
             'name' => 'اختبار ' . $this->faker->word(),
+            'active' => $this->faker->boolean(80), // 80% chance of being active
         ];
     }
 }

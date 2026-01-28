@@ -11,10 +11,19 @@ class StudentGenderChart extends ChartWidget
 
     protected static ?int $sort = 2;
 
+    protected int|string|array $columnSpan = 1;
+
+    protected static ?string $maxHeight = '300px';
+
     protected function getData(): array
     {
-        $maleCount = Student::where('gender', 'male')->count();
-        $femaleCount = Student::where('gender', 'female')->count();
+        $maleCount = Student::whereHas('user', function ($query) {
+            $query->where('gender', 'male');
+        })->count();
+
+        $femaleCount = Student::whereHas('user', function ($query) {
+            $query->where('gender', 'female');
+        })->count();
 
         return [
             'datasets' => [
@@ -34,5 +43,24 @@ class StudentGenderChart extends ChartWidget
     protected function getType(): string
     {
         return 'pie';
+    }
+
+    protected function getOptions(): array
+    {
+        return [
+            'plugins' => [
+                'legend' => [
+                    'display' => true,
+                ],
+            ],
+            'scales' => [
+                'x' => [
+                    'display' => false,
+                ],
+                'y' => [
+                    'display' => false,
+                ],
+            ],
+        ];
     }
 }

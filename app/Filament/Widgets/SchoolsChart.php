@@ -8,7 +8,7 @@ use Filament\Widgets\ChartWidget;
 class SchoolsChart extends ChartWidget
 {
     protected static ?string $heading = 'أعلى المدارس تسجيلاً';
-    protected static ?int $sort = 3;
+    protected static ?int $sort = 2;
 
     protected function getData(): array
     {
@@ -23,7 +23,11 @@ class SchoolsChart extends ChartWidget
                     'label' => 'عدد الطلاب',
                     'data' => $schools->pluck('student_school_count'),
                     'backgroundColor' => [
-                        '#3b82f6', '#8b5cf6', '#ec4899', '#f97316', '#eab308'
+                        '#3b82f6',
+                        '#8b5cf6',
+                        '#ec4899',
+                        '#f97316',
+                        '#eab308'
                     ],
                 ],
             ],

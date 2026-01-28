@@ -11,6 +11,10 @@ class QuestionDifficultyChart extends ChartWidget
 
     protected static ?int $sort = 2;
 
+    protected int|string|array $columnSpan = 1;
+
+    protected static ?string $maxHeight = '300px';
+
     protected function getData(): array
     {
         $easyCount = Question::where('difficulty', 'easy')->count();
@@ -36,5 +40,24 @@ class QuestionDifficultyChart extends ChartWidget
     protected function getType(): string
     {
         return 'pie';
+    }
+
+    protected function getOptions(): array
+    {
+        return [
+            'plugins' => [
+                'legend' => [
+                    'display' => true,
+                ],
+            ],
+            'scales' => [
+                'x' => [
+                    'display' => false,
+                ],
+                'y' => [
+                    'display' => false,
+                ],
+            ],
+        ];
     }
 }

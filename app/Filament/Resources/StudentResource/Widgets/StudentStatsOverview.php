@@ -12,8 +12,14 @@ class StudentStatsOverview extends BaseWidget
     {
         $totalStudents = Student::count();
         $activeStudents = Student::whereHas('exam')->count();
-        $maleStudents = Student::where('gender', 'male')->count();
-        $femaleStudents = Student::where('gender', 'female')->count();
+
+        $maleStudents = Student::whereHas('user', function ($query) {
+            $query->where('gender', 'male');
+        })->count();
+
+        $femaleStudents = Student::whereHas('user', function ($query) {
+            $query->where('gender', 'female');
+        })->count();
 
         return [
             Stat::make('إجمالي الطلاب', $totalStudents)

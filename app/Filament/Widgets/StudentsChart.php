@@ -10,7 +10,7 @@ use Flowframe\Trend\TrendValue;
 class StudentsChart extends ChartWidget
 {
     protected static ?string $heading = 'تسجيل الطلاب خلال العام';
-    protected static ?int $sort = 2; // After StatsOverview
+    protected static ?int $sort = 1; // After StatsOverview
 
     protected function getData(): array
     {
