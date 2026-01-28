@@ -10,8 +10,8 @@ use Spatie\Permission\Traits\HasRoles;
 
 class Admin extends Authenticatable implements FilamentUser
 {
-    use HasRoles;
-    protected $fillable =['name','email','password','active'];
+    use HasRoles, \Illuminate\Notifications\Notifiable;
+    protected $fillable = ['name', 'email', 'password', 'active'];
 
     public function canAccessPanel(Panel $panel): bool
     {

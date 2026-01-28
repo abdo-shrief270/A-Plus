@@ -9,10 +9,13 @@ use Illuminate\Notifications\Notifiable;
 use Spatie\Permission\Traits\HasRoles;
 use Tymon\JWTAuth\Contracts\JWTSubject;
 
-class User extends Authenticatable implements JWTSubject
+use Filament\Models\Contracts\FilamentUser;
+use Filament\Panel;
+
+class User extends Authenticatable implements JWTSubject, FilamentUser
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasFactory, Notifiable,HasRoles;
+    use HasFactory, Notifiable, HasRoles;
 
     /**
      * The attributes that are mass assignable.
@@ -58,12 +61,12 @@ class User extends Authenticatable implements JWTSubject
 
     public function student()
     {
-        return $this->hasOne(Student::class,'user_id','id');
+        return $this->hasOne(Student::class, 'user_id', 'id');
     }
 
     public function studentParent()
     {
-        return $this->hasMany(StudentParent::class,'parent_id','id');
+        return $this->hasMany(StudentParent::class, 'parent_id', 'id');
     }
 
     public function scopeIsParent($query)
@@ -79,5 +82,10 @@ class User extends Authenticatable implements JWTSubject
     public function scopeIsStudent($query)
     {
         return $query->whereHas('student');
+    }
+
+    public function canAccessPanel(Panel $panel): bool
+    {
+        return true; // Or implement specific logic
     }
 }

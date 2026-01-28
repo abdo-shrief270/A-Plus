@@ -70,6 +70,7 @@ class AdminPanelProvider extends PanelProvider
             ->darkMode()
             ->topNavigation()
             ->sidebarCollapsibleOnDesktop()
+            ->databaseNotifications()
             ->authMiddleware([
                 Authenticate::class,
             ]);
