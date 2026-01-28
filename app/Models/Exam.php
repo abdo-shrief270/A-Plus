@@ -36,4 +36,14 @@ class Exam extends Model
     {
         return $this->hasMany(ExamSection::class, 'exam_id', 'id')->select('id', 'name', 'exam_id')->with('categories');
     }
+
+    public function lessons(): HasMany
+    {
+        return $this->hasMany(Lesson::class)->ordered();
+    }
+
+    public function activeLessons(): HasMany
+    {
+        return $this->hasMany(Lesson::class)->active()->ordered();
+    }
 }

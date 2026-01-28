@@ -179,5 +179,8 @@ class DatabaseSeeder extends Seeder
             }
         }
         $this->command->info("Students & Actions Created.");
+
+        // 11. Lessons & Pages
+        $this->call(LessonSeeder::class);
     }
 }

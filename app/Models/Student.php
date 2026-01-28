@@ -33,8 +33,22 @@ class Student extends Model
     {
         return $this->hasOne(StudentSchool::class, 'student_id', 'id');
     }
+
     public function studentParent()
     {
         return $this->hasOne(StudentParent::class, 'student_id', 'id');
+    }
+
+    public function lessonProgress()
+    {
+        return $this->hasMany(StudentLessonProgress::class);
+    }
+
+    public function todayLessons()
+    {
+        return $this->lessonProgress()
+            ->with('lesson.pages')
+            ->whereDate('scheduled_date', today())
+            ->ordered();
     }
 }
