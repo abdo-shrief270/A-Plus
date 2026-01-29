@@ -200,6 +200,11 @@ class ParentResource extends Resource
         return static::getModel()::count();
     }
 
+    public static function getNavigationBadgeColor(): ?string
+    {
+        return 'primary';
+    }
+
     public static function getEloquentQuery(): Builder
     {
         return parent::getEloquentQuery()

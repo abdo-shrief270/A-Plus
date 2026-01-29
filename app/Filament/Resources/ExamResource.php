@@ -150,6 +150,11 @@ class ExamResource extends Resource
         return static::getModel()::count();
     }
 
+    public static function getNavigationBadgeColor(): ?string
+    {
+        return 'primary';
+    }
+
     public static function getPages(): array
     {
         return [

@@ -282,6 +282,11 @@ class StudentResource extends Resource
         return static::getModel()::where('type', 'student')->count();
     }
 
+    public static function getNavigationBadgeColor(): ?string
+    {
+        return 'primary';
+    }
+
     public static function getEloquentQuery(): Builder
     {
         return parent::getEloquentQuery()
