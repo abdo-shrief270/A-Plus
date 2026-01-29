@@ -80,9 +80,9 @@
                     $char = match ($index) { 0 => 'أ', 1 => 'ب', 2 => 'ج', 3 => 'د', default => '-'};
                 @endphp
                 <div @click="selectedAnswer = {{ $answer->id }}" :class="{ 
-                                    'ring-2 ring-primary-500 bg-primary-50 dark:bg-primary-900/20 dark:ring-primary-400': selectedAnswer === {{ $answer->id }},
-                                    'hover:bg-gray-50 dark:hover:bg-gray-800': selectedAnswer !== {{ $answer->id }}
-                                }"
+                                                                'ring-2 ring-primary-500 bg-primary-50 dark:bg-primary-900/20 dark:ring-primary-400': selectedAnswer === {{ $answer->id }},
+                                                                'hover:bg-gray-50 dark:hover:bg-gray-800': selectedAnswer !== {{ $answer->id }}
+                                                            }"
                     class="relative flex items-center p-4 border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 rounded-lg cursor-pointer transition-all">
 
                     <span class="ml-auto flex-grow text-gray-700 dark:text-gray-200 text-lg mathjax-content">
@@ -90,9 +90,9 @@
                     </span>
 
                     <div :class="{
-                                        'bg-primary-100 text-primary-600 dark:bg-primary-800 dark:text-primary-200': selectedAnswer === {{ $answer->id }},
-                                        'bg-gray-100 text-gray-500 dark:bg-gray-800 dark:text-gray-400': selectedAnswer !== {{ $answer->id }}
-                                    }"
+                                                                    'bg-primary-100 text-primary-600 dark:bg-primary-800 dark:text-primary-200': selectedAnswer === {{ $answer->id }},
+                                                                    'bg-gray-100 text-gray-500 dark:bg-gray-800 dark:text-gray-400': selectedAnswer !== {{ $answer->id }}
+                                                                }"
                         class="flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-full font-bold mr-3 transition-colors">
                         {{ $char }}
                     </div>
@@ -119,10 +119,10 @@
             class="bg-white dark:bg-gray-900 rounded-xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-hidden flex flex-col border border-gray-100 dark:border-gray-800">
             <!-- Modal Header -->
             <div
-                class="p-4 border-b border-gray-100 dark:border-gray-800 flex justify-between items-center bg-gray-50 dark:bg-gray-800/50">
+                class="p-4 border-b border-gray-100 dark:border-gray-800 flex justify-between items-center bg-white dark:bg-gray-900 sticky top-0 z-10">
                 <h3 class="font-bold text-gray-800 dark:text-gray-100 text-lg">شرح الإجابة</h3>
                 <button type="button" @click="showExplanation = false"
-                    class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200">
+                    class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 p-1 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full transition-colors">
                     <x-heroicon-o-x-mark class="w-6 h-6" />
                 </button>
             </div>
@@ -140,18 +140,20 @@
                 </span>
             </div>
 
-            <!-- Tabs -->
-            <div class="flex border-b border-gray-200 dark:border-gray-700">
-                <button type="button" @click="activeTab = 'video'"
-                    :class="{ 'border-b-2 border-info-500 text-info-600 dark:text-info-400': activeTab === 'video', 'text-gray-500 dark:text-gray-400': activeTab !== 'video' }"
-                    class="flex-1 py-3 text-center font-bold transition-colors">
-                    فيديو
-                </button>
-                <button type="button" @click="activeTab = 'text'"
-                    :class="{ 'border-b-2 border-info-500 text-info-600 dark:text-info-400': activeTab === 'text', 'text-gray-500 dark:text-gray-400': activeTab !== 'text' }"
-                    class="flex-1 py-3 text-center font-bold transition-colors">
-                    نص
-                </button>
+            <!-- Segmented Control Tabs -->
+            <div class="p-4 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800">
+                <div class="flex p-1 bg-gray-200 dark:bg-gray-950 rounded-lg">
+                    <button type="button" @click="activeTab = 'video'"
+                        :class="activeTab === 'video' ? 'bg-white dark:bg-gray-800 text-gray-900 dark:text-white shadow-sm' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'"
+                        class="flex-1 py-2 text-center text-sm font-bold rounded-md transition-all duration-200">
+                        فيديو
+                    </button>
+                    <button type="button" @click="activeTab = 'text'"
+                        :class="activeTab === 'text' ? 'bg-white dark:bg-gray-800 text-gray-900 dark:text-white shadow-sm' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'"
+                        class="flex-1 py-2 text-center text-sm font-bold rounded-md transition-all duration-200">
+                        نص
+                    </button>
+                </div>
             </div>
 
             <!-- Content -->
@@ -170,9 +172,13 @@
                         </div>
                         <p class="text-center text-gray-500 dark:text-gray-400 text-sm mt-2">فيديو الشرح التوضيحي</p>
                     @else
-                        <div class="flex flex-col items-center justify-center h-48 text-gray-400 dark:text-gray-500">
-                            <x-heroicon-o-video-camera-slash class="w-12 h-12 mb-2" />
-                            <p>لا يوجد فيديو للشرح لهذا السؤال</p>
+                        <div class="flex flex-col items-center justify-center p-12 text-center">
+                            <div
+                                class="w-20 h-20 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center mb-4 text-gray-400 dark:text-gray-500">
+                                <x-heroicon-o-video-camera-slash class="w-10 h-10" />
+                            </div>
+                            <h4 class="text-gray-900 dark:text-gray-100 font-bold text-lg mb-1">لا يوجد فيديو</h4>
+                            <p class="text-gray-500 dark:text-gray-400">لم يتم إضافة فيديو شرح لهذا السؤال حتى الآن</p>
                         </div>
                     @endif
                 </div>
