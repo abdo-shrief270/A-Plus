@@ -40,6 +40,7 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
             Route::post('/check', [AuthController::class, 'checkUserName']);
         });
 
+
         Route::middleware('jwt')->prefix('user')->group(function () {
             Route::get('/', [AuthController::class, 'getUser']);
             Route::post('/update', [AuthController::class, 'updateUser']);
@@ -48,6 +49,21 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
             Route::post('/checkOTP', [AuthController::class, 'checkOTP']);
         });
 
+    });
+
+    // Course Cycle Routes
+    Route::middleware('jwt')->prefix('courses')->group(function () {
+        Route::post('/{course}/enroll', [\App\Http\Controllers\Api\v1\EnrollmentController::class, 'enroll']);
+    });
+
+    Route::middleware('jwt')->prefix('school')->group(function () {
+        Route::post('/enroll-bulk', [\App\Http\Controllers\Api\v1\EnrollmentController::class, 'bulkEnroll']);
+    });
+
+    Route::middleware('jwt')->prefix('payment')->group(function () {
+        Route::post('/initiate', [\App\Http\Controllers\Api\v1\PaymentController::class, 'initiate']);
+        // Webhook usually doesn't need JWT if verified by signature, but for now...
+        Route::post('/webhook', [\App\Http\Controllers\Api\v1\PaymentController::class, 'webhook']);
     });
 });
 
