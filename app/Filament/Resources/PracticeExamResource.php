@@ -12,6 +12,12 @@ use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Filament\Infolists\Infolist;
+use Filament\Infolists\Components\Section;
+use Filament\Infolists\Components\TextEntry;
+use Filament\Infolists\Components\IconEntry;
+use Filament\Support\Enums\FontWeight;
+use Filament\Infolists\Components\TextEntry\TextEntrySize;
 
 class PracticeExamResource extends Resource
 {
@@ -47,7 +53,9 @@ class PracticeExamResource extends Resource
                     ->searchable(),
                 Tables\Columns\IconColumn::make('is_active')
                     ->label('نشط')
-                    ->boolean(),
+                    ->boolean()
+                    ->trueColor('success')
+                    ->falseColor('danger'),
                 Tables\Columns\TextColumn::make('created_at')
                     ->label('تاريخ الإنشاء')
                     ->dateTime()
@@ -70,6 +78,35 @@ class PracticeExamResource extends Resource
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),
                 ]),
+            ]);
+    }
+
+    public static function infolist(Infolist $infolist): Infolist
+    {
+        return $infolist
+            ->schema([
+                Section::make('تفاصيل النموذج')
+                    ->schema([
+                        TextEntry::make('title')
+                            ->label('عنوان النموذج')
+                            ->size(TextEntrySize::Large)
+                            ->weight(FontWeight::Bold),
+                        IconEntry::make('is_active')
+                            ->label('الحالة')
+                            ->boolean()
+                            ->trueColor('success')
+                            ->falseColor('danger'),
+                        TextEntry::make('questions_count')
+                            ->label('عدد الأسئلة')
+                            ->state(fn($record) => $record->questions()?->count())
+                            ->badge(),
+                        TextEntry::make('created_at')
+                            ->label('تاريخ الإنشاء')
+                            ->dateTime(),
+                        TextEntry::make('updated_at')
+                            ->label('آخر تحديث')
+                            ->dateTime(),
+                    ])->columns(3),
             ]);
     }
 
