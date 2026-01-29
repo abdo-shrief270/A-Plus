@@ -30,6 +30,8 @@ class AdminPanelProvider extends PanelProvider
             ->path('/')
             ->login()
             ->profile()
+            ->databaseNotifications()
+            ->databaseNotificationsPolling('1s')
             ->font('Cairo')
             ->colors([
                 'danger' => Color::Rose,
@@ -72,7 +74,6 @@ class AdminPanelProvider extends PanelProvider
             ->darkMode()
             ->topNavigation()
             ->sidebarCollapsibleOnDesktop()
-            ->databaseNotifications()
             ->authMiddleware([
                 Authenticate::class,
             ]);

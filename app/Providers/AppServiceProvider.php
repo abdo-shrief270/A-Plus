@@ -26,5 +26,10 @@ class AppServiceProvider extends ServiceProvider
             'App\Models\User' => \App\Models\User::class,
             'App\Models\Admin' => \App\Models\Admin::class,
         ]);
+
+        // Register model observers for notifications
+        \App\Models\Contact::observe(\App\Observers\ContactObserver::class);
+        \App\Models\Student::observe(\App\Observers\StudentObserver::class);
+        \App\Models\School::observe(\App\Observers\SchoolObserver::class);
     }
 }
