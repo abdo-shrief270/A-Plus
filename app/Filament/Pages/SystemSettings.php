@@ -53,12 +53,24 @@ class SystemSettings extends Page implements HasForms
                         Forms\Components\Tabs\Tab::make('بوابات الدفع')
                             ->icon('heroicon-o-credit-card')
                             ->schema([
+                                Forms\Components\CheckboxList::make('active_gateways')
+                                    ->label('تفعيل بوابات الدفع')
+                                    ->options([
+                                        'stripe' => 'Stripe',
+                                        'paypal' => 'PayPal',
+                                        'myfatoorah' => 'MyFatoorah (ماي فاتورة)',
+                                        'tap' => 'Tap Payments (تاب)',
+                                        'tamara' => 'Tamara (تمارا)',
+                                        'tabby' => 'Tabby (تابي)',
+                                        'paytabs' => 'PayTabs (باي تابس)',
+                                    ])
+                                    ->columns(4)
+                                    ->live(),
+
                                 Forms\Components\Section::make('Stripe')
                                     ->aside()
                                     ->description('إعدادات بوابة Stripe')
                                     ->schema([
-                                        Forms\Components\Toggle::make('stripe_enabled')
-                                            ->label('تفعيل Stripe'),
                                         Forms\Components\TextInput::make('stripe_key')
                                             ->label('المفتاح العام (Public Key)'),
                                         Forms\Components\TextInput::make('stripe_secret')
@@ -69,13 +81,13 @@ class SystemSettings extends Page implements HasForms
                                             ->label('مفتاح الويب هوك (Webhook Secret)')
                                             ->password()
                                             ->revealable(),
-                                    ]),
+                                    ])
+                                    ->visible(fn(Forms\Get $get) => in_array('stripe', $get('active_gateways') ?? [])),
+
                                 Forms\Components\Section::make('PayPal')
                                     ->aside()
                                     ->description('إعدادات بوابة PayPal')
                                     ->schema([
-                                        Forms\Components\Toggle::make('paypal_enabled')
-                                            ->label('تفعيل PayPal'),
                                         Forms\Components\TextInput::make('paypal_client_id')
                                             ->label('معرّف العميل (Client ID)'),
                                         Forms\Components\TextInput::make('paypal_secret')
@@ -89,7 +101,89 @@ class SystemSettings extends Page implements HasForms
                                                 'live' => 'حقيقي (Live)',
                                             ])
                                             ->default('sandbox'),
-                                    ]),
+                                    ])
+                                    ->visible(fn(Forms\Get $get) => in_array('paypal', $get('active_gateways') ?? [])),
+
+                                Forms\Components\Section::make('MyFatoorah (ماي فاتورة)')
+                                    ->aside()
+                                    ->description('إعدادات بوابة MyFatoorah')
+                                    ->schema([
+                                        Forms\Components\TextInput::make('myfatoorah_token')
+                                            ->label('API Token')
+                                            ->password()
+                                            ->revealable(),
+                                        Forms\Components\Select::make('myfatoorah_mode')
+                                            ->label('الوضع')
+                                            ->options([
+                                                'test' => 'تجريبي (Test)',
+                                                'live' => 'حقيقي (Live)',
+                                            ])
+                                            ->default('test'),
+                                    ])
+                                    ->visible(fn(Forms\Get $get) => in_array('myfatoorah', $get('active_gateways') ?? [])),
+
+                                Forms\Components\Section::make('Tap Payments (تاب)')
+                                    ->aside()
+                                    ->description('إعدادات بوابة Tap')
+                                    ->schema([
+                                        Forms\Components\TextInput::make('tap_secret_key')
+                                            ->label('Secret Key (sk_...)')
+                                            ->password()
+                                            ->revealable(),
+                                        Forms\Components\TextInput::make('tap_publishable_key')
+                                            ->label('Publishable Key (pk_...)'),
+                                    ])
+                                    ->visible(fn(Forms\Get $get) => in_array('tap', $get('active_gateways') ?? [])),
+
+                                Forms\Components\Section::make('Tamara (تمارا)')
+                                    ->aside()
+                                    ->description('إعدادات بوابة Tamara')
+                                    ->schema([
+                                        Forms\Components\TextInput::make('tamara_api_token')
+                                            ->label('API Token')
+                                            ->password()
+                                            ->revealable(),
+                                        Forms\Components\TextInput::make('tamara_notification_token')
+                                            ->label('Notification Token')
+                                            ->password()
+                                            ->revealable(),
+                                        Forms\Components\Select::make('tamara_mode')
+                                            ->label('الوضع')
+                                            ->options([
+                                                'sandbox' => 'تجريبي (Sandbox)',
+                                                'live' => 'حقيقي (Live)',
+                                            ])
+                                            ->default('sandbox'),
+                                    ])
+                                    ->visible(fn(Forms\Get $get) => in_array('tamara', $get('active_gateways') ?? [])),
+
+                                Forms\Components\Section::make('Tabby (تابي)')
+                                    ->aside()
+                                    ->description('إعدادات بوابة Tabby')
+                                    ->schema([
+                                        Forms\Components\TextInput::make('tabby_public_key')
+                                            ->label('Public Key (pk_...)'),
+                                        Forms\Components\TextInput::make('tabby_secret_key')
+                                            ->label('Secret Key (sk_...)')
+                                            ->password()
+                                            ->revealable(),
+                                    ])
+                                    ->visible(fn(Forms\Get $get) => in_array('tabby', $get('active_gateways') ?? [])),
+
+                                Forms\Components\Section::make('PayTabs (باي تابس)')
+                                    ->aside()
+                                    ->description('إعدادات بوابة PayTabs')
+                                    ->schema([
+                                        Forms\Components\TextInput::make('paytabs_profile_id')
+                                            ->label('Profile ID'),
+                                        Forms\Components\TextInput::make('paytabs_server_key')
+                                            ->label('Server Key')
+                                            ->password()
+                                            ->revealable(),
+                                        Forms\Components\TextInput::make('paytabs_client_key')
+                                            ->label('Client Key'),
+                                    ])
+                                    ->visible(fn(Forms\Get $get) => in_array('paytabs', $get('active_gateways') ?? [])),
                             ]),
                         Forms\Components\Tabs\Tab::make('قانوني')
                             ->icon('heroicon-o-scale')
@@ -116,6 +210,9 @@ class SystemSettings extends Page implements HasForms
                                             ->options([
                                                 'text' => 'نص',
                                                 'boolean' => 'منطقي (True/False)',
+                                                'image' => 'صورة',
+                                                'json' => 'JSON',
+                                                'select' => 'قائمة (Select)',
                                                 'number' => 'رقم',
                                             ])
                                             ->default('text'),
@@ -144,7 +241,16 @@ class SystemSettings extends Page implements HasForms
         foreach ($data as $key => $value) {
             // Determine group based on key prefix or manual logic
             $group = 'general';
-            if (str_starts_with($key, 'stripe_') || str_starts_with($key, 'paypal_')) {
+            if (
+                str_starts_with($key, 'stripe_') ||
+                str_starts_with($key, 'paypal_') ||
+                str_starts_with($key, 'myfatoorah_') ||
+                str_starts_with($key, 'tap_') ||
+                str_starts_with($key, 'tamara_') ||
+                str_starts_with($key, 'tabby_') ||
+                str_starts_with($key, 'paytabs_') ||
+                $key === 'active_gateways'
+            ) {
                 $group = 'payment';
             } elseif (in_array($key, ['terms_of_service', 'privacy_policy'])) {
                 $group = 'legal';
