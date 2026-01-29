@@ -17,7 +17,7 @@ class SystemSettings extends Page implements HasForms
 
     protected static ?string $navigationIcon = 'heroicon-o-cog-6-tooth';
     protected static ?string $navigationLabel = 'إعدادات النظام';
-    protected static ?string $navigationGroup = 'الإعدادات';
+    protected static ?string $navigationGroup = 'النظام';
     protected static string $view = 'filament.pages.system-settings';
 
     public ?array $data = [];
@@ -199,25 +199,52 @@ class SystemSettings extends Page implements HasForms
                                 Forms\Components\Repeater::make('custom_settings')
                                     ->label('إعدادات إضافية')
                                     ->schema([
-                                        Forms\Components\TextInput::make('key')
-                                            ->label('المفتاح (Key)')
-                                            ->required(),
-                                        Forms\Components\TextInput::make('value')
-                                            ->label('القيمة (Value)')
-                                            ->required(),
-                                        Forms\Components\Select::make('type')
-                                            ->label('النوع')
-                                            ->options([
-                                                'text' => 'نص',
-                                                'boolean' => 'منطقي (True/False)',
-                                                'image' => 'صورة',
-                                                'json' => 'JSON',
-                                                'select' => 'قائمة (Select)',
-                                                'number' => 'رقم',
-                                            ])
-                                            ->default('text'),
+                                        Forms\Components\Grid::make(3)
+                                            ->schema([
+                                                Forms\Components\TextInput::make('key')
+                                                    ->label('المفتاح (Key)')
+                                                    ->required(),
+                                                Forms\Components\Select::make('type')
+                                                    ->label('النوع')
+                                                    ->options([
+                                                        'text' => 'نص',
+                                                        'boolean' => 'منطقي (True/False)',
+                                                        'image' => 'صورة',
+                                                        'file' => 'ملف (File)',
+                                                        'json' => 'JSON (Key-Value)',
+                                                        'number' => 'رقم',
+                                                    ])
+                                                    ->default('text')
+                                                    ->live(),
+                                                Forms\Components\TextInput::make('value_text')
+                                                    ->label('القيمة (Value)')
+                                                    ->visible(fn(Forms\Get $get) => !in_array($get('type'), ['boolean', 'image', 'file', 'json']))
+                                                    ->required(fn(Forms\Get $get) => !in_array($get('type'), ['boolean', 'image', 'file', 'json'])),
+
+                                                Forms\Components\Toggle::make('value_boolean')
+                                                    ->label('القيمة (Value)')
+                                                    ->visible(fn(Forms\Get $get) => $get('type') === 'boolean')
+                                                    ->default(false),
+
+                                                Forms\Components\FileUpload::make('value_image')
+                                                    ->label('القيمة (Value)')
+                                                    ->visible(fn(Forms\Get $get) => $get('type') === 'image')
+                                                    ->image()
+                                                    ->directory('settings')
+                                                    ->preserveFilenames(),
+
+                                                Forms\Components\FileUpload::make('value_file')
+                                                    ->label('القيمة (Value)')
+                                                    ->visible(fn(Forms\Get $get) => $get('type') === 'file')
+                                                    ->directory('settings/files')
+                                                    ->preserveFilenames()
+                                                    ->downloadable(),
+
+                                                Forms\Components\KeyValue::make('value_json')
+                                                    ->label('القيمة (Value)')
+                                                    ->visible(fn(Forms\Get $get) => $get('type') === 'json'),
+                                            ]),
                                     ])
-                                    ->columns(3)
                                     ->addActionLabel('إضافة إعداد جديد'),
                             ]),
                     ])->columnSpanFull(),
@@ -237,6 +264,32 @@ class SystemSettings extends Page implements HasForms
     public function submit(): void
     {
         $data = $this->form->getState();
+
+        // Normalize custom_settings
+        if (isset($data['custom_settings']) && is_array($data['custom_settings'])) {
+            foreach ($data['custom_settings'] as $index => &$item) {
+                if (isset($item['type'])) {
+                    if ($item['type'] === 'boolean') {
+                        $item['value'] = $item['value_boolean'] ?? false;
+                    } elseif ($item['type'] === 'image') {
+                        $item['value'] = $item['value_image'] ?? null;
+                    } elseif ($item['type'] === 'file') {
+                        $item['value'] = $item['value_file'] ?? null;
+                    } elseif ($item['type'] === 'json') {
+                        $item['value'] = $item['value_json'] ?? [];
+                    } else {
+                        $item['value'] = $item['value_text'] ?? null;
+                    }
+
+                    // Clean up temp fields
+                    unset($item['value_text']);
+                    unset($item['value_boolean']);
+                    unset($item['value_image']);
+                    unset($item['value_file']);
+                    unset($item['value_json']);
+                }
+            }
+        }
 
         foreach ($data as $key => $value) {
             // Determine group based on key prefix or manual logic
