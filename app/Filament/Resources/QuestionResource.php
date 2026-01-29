@@ -87,6 +87,14 @@ class QuestionResource extends Resource
                                     ->previewable(true)
                                     ->moveFiles()
                                     ->formatStateUsing(fn($state, $record) => $record?->getRawOriginal('image_path') ? [$record->getRawOriginal('image_path')] : null),
+                                Forms\Components\Toggle::make('is_new')
+                                    ->label('سؤال جديد (Trending)')
+                                    ->default(false),
+                                Forms\Components\Select::make('practice_exam_id')
+                                    ->label('النموذج')
+                                    ->relationship('practiceExam', 'title')
+                                    ->searchable()
+                                    ->preload(),
                             ]),
                         Forms\Components\Tabs\Tab::make('الشرح')
                             ->schema([
@@ -362,6 +370,10 @@ class QuestionResource extends Resource
                 ->modifyQueryUsing(fn(Builder $query) => $query->whereHas('type', fn($q) => $q->where('name', 'نصي'))),
             'image' => Tab::make('صوري')
                 ->modifyQueryUsing(fn(Builder $query) => $query->whereHas('type', fn($q) => $q->where('name', 'صوري'))),
+            'trending' => Tab::make('Trending')
+                ->modifyQueryUsing(fn(Builder $query) => $query->where('is_new', true)->whereNull('practice_exam_id')),
+            'linked_to_model' => Tab::make('مرتبط بنموذج')
+                ->modifyQueryUsing(fn(Builder $query) => $query->whereNotNull('practice_exam_id')),
             'comparison' => Tab::make('مقارنة')
                 ->modifyQueryUsing(fn(Builder $query) => $query->whereHas('type', fn($q) => $q->where('name', 'مقارنة'))),
         ];

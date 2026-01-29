@@ -11,10 +11,20 @@ class Question extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['text', 'image_path', 'explanation_text', 'explanation_text_image_path', 'explanation_video_url', 'difficulty'];
+    protected $fillable = [
+        'text',
+        'image_path',
+        'explanation_text',
+        'explanation_text_image_path',
+        'explanation_video_url',
+        'difficulty',
+        'is_new',
+        'practice_exam_id'
+    ];
     protected $hidden = ['pivot'];
     protected $casts = [
         'difficulty' => 'string',
+        'is_new' => 'boolean',
     ];
 
     public function answers(): HasMany
@@ -35,6 +45,11 @@ class Question extends Model
     public function categories()
     {
         return $this->belongsToMany(SectionCategory::class, 'category_questions', 'question_id', 'section_category_id');
+    }
+
+    public function practiceExam()
+    {
+        return $this->belongsTo(PracticeExam::class);
     }
 
     public function getImagePathAttribute($value): ?string
