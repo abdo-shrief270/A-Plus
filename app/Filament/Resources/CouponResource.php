@@ -19,7 +19,9 @@ class CouponResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-ticket';
 
-    protected static ?string $navigationGroup = 'المالية';
+    protected static ?string $navigationGroup = 'الدورات والمبيعات';
+
+    protected static ?int $navigationSort = 2;
 
     protected static ?string $modelLabel = 'كوبون';
 

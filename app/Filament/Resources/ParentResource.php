@@ -21,8 +21,9 @@ class ParentResource extends Resource
 {
     protected static ?string $model = Parentt::class;
 
-    protected static ?int $navigationSort = 1;
+    protected static ?int $navigationSort = 3;
     protected static ?string $navigationIcon = 'heroicon-o-user-group';
+    protected static ?string $navigationGroup = 'إدارة المستخدمين';
 
     public static function form(Form $form): Form
     {
@@ -229,9 +230,5 @@ class ParentResource extends Resource
     public static function getTitleCasePluralModelLabel(): string
     {
         return 'أولياء الأمور';
-    }
-    public static function getNavigationGroup(): string
-    {
-        return 'المستخدمين';
     }
 }

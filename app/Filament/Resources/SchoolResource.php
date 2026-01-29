@@ -28,8 +28,9 @@ class SchoolResource extends Resource
 {
     protected static ?string $model = School::class;
 
-    protected static ?int $navigationSort = 2;
+    protected static ?int $navigationSort = 4;
     protected static ?string $navigationIcon = 'heroicon-o-user-group';
+    protected static ?string $navigationGroup = 'إدارة المستخدمين';
 
     public static function form(Form $form): Form
     {
@@ -202,9 +203,5 @@ class SchoolResource extends Resource
     public static function getTitleCasePluralModelLabel(): string
     {
         return 'المدراس';
-    }
-    public static function getNavigationGroup(): string
-    {
-        return 'المستخدمين';
     }
 }

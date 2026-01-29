@@ -21,7 +21,8 @@ class QuestionTypeResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-sparkles';
 
-    protected static ?int $navigationSort = 4;
+    protected static ?int $navigationSort = 7;
+    protected static ?string $navigationGroup = 'المحتوى التعليمي';
 
     public static function form(Form $form): Form
     {

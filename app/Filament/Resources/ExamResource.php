@@ -30,7 +30,8 @@ class ExamResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-academic-cap';
 
-    protected static ?int $navigationSort = 0;
+    protected static ?int $navigationSort = 1;
+    protected static ?string $navigationGroup = 'المحتوى التعليمي';
 
     public static function form(Form $form): Form
     {

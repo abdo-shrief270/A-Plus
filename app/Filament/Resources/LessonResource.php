@@ -24,8 +24,8 @@ class LessonResource extends Resource
     protected static ?string $model = Lesson::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-academic-cap';
-
-    protected static ?string $navigationGroup = 'خطة المذاكرة';
+    protected static ?int $navigationSort = 2;
+    protected static ?string $navigationGroup = 'المحتوى التعليمي';
 
     protected static ?string $modelLabel = 'درس';
 

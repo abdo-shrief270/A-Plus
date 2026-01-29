@@ -18,6 +18,8 @@ class PaymentResource extends Resource
 
     protected static ?string $navigationGroup = 'المالية';
 
+    protected static ?int $navigationSort = 2;
+
     protected static ?string $modelLabel = 'دفعة';
 
     protected static ?string $pluralModelLabel = 'المدفوعات';

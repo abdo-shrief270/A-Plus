@@ -18,6 +18,8 @@ class EnrollmentResource extends Resource
 
     protected static ?string $navigationGroup = 'المالية';
 
+    protected static ?int $navigationSort = 1;
+
     protected static ?string $modelLabel = 'تسجيل';
 
     protected static ?string $pluralModelLabel = 'التسجيلات';

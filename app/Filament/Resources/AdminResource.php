@@ -14,8 +14,13 @@ use Illuminate\Support\Facades\Gate;
 class AdminResource extends Resource
 {
     protected static ?string $model = Admin::class;
-    protected static ?int $navigationSort = 0;
+    protected static ?int $navigationSort = 1;
     protected static ?string $navigationIcon = 'heroicon-o-user-group';
+
+    public static function getNavigationGroup(): ?string
+    {
+        return 'إدارة المستخدمين';
+    }
 
     public static function form(Form $form): Form
     {
@@ -34,7 +39,7 @@ class AdminResource extends Resource
                     ->maxLength(255),
                 Forms\Components\Select::make('roles')
                     ->label('الأدوار')
-                    ->options(fn () => \Spatie\Permission\Models\Role::query()->orderBy('id', 'ASC')->pluck('name', 'name'))
+                    ->options(fn() => \Spatie\Permission\Models\Role::query()->orderBy('id', 'ASC')->pluck('name', 'name'))
                     ->multiple(),
             ]);
     }
@@ -74,7 +79,7 @@ class AdminResource extends Resource
             ->actions([
                 Tables\Actions\ViewAction::make(),
                 Tables\Actions\EditAction::make()
-                ->slideOver(),
+                    ->slideOver(),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
@@ -122,10 +127,6 @@ class AdminResource extends Resource
     public static function getTitleCasePluralModelLabel(): string
     {
         return 'المستخدمين';
-    }
-    public static function getNavigationGroup(): string
-    {
-        return 'النظام';
     }
 
 }
