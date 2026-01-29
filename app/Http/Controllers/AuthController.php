@@ -62,7 +62,9 @@ class AuthController extends Controller
                 return $this->apiResponse(401, 'Invalid User Type');
             }
 
-            $token = auth('api')->login($user);
+            /** @var \Tymon\JWTAuth\JWTGuard $apiGuard */
+            $apiGuard = auth('api');
+            $token = $apiGuard->login($user);
 
             DB::commit();
 
@@ -91,17 +93,22 @@ class AuthController extends Controller
     {
         $credentials = $request->only('user_name', 'password');
         try {
-            if ($token = auth('api')->attempt($credentials)) {
+            /** @var \Tymon\JWTAuth\JWTGuard $apiGuard */
+            $apiGuard = auth('api');
+            /** @var \Tymon\JWTAuth\JWTGuard $schoolGuard */
+            $schoolGuard = auth('schools');
+
+            if ($token = $apiGuard->attempt($credentials)) {
                 return $this->apiResponse(200, 'User Logged In Successfully', null, [
                     'token' => $token,
-                    'type' => \auth('api')->user()->type,
-                    'expires_in' => auth('api')->factory()->getTTL() * 60,
+                    'type' => $apiGuard->user()->type,
+                    'expires_in' => $apiGuard->factory()->getTTL() * 60,
                 ]);
-            } elseif ($token = auth('schools')->attempt($credentials)) {
+            } elseif ($token = $schoolGuard->attempt($credentials)) {
                 return $this->apiResponse(200, 'User Logged In Successfully', null, [
                     'token' => $token,
                     'type' => 'school',
-                    'expires_in' => auth('api')->factory()->getTTL() * 60,
+                    'expires_in' => $schoolGuard->factory()->getTTL() * 60,
                 ]);
             } else {
                 return $this->apiResponse(401, 'Invalid credentials');

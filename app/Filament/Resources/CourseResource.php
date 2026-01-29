@@ -158,6 +158,7 @@ class CourseResource extends Resource
                     ->label('الحالة'),
             ])
             ->actions([
+                Tables\Actions\ViewAction::make(),
                 Tables\Actions\EditAction::make(),
             ])
             ->bulkActions([
@@ -189,11 +190,76 @@ class CourseResource extends Resource
         return 'الدورات النشطة';
     }
 
+    public static function infolist(Forms\Form|\Filament\Infolists\Infolist $infolist): \Filament\Infolists\Infolist
+    {
+        return $infolist
+            ->schema([
+                \Filament\Infolists\Components\Section::make('المعلومات الأساسية')
+                    ->schema([
+                        \Filament\Infolists\Components\TextEntry::make('title')
+                            ->label('العنوان')
+                            ->weight('bold'),
+                        \Filament\Infolists\Components\TextEntry::make('slug')
+                            ->label('الرابط المختصر'),
+                        \Filament\Infolists\Components\ImageEntry::make('image_path')
+                            ->label('الصورة')
+                            ->columnSpanFull(),
+                        \Filament\Infolists\Components\TextEntry::make('description')
+                            ->label('الوصف')
+                            ->html()
+                            ->columnSpanFull(),
+                    ])->columns(2),
+
+                \Filament\Infolists\Components\Section::make('الدورة والتسعير')
+                    ->schema([
+                        \Filament\Infolists\Components\TextEntry::make('price')
+                            ->label('السعر')
+                            ->money('SAR'),
+                        \Filament\Infolists\Components\IconEntry::make('active')
+                            ->label('مفعل')
+                            ->boolean(),
+                        \Filament\Infolists\Components\TextEntry::make('start_date')
+                            ->label('تاريخ البدء')
+                            ->date(),
+                        \Filament\Infolists\Components\TextEntry::make('end_date')
+                            ->label('تاريخ الانتهاء')
+                            ->date(),
+                    ])->columns(2),
+
+                \Filament\Infolists\Components\Section::make('بيانات إضافية')
+                    ->schema([
+                        \Filament\Infolists\Components\TextEntry::make('level')
+                            ->label('المستوى')
+                            ->badge()
+                            ->color(fn(string $state): string => match ($state) {
+                                'beginner' => 'success',
+                                'intermediate' => 'warning',
+                                'advanced' => 'danger',
+                            })
+                            ->formatStateUsing(fn(string $state): string => match ($state) {
+                                'beginner' => 'مبتدئ',
+                                'intermediate' => 'متوسط',
+                                'advanced' => 'متقدم',
+                            }),
+                        \Filament\Infolists\Components\TextEntry::make('total_hours')
+                            ->label('إجمالي الساعات')
+                            ->suffix(' ساعة'),
+                        \Filament\Infolists\Components\TextEntry::make('lectures_count')
+                            ->label('عدد المحاضرات'),
+                        \Filament\Infolists\Components\TextEntry::make('rating')
+                            ->label('التقييم')
+                            ->badge()
+                            ->color('warning'),
+                    ])->columns(2),
+            ]);
+    }
+
     public static function getPages(): array
     {
         return [
             'index' => Pages\ListCourses::route('/'),
             'create' => Pages\CreateCourse::route('/create'),
+            'view' => Pages\ViewCourse::route('/{record}'),
             'edit' => Pages\EditCourse::route('/{record}/edit'),
         ];
     }

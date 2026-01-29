@@ -114,6 +114,7 @@ class EnrollmentResource extends Resource
                     ->relationship('course', 'title'),
             ])
             ->actions([
+                Tables\Actions\ViewAction::make(),
                 Tables\Actions\EditAction::make(),
                 Tables\Actions\DeleteAction::make(),
             ])
@@ -129,6 +130,52 @@ class EnrollmentResource extends Resource
         return [
             //
         ];
+    }
+
+    public static function infolist(Forms\Form|\Filament\Infolists\Infolist $infolist): \Filament\Infolists\Infolist
+    {
+        return $infolist
+            ->schema([
+                \Filament\Infolists\Components\Section::make('معلومات الطالب')
+                    ->schema([
+                        \Filament\Infolists\Components\TextEntry::make('user.name')
+                            ->label('اسم الطالب')
+                            ->weight('bold'),
+                        \Filament\Infolists\Components\TextEntry::make('user.email')
+                            ->label('البريد الإلكتروني')
+                            ->icon('heroicon-m-envelope'),
+                    ])->columns(2),
+
+                \Filament\Infolists\Components\Section::make('معلومات الدورة')
+                    ->schema([
+                        \Filament\Infolists\Components\TextEntry::make('course.title')
+                            ->label('عنوان الدورة')
+                            ->weight('bold'),
+                        \Filament\Infolists\Components\TextEntry::make('course.price')
+                            ->label('سعر الدورة')
+                            ->money('SAR'),
+                    ])->columns(2),
+
+                \Filament\Infolists\Components\Section::make('تفاصيل التسجيل')
+                    ->schema([
+                        \Filament\Infolists\Components\TextEntry::make('enrolled_at')
+                            ->label('تاريخ التسجيل')
+                            ->date(),
+                        \Filament\Infolists\Components\TextEntry::make('status')
+                            ->label('الحالة')
+                            ->badge()
+                            ->color(fn(string $state): string => match ($state) {
+                                'active' => 'success',
+                                'pending' => 'warning',
+                                'cancelled' => 'danger',
+                            })
+                            ->formatStateUsing(fn(string $state): string => match ($state) {
+                                'active' => 'نشط',
+                                'pending' => 'معلق',
+                                'cancelled' => 'ملغي',
+                            }),
+                    ])->columns(2),
+            ]);
     }
 
     public static function getNavigationBadge(): ?string
@@ -151,6 +198,7 @@ class EnrollmentResource extends Resource
         return [
             'index' => Pages\ListEnrollments::route('/'),
             'create' => Pages\CreateEnrollment::route('/create'),
+            'view' => Pages\ViewEnrollment::route('/{record}'),
             'edit' => Pages\EditEnrollment::route('/{record}/edit'),
         ];
     }

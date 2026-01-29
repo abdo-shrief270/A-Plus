@@ -128,6 +128,58 @@ class PaymentResource extends Resource
         ];
     }
 
+    public static function infolist(Forms\Form|\Filament\Infolists\Infolist $infolist): \Filament\Infolists\Infolist
+    {
+        return $infolist
+            ->schema([
+                \Filament\Infolists\Components\Section::make('معلومات الدفع')
+                    ->schema([
+                        \Filament\Infolists\Components\TextEntry::make('transaction_id')
+                            ->label('رقم المعاملة')
+                            ->copyable()
+                            ->weight('bold'),
+                        \Filament\Infolists\Components\TextEntry::make('amount')
+                            ->label('المبلغ')
+                            ->money('SAR')
+                            ->weight('bold')
+                            ->color('success'),
+                        \Filament\Infolists\Components\TextEntry::make('payment_method')
+                            ->label('طريقة الدفع'),
+                        \Filament\Infolists\Components\TextEntry::make('status')
+                            ->label('الحالة')
+                            ->badge()
+                            ->color(fn(string $state): string => match ($state) {
+                                'completed' => 'success',
+                                'pending' => 'warning',
+                                'failed' => 'danger',
+                            })
+                            ->formatStateUsing(fn(string $state): string => match ($state) {
+                                'completed' => 'مكتمل',
+                                'pending' => 'معلق',
+                                'failed' => 'فشل',
+                            }),
+                    ])->columns(2),
+
+                \Filament\Infolists\Components\Section::make('بيانات الدافع')
+                    ->schema([
+                        \Filament\Infolists\Components\TextEntry::make('user.name')
+                            ->label('اسم المستخدم'),
+                        \Filament\Infolists\Components\TextEntry::make('user.email')
+                            ->label('البريد الإلكتروني'),
+                    ])->columns(2),
+
+                \Filament\Infolists\Components\Section::make('بيانات تقنية')
+                    ->schema([
+                        \Filament\Infolists\Components\TextEntry::make('payment_metadata')
+                            ->label('بيانات وصفية (Metadata)')
+                            ->columnSpanFull()
+                            ->formatStateUsing(fn($state) => is_array($state) ? json_encode($state, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE) : $state)
+                            ->fontFamily('mono'),
+                    ])
+                    ->collapsed(),
+            ]);
+    }
+
     public static function getNavigationBadge(): ?string
     {
         return static::getModel()::where('status', 'pending')->count() ?: 0;
@@ -147,6 +199,9 @@ class PaymentResource extends Resource
     {
         return [
             'index' => Pages\ListPayments::route('/'),
+            'create' => Pages\CreatePayment::route('/create'),
+            'view' => Pages\ViewPayment::route('/{record}'),
+            'edit' => Pages\EditPayment::route('/{record}/edit'),
         ];
     }
 }

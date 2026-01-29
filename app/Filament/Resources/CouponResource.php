@@ -111,6 +111,7 @@ class CouponResource extends Resource
                     ]),
             ])
             ->actions([
+                Tables\Actions\ViewAction::make(),
                 Tables\Actions\EditAction::make(),
                 Tables\Actions\DeleteAction::make(),
             ])
@@ -138,11 +139,59 @@ class CouponResource extends Resource
         return 'primary';
     }
 
+    public static function infolist(Forms\Form|\Filament\Infolists\Infolist $infolist): \Filament\Infolists\Infolist
+    {
+        return $infolist
+            ->schema([
+                \Filament\Infolists\Components\Section::make('تفاصيل الكوبون')
+                    ->schema([
+                        \Filament\Infolists\Components\TextEntry::make('code')
+                            ->label('الكود')
+                            ->copyable()
+                            ->weight('bold'),
+                        \Filament\Infolists\Components\TextEntry::make('type')
+                            ->label('النوع')
+                            ->badge()
+                            ->color(fn(string $state): string => match ($state) {
+                                'fixed' => 'info',
+                                'percentage' => 'warning',
+                            })
+                            ->formatStateUsing(fn(string $state): string => match ($state) {
+                                'fixed' => 'مبلغ ثابت',
+                                'percentage' => 'نسبة مئوية',
+                            }),
+                        \Filament\Infolists\Components\TextEntry::make('value')
+                            ->label('قيمة الخصم')
+                            ->money('SAR'),
+                        \Filament\Infolists\Components\TextEntry::make('usage_limit')
+                            ->label('حد الاستخدام'),
+                    ])->columns(2),
+
+                \Filament\Infolists\Components\Section::make('الصلاحية')
+                    ->schema([
+                        \Filament\Infolists\Components\TextEntry::make('valid_from')
+                            ->label('صالح من')
+                            ->date(),
+                        \Filament\Infolists\Components\TextEntry::make('valid_until')
+                            ->label('صالح حتى')
+                            ->date(),
+                    ])->columns(2),
+
+                \Filament\Infolists\Components\Section::make('الإحصائيات')
+                    ->schema([
+                        \Filament\Infolists\Components\TextEntry::make('usages_count')
+                            ->label('عدد مرات الاستخدام')
+                            ->state(fn($record) => $record->usages()->count()),
+                    ])->columns(1),
+            ]);
+    }
+
     public static function getPages(): array
     {
         return [
             'index' => Pages\ListCoupons::route('/'),
             'create' => Pages\CreateCoupon::route('/create'),
+            'view' => Pages\ViewCoupon::route('/{record}'),
             'edit' => Pages\EditCoupon::route('/{record}/edit'),
         ];
     }
