@@ -50,10 +50,14 @@ class ArticleResource extends Resource
     {
         return $table
             ->columns([
+                Tables\Columns\TextColumn::make('id')
+                    ->label('ID')
+                    ->sortable(),
                 Tables\Columns\TextColumn::make('title')
                     ->label('القطعة')
                     ->searchable()
-                    ->limit(50),
+                    ->limit(50)
+                    ->tooltip(fn($record) => $record->title),
                 Tables\Columns\IconColumn::make('is_active')
                     ->label('الحالة')
                     ->boolean()
@@ -74,16 +78,29 @@ class ArticleResource extends Resource
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
-                //
+                Tables\Filters\TernaryFilter::make('is_active')
+                    ->label('الحالة')
+                    ->boolean()
+                    ->trueLabel('نشط')
+                    ->falseLabel('غير نشط')
+                    ->placeholder('الكل'),
             ])
             ->actions([
-                Tables\Actions\EditAction::make(),
+                Tables\Actions\EditAction::make()
+                    ->label('تعديل'),
+                Tables\Actions\DeleteAction::make()
+                    ->label('حذف'),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),
                 ]),
             ]);
+    }
+
+    public static function getNavigationBadge(): ?string
+    {
+        return static::getModel()::count();
     }
 
     public static function getRelations(): array
