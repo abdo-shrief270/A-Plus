@@ -61,4 +61,9 @@ class Question extends Model
     {
         return $value ? url(Storage::url($value)) : null;
     }
+
+    public function articles(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
+    {
+        return $this->belongsToMany(Article::class);
+    }
 }
