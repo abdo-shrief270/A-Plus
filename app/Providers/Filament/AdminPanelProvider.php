@@ -74,6 +74,11 @@ class AdminPanelProvider extends PanelProvider
             ->darkMode()
             ->topNavigation()
             ->sidebarCollapsibleOnDesktop()
+            ->navigationGroups([
+                'المحتوى التعليمي',
+                'المالية',
+                'إدارة المستخدمين',
+            ])
             ->authMiddleware([
                 Authenticate::class,
             ]);
