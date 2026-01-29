@@ -238,6 +238,14 @@ class QuestionResource extends Resource
             ])
             ->actions([
                 Tables\Actions\ActionGroup::make([
+                    Tables\Actions\Action::make('preview')
+                        ->label('معاينة')
+                        ->icon('heroicon-o-eye')
+                        ->color('info')
+                        ->modalContent(fn($record) => view('filament.resources.question-resource.preview', ['record' => $record]))
+                        ->modalWidth('5xl')
+                        ->slideOver()
+                        ->modalFooterActions(fn() => []),
                     Tables\Actions\ViewAction::make(),
                     Tables\Actions\EditAction::make()
                         ->label('تعديل'),
