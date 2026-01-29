@@ -34,7 +34,7 @@ class NewStudentRegistrationNotification extends Notification
             ->actions([
                 \Filament\Notifications\Actions\Action::make('view')
                     ->label('عرض الطالب')
-                    ->url(route('filament.admin.resources.students.view', ['record' => $this->student->id]))
+                    ->url(fn() => \App\Filament\Resources\StudentResource::getUrl('edit', ['record' => $this->student->id]))
             ])
             ->getDatabaseMessage();
     }

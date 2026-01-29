@@ -14,6 +14,10 @@ use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Filament\Infolists;
+use Filament\Infolists\Infolist;
+use Filament\Infolists\Components\Section;
+use Filament\Infolists\Components\TextEntry;
 
 class SectionCategoryResource extends Resource
 {
@@ -50,8 +54,9 @@ class SectionCategoryResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
-            ->modifyQueryUsing(fn (Builder $query) =>
-            $query->with('section')->withCount('questions')
+            ->modifyQueryUsing(
+                fn(Builder $query) =>
+                $query->with('section')->withCount('questions')
             )
             ->columns([
                 Tables\Columns\TextColumn::make('name')
@@ -94,11 +99,13 @@ class SectionCategoryResource extends Resource
             ->defaultSort('created_at', 'desc')
             ->filters([])
             ->actions([
-                Tables\Actions\EditAction::make()
-                    ->label('تعديل الفئة'),
-
-                Tables\Actions\DeleteAction::make()
-                    ->label('حذف الفئة'),
+                Tables\Actions\ActionGroup::make([
+                    Tables\Actions\ViewAction::make(),
+                    Tables\Actions\EditAction::make()
+                        ->label('تعديل الفئة'),
+                    Tables\Actions\DeleteAction::make()
+                        ->label('حذف الفئة'),
+                ]),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
@@ -123,6 +130,7 @@ class SectionCategoryResource extends Resource
     {
         return [
             'index' => Pages\ListSectionCategories::route('/'),
+            'view' => Pages\ViewSectionCategory::route('/{record}'),
             'edit' => Pages\EditSectionCategory::route('/{record}/edit'),
         ];
     }

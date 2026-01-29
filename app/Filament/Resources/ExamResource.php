@@ -12,6 +12,11 @@ use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Filament\Infolists;
+use Filament\Infolists\Infolist;
+use Filament\Infolists\Components\Section;
+use Filament\Infolists\Components\TextEntry;
+use Filament\Infolists\Components\IconEntry;
 use App\Filament\Exports\ExamExporter;
 use App\Filament\Imports\ExamImporter;
 use Filament\Tables\Actions\ExportAction;
@@ -69,12 +74,45 @@ class ExamResource extends Resource
                 //
             ])
             ->actions([
-                Tables\Actions\EditAction::make(),
+                Tables\Actions\ActionGroup::make([
+                    Tables\Actions\ViewAction::make(),
+                    Tables\Actions\EditAction::make(),
+                ]),
             ])
             ->bulkActions([
                 //                Tables\Actions\BulkActionGroup::make([
 //                    Tables\Actions\DeleteBulkAction::make(),
 //                ]),
+            ]);
+    }
+
+    public static function infolist(Infolist $infolist): Infolist
+    {
+        return $infolist
+            ->schema([
+                Section::make('معلومات الاختبار')
+                    ->schema([
+                        TextEntry::make('name')
+                            ->label('اسم الاختبار'),
+                        TextEntry::make('id')
+                            ->label('كود الاختبار'),
+                        TextEntry::make('sections_count')
+                            ->label('عدد الأقسام'),
+                        TextEntry::make('subjects_count')
+                            ->label('عدد المواد'),
+                    ])
+                    ->columns(2),
+
+                Section::make('معلومات النظام')
+                    ->schema([
+                        TextEntry::make('created_at')
+                            ->label('تاريخ الاضافة')
+                            ->dateTime(),
+                        TextEntry::make('updated_at')
+                            ->label('تاريخ اخر تعديل')
+                            ->dateTime(),
+                    ])
+                    ->columns(2),
             ]);
     }
 
@@ -115,6 +153,7 @@ class ExamResource extends Resource
     {
         return [
             'index' => Pages\ListExams::route('/'),
+            'view' => Pages\ViewExam::route('/{record}'),
             'edit' => Pages\EditExam::route('/{record}/edit'),
         ];
     }

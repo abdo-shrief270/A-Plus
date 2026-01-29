@@ -13,6 +13,10 @@ use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Filament\Infolists;
+use Filament\Infolists\Infolist;
+use Filament\Infolists\Components\Section;
+use Filament\Infolists\Components\TextEntry;
 
 class ExamSectionResource extends Resource
 {
@@ -45,8 +49,9 @@ class ExamSectionResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
-            ->modifyQueryUsing(fn (Builder $query) =>
-            $query->with('exam')->withCount('categories')
+            ->modifyQueryUsing(
+                fn(Builder $query) =>
+                $query->with('exam')->withCount('categories')
             )
             ->columns([
                 Tables\Columns\TextColumn::make('name')
@@ -82,16 +87,46 @@ class ExamSectionResource extends Resource
             ->defaultSort('created_at', 'desc')
             ->filters([])
             ->actions([
-                Tables\Actions\EditAction::make()
-                    ->label('تعديل القسم'),
-
-                Tables\Actions\DeleteAction::make()
-                    ->label('حذف القسم'),
+                Tables\Actions\ActionGroup::make([
+                    Tables\Actions\ViewAction::make(),
+                    Tables\Actions\EditAction::make()
+                        ->label('تعديل القسم'),
+                    Tables\Actions\DeleteAction::make()
+                        ->label('حذف القسم'),
+                ]),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),
                 ]),
+            ]);
+    }
+
+    public static function infolist(Infolist $infolist): Infolist
+    {
+        return $infolist
+            ->schema([
+                Section::make('معلومات القسم')
+                    ->schema([
+                        TextEntry::make('name')
+                            ->label('اسم القسم'),
+                        TextEntry::make('exam.name')
+                            ->label('اسم الاختبار'),
+                        TextEntry::make('categories_count')
+                            ->label('عدد الفئات'),
+                    ])
+                    ->columns(3),
+
+                Section::make('معلومات النظام')
+                    ->schema([
+                        TextEntry::make('created_at')
+                            ->label('تاريخ الاضافة')
+                            ->dateTime(),
+                        TextEntry::make('updated_at')
+                            ->label('تاريخ اخر تعديل')
+                            ->dateTime(),
+                    ])
+                    ->columns(2),
             ]);
     }
     public static function canCreate(): bool
@@ -115,6 +150,7 @@ class ExamSectionResource extends Resource
     {
         return [
             'index' => Pages\ListExamSections::route('/'),
+            'view' => Pages\ViewExamSection::route('/{record}'),
             'edit' => Pages\EditExamSection::route('/{record}/edit'),
         ];
     }

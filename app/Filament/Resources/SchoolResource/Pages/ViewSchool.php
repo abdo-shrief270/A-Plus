@@ -4,23 +4,16 @@ namespace App\Filament\Resources\SchoolResource\Pages;
 
 use App\Filament\Resources\SchoolResource;
 use Filament\Actions;
-use Filament\Resources\Pages\ListRecords;
+use Filament\Resources\Pages\ViewRecord;
 
-class ListSchools extends ListRecords
+class ViewSchool extends ViewRecord
 {
     protected static string $resource = SchoolResource::class;
 
     protected function getHeaderActions(): array
     {
         return [
-            Actions\CreateAction::make(),
-        ];
-    }
-
-    protected function getHeaderWidgets(): array
-    {
-        return [
-            SchoolResource\Widgets\SchoolStatsOverview::class,
+            Actions\EditAction::make(),
         ];
     }
 }

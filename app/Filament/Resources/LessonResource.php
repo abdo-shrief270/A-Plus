@@ -11,6 +11,13 @@ use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use Filament\Infolists;
+use Filament\Infolists\Infolist;
+use Filament\Infolists\Components\Section;
+use Filament\Infolists\Components\TextEntry;
+use Filament\Infolists\Components\IconEntry;
+use Filament\Infolists\Components\ImageEntry;
+use Filament\Infolists\Components\ColorEntry;
 
 class LessonResource extends Resource
 {
@@ -163,6 +170,7 @@ class LessonResource extends Resource
                     ->slideOver()
                     ->modalSubmitAction(false)
                     ->modalCancelActionLabel('إغلاق'),
+                Tables\Actions\ViewAction::make(),
                 Tables\Actions\EditAction::make(),
                 Tables\Actions\DeleteAction::make(),
             ])
@@ -172,6 +180,64 @@ class LessonResource extends Resource
                 ]),
             ])
             ->defaultSort('order', 'asc');
+    }
+
+    public static function infolist(Infolist $infolist): Infolist
+    {
+        return $infolist
+            ->schema([
+                Section::make('معلومات الدرس الأساسية')
+                    ->schema([
+                        TextEntry::make('title')
+                            ->label('عنوان الدرس')
+                            ->weight('bold'),
+                        TextEntry::make('exam.name')
+                            ->label('الامتحان'),
+                        TextEntry::make('description')
+                            ->label('وصف الدرس')
+                            ->columnSpanFull()
+                            ->prose(),
+                    ])
+                    ->columns(2),
+
+                Section::make('التخصيص والمظهر')
+                    ->schema([
+                        ImageEntry::make('logo')
+                            ->label('شعار الدرس')
+                            ->circular(),
+                        ColorEntry::make('color')
+                            ->label('لون الدرس'),
+                    ])
+                    ->columns(2),
+
+                Section::make('الإعدادات')
+                    ->schema([
+                        TextEntry::make('order')
+                            ->label('الترتيب')
+                            ->badge(),
+                        TextEntry::make('duration_minutes')
+                            ->label('المدة المتوقعة')
+                            ->suffix(' دقيقة'),
+                        IconEntry::make('is_active')
+                            ->label('نشط')
+                            ->boolean(),
+                        TextEntry::make('pages_count')
+                            ->label('عدد الصفحات')
+                            ->state(fn($record) => $record->pages()->count()),
+                    ])
+                    ->columns(4),
+
+                Section::make('معلومات النظام')
+                    ->schema([
+                        TextEntry::make('created_at')
+                            ->label('تاريخ الإنشاء')
+                            ->dateTime(),
+                        TextEntry::make('updated_at')
+                            ->label('تاريخ آخر تعديل')
+                            ->dateTime(),
+                    ])
+                    ->columns(2),
+            ]);
     }
 
     public static function getRelations(): array
@@ -186,6 +252,7 @@ class LessonResource extends Resource
         return [
             'index' => Pages\ListLessons::route('/'),
             'create' => Pages\CreateLesson::route('/create'),
+            'view' => Pages\ViewLesson::route('/{record}'),
             'edit' => Pages\EditLesson::route('/{record}/edit'),
         ];
     }

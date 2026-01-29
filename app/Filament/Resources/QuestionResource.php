@@ -13,6 +13,14 @@ use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Filament\Infolists;
+use Filament\Infolists\Infolist;
+use Filament\Infolists\Components\Section;
+use Filament\Infolists\Components\TextEntry;
+use Filament\Infolists\Components\IconEntry;
+use Filament\Infolists\Components\ImageEntry;
+use Filament\Infolists\Components\RepeatableEntry;
+use Filament\Infolists\Components\Grid;
 use Illuminate\Support\Facades\Storage;
 use App\Filament\Exports\QuestionExporter;
 use App\Filament\Imports\QuestionImporter;
@@ -221,6 +229,7 @@ class QuestionResource extends Resource
             ])
             ->actions([
                 Tables\Actions\ActionGroup::make([
+                    Tables\Actions\ViewAction::make(),
                     Tables\Actions\EditAction::make()
                         ->label('تعديل'),
                     Tables\Actions\DeleteAction::make()
@@ -231,6 +240,71 @@ class QuestionResource extends Resource
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),
                 ]),
+            ]);
+    }
+
+    public static function infolist(Infolist $infolist): Infolist
+    {
+        return $infolist
+            ->schema([
+                Section::make('السؤال')
+                    ->schema([
+                        Grid::make(3)
+                            ->schema([
+                                TextEntry::make('type.name')
+                                    ->label('نوع السؤال'),
+                                TextEntry::make('id')
+                                    ->label('رقم السؤال'),
+                                TextEntry::make('created_at')
+                                    ->label('تاريخ الاضافة')
+                                    ->dateTime(),
+                            ]),
+                        TextEntry::make('text')
+                            ->label('نص السؤال')
+                            ->columnSpanFull()
+                            ->prose(),
+                        ImageEntry::make('image_path')
+                            ->label('صورة مرفقة')
+                            ->disk('public')
+                            ->columnSpanFull(),
+                    ]),
+
+                Section::make('الشرح')
+                    ->schema([
+                        TextEntry::make('explanation_text')
+                            ->label('شرح السؤال')
+                            ->columnSpanFull()
+                            ->prose(),
+                        ImageEntry::make('explanation_text_image_path')
+                            ->label('صورة مرفقة للشرح')
+                            ->disk('public')
+                            ->columnSpanFull(),
+                        TextEntry::make('explanation_video_url')
+                            ->label('فيديو شرح السؤال')
+                            ->url(fn($state) => $state)
+                            ->openUrlInNewTab()
+                            ->columnSpanFull(),
+                    ])
+                    ->collapsible(),
+
+                Section::make('الإجابات')
+                    ->schema([
+                        RepeatableEntry::make('answers')
+                            ->label('قائمة الإجابات')
+                            ->schema([
+                                TextEntry::make('text')
+                                    ->label('نص الإجابة')
+                                    ->visible(fn($record) => !empty($record->text)),
+                                ImageEntry::make('image_path')
+                                    ->label('صورة الإجابة')
+                                    ->disk('public')
+                                    ->visible(fn($record) => !empty($record->image_path)),
+                                IconEntry::make('is_correct')
+                                    ->label('صحيحة؟')
+                                    ->boolean(),
+                            ])
+                            ->columns(3),
+                    ]),
             ]);
     }
 
@@ -252,6 +326,7 @@ class QuestionResource extends Resource
         return [
             'index' => Pages\ListQuestions::route('/'),
             'create' => Pages\CreateQuestion::route('/create'),
+            'view' => Pages\ViewQuestion::route('/{record}'),
             'edit' => Pages\EditQuestion::route('/{record}/edit'),
         ];
     }

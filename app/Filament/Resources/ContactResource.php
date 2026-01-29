@@ -15,6 +15,10 @@ use Filament\Tables\Actions\ExportAction;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Filament\Infolists;
+use Filament\Infolists\Infolist;
+use Filament\Infolists\Components\Section;
+use Filament\Infolists\Components\TextEntry;
 
 class ContactResource extends Resource
 {
@@ -86,6 +90,7 @@ class ContactResource extends Resource
         return [
             'index' => Pages\ListContacts::route('/'),
             'create' => Pages\CreateContact::route('/create'),
+            'view' => Pages\ViewContact::route('/{record}'),
             'edit' => Pages\EditContact::route('/{record}/edit'),
         ];
     }

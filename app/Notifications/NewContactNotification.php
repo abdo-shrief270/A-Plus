@@ -25,13 +25,13 @@ class NewContactNotification extends Notification
     {
         return FilamentNotification::make()
             ->title('رسالة جديدة')
-            ->body("رسالة من {$this->contact->name}: {$this->contact->subject}")
+            ->body("رسالة من {$this->contact->name}")
             ->icon('heroicon-o-envelope')
             ->iconColor('info')
             ->actions([
                 \Filament\Notifications\Actions\Action::make('view')
                     ->label('عرض الرسالة')
-                    ->url(route('filament.admin.resources.contacts.view', ['record' => $this->contact->id]))
+                    ->url(fn() => \App\Filament\Resources\ContactResource::getUrl('edit', ['record' => $this->contact->id]))
             ])
             ->getDatabaseMessage();
     }

@@ -12,6 +12,12 @@ use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
+use Filament\Infolists;
+use Filament\Infolists\Infolist;
+use Filament\Infolists\Components\Section;
+use Filament\Infolists\Components\TextEntry;
+use Filament\Infolists\Components\Grid;
+use Filament\Infolists\Components\IconEntry;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use App\Filament\Exports\UserExporter;
@@ -201,6 +207,7 @@ class StudentResource extends Resource
             ])
             ->actions([
                 Tables\Actions\ActionGroup::make([
+                    Tables\Actions\ViewAction::make(),
                     Tables\Actions\EditAction::make(),
                     Tables\Actions\DeleteAction::make(),
                 ]),
@@ -209,6 +216,56 @@ class StudentResource extends Resource
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),
                 ]),
+            ]);
+    }
+
+    public static function infolist(Infolist $infolist): Infolist
+    {
+        return $infolist
+            ->schema([
+                Section::make('المعلومات الأساسية')
+                    ->schema([
+                        TextEntry::make('name')
+                            ->label('الاسم الكامل'),
+                        TextEntry::make('user_name')
+                            ->label('اسم المستخدم'),
+                        TextEntry::make('email')
+                            ->label('البريد الإلكتروني')
+                            ->icon('heroicon-o-envelope'),
+                        TextEntry::make('phone')
+                            ->label('رقم الجوال')
+                            ->icon('heroicon-o-phone'),
+                        TextEntry::make('gender')
+                            ->label('الجنس')
+                            ->formatStateUsing(fn($state) => $state === 'male' ? 'ذكر' : 'أنثى'),
+                        IconEntry::make('active')
+                            ->label('الحالة')
+                            ->boolean(),
+                    ])
+                    ->columns(2),
+
+                Section::make('المعلومات الأكاديمية')
+                    ->schema([
+                        TextEntry::make('student.exam.name')
+                            ->label('نوع الاختبار'),
+                        TextEntry::make('student.exam_date')
+                            ->label('تاريخ الاختبار')
+                            ->date(),
+                        TextEntry::make('student.id_number')
+                            ->label('رقم الهوية'),
+                    ])
+                    ->columns(3),
+
+                Section::make('معلومات النظام')
+                    ->schema([
+                        TextEntry::make('created_at')
+                            ->label('تاريخ الاضافة')
+                            ->dateTime(),
+                        TextEntry::make('updated_at')
+                            ->label('تاريخ اخر تعديل')
+                            ->dateTime(),
+                    ])
+                    ->columns(2),
             ]);
     }
 
@@ -235,6 +292,7 @@ class StudentResource extends Resource
         return [
             'index' => Pages\ListStudents::route('/'),
             'create' => Pages\CreateStudent::route('/create'),
+            'view' => Pages\ViewStudent::route('/{record}'),
             'edit' => Pages\EditStudent::route('/{record}/edit'),
         ];
     }

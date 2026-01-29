@@ -12,6 +12,11 @@ use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Filament\Infolists;
+use Filament\Infolists\Infolist;
+use Filament\Infolists\Components\Section;
+use Filament\Infolists\Components\TextEntry;
+use Filament\Infolists\Components\IconEntry;
 use App\Filament\Exports\SchoolExporter;
 use App\Filament\Imports\SchoolImporter;
 use Filament\Tables\Actions\ExportAction;
@@ -111,6 +116,7 @@ class SchoolResource extends Resource
             ])
             ->actions([
                 Tables\Actions\ActionGroup::make([
+                    Tables\Actions\ViewAction::make(),
                     Tables\Actions\EditAction::make(),
                     Tables\Actions\DeleteAction::make(),
                 ]),
@@ -119,6 +125,37 @@ class SchoolResource extends Resource
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),
                 ]),
+            ]);
+    }
+
+    public static function infolist(Infolist $infolist): Infolist
+    {
+        return $infolist
+            ->schema([
+                Section::make('معلومات المدرسة')
+                    ->schema([
+                        TextEntry::make('name')
+                            ->label('اسم المدرسة'),
+                        TextEntry::make('user_name')
+                            ->label('كود المدرسة'),
+                        IconEntry::make('active')
+                            ->label('الحالة')
+                            ->boolean(),
+                        TextEntry::make('student_school_count')
+                            ->label('عدد الطلاب'),
+                    ])
+                    ->columns(2),
+
+                Section::make('معلومات النظام')
+                    ->schema([
+                        TextEntry::make('created_at')
+                            ->label('تاريخ الاضافة')
+                            ->dateTime(),
+                        TextEntry::make('updated_at')
+                            ->label('تاريخ اخر تعديل')
+                            ->dateTime(),
+                    ])
+                    ->columns(2),
             ]);
     }
 
@@ -144,6 +181,7 @@ class SchoolResource extends Resource
         return [
             'index' => Pages\ListSchools::route('/'),
             'create' => Pages\CreateSchool::route('/create'),
+            'view' => Pages\ViewSchool::route('/{record}'),
             'edit' => Pages\EditSchool::route('/{record}/edit'),
         ];
     }

@@ -31,7 +31,7 @@ class NewSchoolRegistrationNotification extends Notification
             ->actions([
                 \Filament\Notifications\Actions\Action::make('view')
                     ->label('عرض المدرسة')
-                    ->url(route('filament.admin.resources.schools.view', ['record' => $this->school->id]))
+                    ->url(fn() => \App\Filament\Resources\SchoolResource::getUrl('edit', ['record' => $this->school->id]))
             ])
             ->getDatabaseMessage();
     }

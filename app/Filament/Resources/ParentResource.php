@@ -11,6 +11,11 @@ use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use Filament\Infolists;
+use Filament\Infolists\Infolist;
+use Filament\Infolists\Components\Section;
+use Filament\Infolists\Components\TextEntry;
+use Filament\Infolists\Components\IconEntry;
 
 class ParentResource extends Resource
 {
@@ -44,7 +49,7 @@ class ParentResource extends Resource
 
                         // Get the current record ID if editing
                         $currentId = $get('id'); // This works in edit mode
-
+            
                         $query = \App\Models\User::where('user_name', $state);
                         if ($currentId) {
                             $query->where('id', '!=', $currentId); // Ignore current record
@@ -60,7 +65,7 @@ class ParentResource extends Resource
                 Forms\Components\TextInput::make('phone')
                     ->label('رقم الجوال')
                     ->tel()
-                    ->unique('users','phone',ignoreRecord: true)
+                    ->unique('users', 'phone', ignoreRecord: true)
                     ->maxLength(20)
                     ->live()
                     ->required(),
@@ -106,7 +111,7 @@ class ParentResource extends Resource
 
                 Tables\Columns\TextColumn::make('gender')
                     ->label('الجنس')
-                    ->formatStateUsing(fn ($state) => $state === 'male' ? 'ذكر' : 'أنثى'),
+                    ->formatStateUsing(fn($state) => $state === 'male' ? 'ذكر' : 'أنثى'),
 
                 Tables\Columns\TextColumn::make('student_parent_count')
                     ->label('عدد الأبناء'),
@@ -130,12 +135,55 @@ class ParentResource extends Resource
                 //
             ])
             ->actions([
-                Tables\Actions\EditAction::make(),
+                Tables\Actions\ActionGroup::make([
+                    Tables\Actions\ViewAction::make(),
+                    Tables\Actions\EditAction::make(),
+                ]),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),
                 ]),
+            ]);
+    }
+
+    public static function infolist(Infolist $infolist): Infolist
+    {
+        return $infolist
+            ->schema([
+                Section::make('المعلومات الأساسية')
+                    ->schema([
+                        TextEntry::make('name')
+                            ->label('الاسم الكامل'),
+                        TextEntry::make('user_name')
+                            ->label('اسم المستخدم'),
+                        TextEntry::make('email')
+                            ->label('البريد الإلكتروني')
+                            ->icon('heroicon-o-envelope'),
+                        TextEntry::make('phone')
+                            ->label('رقم الجوال')
+                            ->icon('heroicon-o-phone'),
+                        TextEntry::make('gender')
+                            ->label('الجنس')
+                            ->formatStateUsing(fn($state) => $state === 'male' ? 'ذكر' : 'أنثى'),
+                        IconEntry::make('active')
+                            ->label('الحالة')
+                            ->boolean(),
+                        TextEntry::make('student_parent_count')
+                            ->label('عدد الأبناء'),
+                    ])
+                    ->columns(2),
+
+                Section::make('معلومات النظام')
+                    ->schema([
+                        TextEntry::make('created_at')
+                            ->label('تاريخ الاضافة')
+                            ->dateTime(),
+                        TextEntry::make('updated_at')
+                            ->label('تاريخ اخر تعديل')
+                            ->dateTime(),
+                    ])
+                    ->columns(2),
             ]);
     }
 
@@ -148,13 +196,13 @@ class ParentResource extends Resource
 
     public static function getNavigationBadge(): ?string
     {
-        return static::getModel()::where('type','parent')->count();
+        return static::getModel()::count();
     }
 
     public static function getEloquentQuery(): Builder
     {
         return parent::getEloquentQuery()
-            ->where('type','parent')->withCount('studentParent');
+            ->withCount('studentParent');
     }
 
     public static function getPages(): array
@@ -162,6 +210,7 @@ class ParentResource extends Resource
         return [
             'index' => Pages\ListParents::route('/'),
             'create' => Pages\CreateParent::route('/create'),
+            'view' => Pages\ViewParent::route('/{record}'),
             'edit' => Pages\EditParent::route('/{record}/edit'),
         ];
     }

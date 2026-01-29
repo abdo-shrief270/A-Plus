@@ -12,9 +12,7 @@ class ParentStatsOverview extends BaseWidget
     protected function getStats(): array
     {
         $totalParents = Parentt::count();
-        $activeParents = Parentt::whereHas('user', function ($query) {
-            $query->where('active', true);
-        })->count();
+        $activeParents = Parentt::where('active', true)->count();
         $parentsWithStudents = StudentParent::distinct('parent_id')->count('parent_id');
 
         return [

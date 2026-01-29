@@ -10,6 +10,10 @@ use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
+use Filament\Infolists;
+use Filament\Infolists\Infolist;
+use Filament\Infolists\Components\Section;
+use Filament\Infolists\Components\TextEntry;
 
 class QuestionTypeResource extends Resource
 {
@@ -60,16 +64,44 @@ class QuestionTypeResource extends Resource
             ])
             ->filters([])
             ->actions([
-                Tables\Actions\EditAction::make()
-                    ->label('تعديل السؤال'),
-
-                Tables\Actions\DeleteAction::make()
-                    ->label('حذف السؤال'),
+                Tables\Actions\ActionGroup::make([
+                    Tables\Actions\ViewAction::make(),
+                    Tables\Actions\EditAction::make()
+                        ->label('تعديل'),
+                    Tables\Actions\DeleteAction::make()
+                        ->label('حذف'),
+                ]),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),
                 ]),
+            ]);
+    }
+
+    public static function infolist(Infolist $infolist): Infolist
+    {
+        return $infolist
+            ->schema([
+                Section::make('معلومات نوع السؤال')
+                    ->schema([
+                        TextEntry::make('name')
+                            ->label('الأسم'),
+                        TextEntry::make('id')
+                            ->label('رقم المعرف'),
+                    ])
+                    ->columns(2),
+
+                Section::make('معلومات النظام')
+                    ->schema([
+                        TextEntry::make('created_at')
+                            ->label('تاريخ الاضافة')
+                            ->dateTime(),
+                        TextEntry::make('updated_at')
+                            ->label('تاريخ اخر تعديل')
+                            ->dateTime(),
+                    ])
+                    ->columns(2),
             ]);
     }
 
@@ -90,7 +122,7 @@ class QuestionTypeResource extends Resource
     {
         return [
             'index' => Pages\ListQuestionTypes::route('/'),
-            'create' => Pages\CreateQuestionType::route('/create'),
+            'view' => Pages\ViewQuestionType::route('/{record}'),
             'edit' => Pages\EditQuestionType::route('/{record}/edit'),
         ];
     }
