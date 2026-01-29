@@ -23,4 +23,15 @@ class ListExams extends ListRecords
             ExamResource\Widgets\ExamStatsOverview::class,
         ];
     }
+
+    public function getTabs(): array
+    {
+        return [
+            null => \Filament\Resources\Components\Tab::make('الكل'),
+            'active' => \Filament\Resources\Components\Tab::make('نشط')
+                ->modifyQueryUsing(fn($query) => $query->where('active', true)),
+            'inactive' => \Filament\Resources\Components\Tab::make('غير نشط')
+                ->modifyQueryUsing(fn($query) => $query->where('active', false)),
+        ];
+    }
 }

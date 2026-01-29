@@ -16,4 +16,11 @@ class ListExamSections extends ListRecords
             Actions\CreateAction::make(),
         ];
     }
+
+    protected function getHeaderWidgets(): array
+    {
+        return [
+            ExamSectionResource\Widgets\ExamSectionStatsOverview::class,
+        ];
+    }
 }

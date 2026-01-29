@@ -18,14 +18,21 @@ class ListAdmins extends ListRecords
             Actions\CreateAction::make(),
         ];
     }
+
+    protected function getHeaderWidgets(): array
+    {
+        return [
+            AdminResource\Widgets\AdminStatsOverview::class,
+        ];
+    }
+
     public function getTabs(): array
     {
-        $data= [
-            null => Tab::make('الكل')->query(fn ($query) => $query)
+        $data = [
+            null => Tab::make('الكل')->query(fn($query) => $query)
         ];
-        foreach (\Spatie\Permission\Models\Role::orderBy('id', 'ASC')->select('name')->pluck('name')->all() as $role)
-        {
-            $data[$role] = Tab::make()->query(fn ($query) => $query->role($role));
+        foreach (\Spatie\Permission\Models\Role::orderBy('id', 'ASC')->select('name')->pluck('name')->all() as $role) {
+            $data[$role] = Tab::make()->query(fn($query) => $query->role($role));
         }
         return $data;
     }

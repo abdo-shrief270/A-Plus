@@ -23,4 +23,15 @@ class ListStudents extends ListRecords
             StudentResource\Widgets\StudentStatsOverview::class,
         ];
     }
+
+    public function getTabs(): array
+    {
+        return [
+            null => \Filament\Resources\Components\Tab::make('الكل'),
+            'active' => \Filament\Resources\Components\Tab::make('نشط')
+                ->modifyQueryUsing(fn($query) => $query->whereHas('user', fn($q) => $q->where('active', true))),
+            'inactive' => \Filament\Resources\Components\Tab::make('غير نشط')
+                ->modifyQueryUsing(fn($query) => $query->whereHas('user', fn($q) => $q->where('active', false))),
+        ];
+    }
 }

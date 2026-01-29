@@ -12,7 +12,7 @@ class LessonStatsOverview extends BaseWidget
     protected function getStats(): array
     {
         $totalLessons = Lesson::count();
-        $activeLessons = Lesson::where('active', true)->count();
+        $activeLessons = Lesson::where('is_active', true)->count();
         $totalPages = LessonPage::count();
         $avgPagesPerLesson = round(LessonPage::count() / max(Lesson::count(), 1), 1);
 
