@@ -18,8 +18,8 @@ class QuestionController extends Controller
     {
         try {
             return $this->apiResponse(200, 'Question Data Returned Successfully', null, [
-                'question'  =>$question->setHidden(['answers']),
-                'answers'   =>$question->answers->select('order','text')
+                'question' => $question->setHidden(['answers']),
+                'answers' => $question->answers->select('order', 'text')
             ]);
         } catch (\Exception $e) {
             return $this->apiResponse(500, 'Question Data Returning failed: ' . $e->getMessage());

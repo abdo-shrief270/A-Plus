@@ -50,4 +50,9 @@ class Exam extends Model
     {
         return $this->hasMany(Lesson::class)->active()->ordered();
     }
+
+    public function scopeActive($query)
+    {
+        return $query->where('active', true);
+    }
 }

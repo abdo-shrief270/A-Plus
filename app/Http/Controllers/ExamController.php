@@ -18,9 +18,9 @@ class ExamController extends Controller
     {
 
         try {
-            $exams =Exam::get();
+            $exams = Exam::active()->get();
             return $this->apiResponse(200, 'Exams Returned Successfully', null, [
-                'exams'=>$exams->makeHidden(['created_at','updated_at'])
+                'exams' => $exams->makeHidden(['created_at', 'updated_at'])
             ]);
         } catch (\Exception $e) {
             return $this->apiResponse(500, 'Exams Returning failed: ' . $e->getMessage());
@@ -31,19 +31,25 @@ class ExamController extends Controller
     public function categories()
     {
         try {
-            $exam = Auth::user()?->student?->exam;
-            if($exam->subjects->count()>0 && $exam->sections->count()>0  ){
+            $user = auth('api')->user() ?: auth('schools')->user();
+            $exam = $user?->student?->exam;
+
+            if (!$exam) {
+                return $this->apiResponse(404, 'Exam Data Not Found');
+            }
+
+            if ($exam->subjects->count() > 0 && $exam->sections->count() > 0) {
                 return $this->apiResponse(200, 'Exam Data Returned Successfully', null, [
-                    'subjects'=>$exam->subjects,
-                    'sections'=>$exam->sectionsCategories
+                    'subjects' => $exam->subjects,
+                    'sections' => $exam->sectionsCategories
                 ]);
-            }elseif($exam->subjects->count()>0){
+            } elseif ($exam->subjects->count() > 0) {
                 return $this->apiResponse(200, 'Exam Subjects Returned Successfully', null, [
-                    'subjects'=>$exam->subjects
+                    'subjects' => $exam->subjects
                 ]);
-            }else{
+            } else {
                 return $this->apiResponse(200, 'Exam Sections Returned Successfully', null, [
-                    'sections'=>$exam->sectionsCategories
+                    'sections' => $exam->sectionsCategories
                 ]);
             }
 
@@ -56,7 +62,7 @@ class ExamController extends Controller
 
         try {
             return $this->apiResponse(200, 'Questions Returned Successfully', null, [
-                'questions'=>$subject->questions->select('id','text','image_path')
+                'questions' => $subject->questions->select('id', 'text', 'image_path')
             ]);
         } catch (\Exception $e) {
             return $this->apiResponse(500, 'Questions Returning failed: ' . $e->getMessage());
@@ -68,7 +74,7 @@ class ExamController extends Controller
 
         try {
             return $this->apiResponse(200, 'Questions Returned Successfully', null, [
-                'questions'=>$category->questions->select('id','text','image_path')
+                'questions' => $category->questions->select('id', 'text', 'image_path')
             ]);
         } catch (\Exception $e) {
             return $this->apiResponse(500, 'Questions Returning failed: ' . $e->getMessage());

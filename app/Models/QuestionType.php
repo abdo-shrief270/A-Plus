@@ -2,9 +2,11 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class QuestionType extends Model
 {
-    protected $fillable =['name','def_answers'];
+    use HasFactory;
+    protected $fillable = ['name', 'def_answers'];
 }

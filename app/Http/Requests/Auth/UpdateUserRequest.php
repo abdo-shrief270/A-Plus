@@ -30,13 +30,13 @@ class UpdateUserRequest extends FormRequest
                 'string',
                 'min:5',
                 'max:255',
-                Rule::unique('users', 'user_name')->ignore($this->user()->id),
+                Rule::unique('users', 'user_name')->ignore($this->user('api')?->id ?? $this->user()?->id),
             ],
 
             'phone' => [
                 'string',
                 'max:255',
-                Rule::unique('users', 'phone')->ignore($this->user()->id),
+                Rule::unique('users', 'phone')->ignore($this->user('api')?->id ?? $this->user()?->id),
             ],
 
             'country_code' => 'nullable|string',
@@ -45,7 +45,7 @@ class UpdateUserRequest extends FormRequest
                 'string',
                 'email',
                 'max:255',
-                Rule::unique('users', 'email')->ignore($this->user()->id),
+                Rule::unique('users', 'email')->ignore($this->user('api')?->id ?? $this->user()?->id),
             ],
 
             'exam_date' => 'nullable|date|after:today',
@@ -53,7 +53,7 @@ class UpdateUserRequest extends FormRequest
             'id_number' => [
                 'string',
                 'max:255',
-                Rule::unique('students', 'id_number')->ignore($this->user()->id),
+                Rule::unique('students', 'id_number')->ignore($this->user('api')?->student?->id ?? $this->user()?->student?->id),
             ],
 
             'old_password' => 'required_with:password|string|min:6',

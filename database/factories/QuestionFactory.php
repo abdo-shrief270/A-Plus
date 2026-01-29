@@ -14,9 +14,9 @@ class QuestionFactory extends Factory
         return [
             'uuid' => Str::uuid(),
             'text' => $this->faker->realText(100) . '؟',
-            'image_path' => null, // Can add random logic later if acceptable
+            'image_path' => null,
             'explanation_text' => $this->faker->realText(200),
-            'question_type_id' => QuestionType::inRandomOrder()->first()?->id ?? 1,
+            'question_type_id' => QuestionType::factory(),
             'difficulty' => $this->faker->randomElement(['easy', 'medium', 'hard']),
         ];
     }
