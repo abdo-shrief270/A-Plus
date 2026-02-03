@@ -1,7 +1,9 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Api\v1;
 
+use App\Http\Controllers\Api\BaseApiController;
+use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\ChangePasswordRequest;
 use App\Http\Requests\Auth\CheckOTPRequest;
 use App\Http\Requests\Auth\CheckUserNameRequest;
@@ -13,7 +15,7 @@ use App\Http\Requests\Auth\UpdateUserRequest;
 use App\Http\Requests\LoginOTPRequest;
 use App\Models\Student;
 use App\Models\User;
-use App\Traits\ApiResponse;
+// use App\Traits\ApiResponse; // Removed
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -23,9 +25,9 @@ use Tymon\JWTAuth\Exceptions\JWTException;
 use Tymon\JWTAuth\Facades\JWTAuth;
 use function PHPUnit\Framework\isEmpty;
 
-class AuthController extends Controller
+class AuthController extends BaseApiController
 {
-    use ApiResponse;
+    // use ApiResponse; // Removed
     public function register(Register $request)
     {
         DB::beginTransaction();
@@ -59,7 +61,7 @@ class AuthController extends Controller
                 $studentData = $student->makeHidden(['id', 'created_at', 'updated_at', 'user_id'])->toArray();
             } elseif ($request->type !== 'parent') {
                 DB::rollBack();
-                return $this->apiResponse(401, 'Invalid User Type');
+                return $this->errorResponse('Invalid User Type', 401);
             }
 
             /** @var \Tymon\JWTAuth\JWTGuard $apiGuard */
@@ -75,17 +77,17 @@ class AuthController extends Controller
                 $userData = array_merge($userData, $studentData);
             }
 
-            return $this->apiResponse(200, 'User Registered Successfully', null, [
+            return $this->successResponse([
                 'token' => $token,
                 'user' => array_merge(['type' => $request->type], $userData)
-            ]);
+            ], 'User Registered Successfully');
 
         } catch (JWTException $e) {
             DB::rollBack();
-            return $this->apiResponse(500, 'Could not create token');
+            return $this->errorResponse('Could not create token', 500);
         } catch (\Exception $e) {
             DB::rollBack();
-            return $this->apiResponse(500, 'Registration failed: ' . $e->getMessage());
+            return $this->errorResponse('Registration failed: ' . $e->getMessage(), 500);
         }
     }
 
@@ -99,22 +101,22 @@ class AuthController extends Controller
             $schoolGuard = auth('schools');
 
             if ($token = $apiGuard->attempt($credentials)) {
-                return $this->apiResponse(200, 'User Logged In Successfully', null, [
+                return $this->successResponse([
                     'token' => $token,
                     'type' => $apiGuard->user()->type,
                     'expires_in' => $apiGuard->factory()->getTTL() * 60,
-                ]);
+                ], 'User Logged In Successfully');
             } elseif ($token = $schoolGuard->attempt($credentials)) {
-                return $this->apiResponse(200, 'User Logged In Successfully', null, [
+                return $this->successResponse([
                     'token' => $token,
                     'type' => 'school',
                     'expires_in' => $schoolGuard->factory()->getTTL() * 60,
-                ]);
+                ], 'User Logged In Successfully');
             } else {
-                return $this->apiResponse(401, 'Invalid credentials');
+                return $this->errorResponse('Invalid credentials', 401);
             }
         } catch (JWTException $e) {
-            return $this->apiResponse(500, 'Could not create token');
+            return $this->errorResponse('Could not create token', 500);
         }
     }
     //
@@ -149,13 +151,13 @@ class AuthController extends Controller
         try {
             $user = auth('api')->user() ?: auth('schools')->user();
             if (!$user) {
-                return $this->apiResponse(404, 'User not found');
+                return $this->errorResponse('User not found', 404);
             }
-            return $this->apiResponse(200, 'User Data Retrieved Successfully', null, [
+            return $this->successResponse([
                 'data' => $user->makeHidden(['id', 'created_at', 'updated_at', 'remember_token', 'password'])->toArray(),
-            ]);
+            ], 'User Data Retrieved Successfully');
         } catch (JWTException $e) {
-            return $this->apiResponse(404, 'Failed to fetch user profile');
+            return $this->errorResponse('Failed to fetch user profile', 404);
         }
     }
 
@@ -164,20 +166,20 @@ class AuthController extends Controller
         try {
             $user = auth('api')->user() ?: auth('schools')->user();
             if (!$user) {
-                return $this->apiResponse(404, 'User not found');
+                return $this->errorResponse('User not found', 404);
             }
             if ($request->password) {
                 if (!Hash::check($request->old_password, $user->password)) {
-                    return $this->apiResponse(403, 'Validation Error', ['old_password' => 'كلمة المرور القديمة غير صحيحة.']);
+                    return $this->errorResponse('Validation Error', 403, ['old_password' => 'كلمة المرور القديمة غير صحيحة.']);
                 }
             }
 
             $user->update($request->validated());
-            return $this->apiResponse(200, 'User Profile Updated Successfully', null, [
+            return $this->successResponse([
                 'data' => $user->makeHidden(['id', 'created_at', 'updated_at', 'remember_token', 'password'])->toArray(),
-            ]);
+            ], 'User Profile Updated Successfully');
         } catch (JWTException $e) {
-            return $this->apiResponse(500, 'Failed to update user profile');
+            return $this->errorResponse('Failed to update user profile', 500);
         }
     }
 
@@ -188,12 +190,12 @@ class AuthController extends Controller
             $user = User::where('user_name', $request->user_name)->first();
             $available = !$user;
         } catch (\Exception $e) {
-            return $this->apiResponse(500, 'Could not check UserName');
+            return $this->errorResponse('Could not check UserName', 500);
         }
 
-        return $this->apiResponse(200, 'Username availability checked', null, [
+        return $this->successResponse([
             'available' => $available,
-        ]);
+        ], 'Username availability checked');
     }
     protected function generateUniqueUserName($name)
     {
@@ -220,11 +222,11 @@ class AuthController extends Controller
                     'created_at' => now(),
                 ]);
                 if (isset($user->phone)) {
-                    return $this->apiResponse(200, 'OTP is sent check your sms inbox!', null, ['token' => $token, 'type' => 'phone', 'phone' => $user->phone]);
+                    return $this->successResponse(['token' => $token, 'type' => 'phone', 'phone' => $user->phone], 'OTP is sent check your sms inbox!');
                 } elseif (isset($user->email)) {
-                    return $this->apiResponse(200, 'OTP is sent check your email inbox!', null, ['token' => $token, 'type' => 'email', 'email' => $user->email]);
+                    return $this->successResponse(['token' => $token, 'type' => 'email', 'email' => $user->email], 'OTP is sent check your email inbox!');
                 } else {
-                    return $this->apiResponse(404, 'لم يتم العثور على المستخدم بهذه البيانات');
+                    return $this->errorResponse('لم يتم العثور على المستخدم بهذه البيانات', 404);
                 }
             } elseif (isset($request->phone)) {
                 $user = User::where('phone', $request->country_code . $request->phone)->first();
@@ -234,7 +236,7 @@ class AuthController extends Controller
                     'token' => $token,
                     'created_at' => now(),
                 ]);
-                return $this->apiResponse(200, 'OTP is sent check your sms inbox!', null, ['token' => $token, 'type' => 'phone', 'phone' => $user->phone]);
+                return $this->successResponse(['token' => $token, 'type' => 'phone', 'phone' => $user->phone], 'OTP is sent check your sms inbox!');
             } elseif (isset($request->whatsapp)) {
                 $user = User::where('phone', $request->country_code . $request->whatsapp)->first();
                 $token = Str::random(100);
@@ -243,7 +245,7 @@ class AuthController extends Controller
                     'token' => $token,
                     'created_at' => now(),
                 ]);
-                return $this->apiResponse(200, 'OTP is sent check your whatsapp inbox!', null, ['token' => $token, 'type' => 'whatsapp', 'whatsapp' => $user->phone]);
+                return $this->successResponse(['token' => $token, 'type' => 'whatsapp', 'whatsapp' => $user->phone], 'OTP is sent check your whatsapp inbox!');
             } elseif (isset($request->email)) {
                 $user = User::where('email', $request->email)->first();
                 $token = Str::random(100);
@@ -252,16 +254,16 @@ class AuthController extends Controller
                     'token' => $token,
                     'created_at' => now(),
                 ]);
-                return $this->apiResponse(200, 'OTP is sent check your email inbox!', null, ['token' => $token, 'type' => 'email', 'email' => $user->email]);
+                return $this->successResponse(['token' => $token, 'type' => 'email', 'email' => $user->email], 'OTP is sent check your email inbox!');
             } else {
-                return $this->apiResponse(404, 'لم يتم العثور على المستخدم بهذه البيانات');
+                return $this->errorResponse('لم يتم العثور على المستخدم بهذه البيانات', 404);
             }
 
             # TODO : Send OTP depend on the method also delete all previous tokens
 
 
         } catch (\Exception $e) {
-            return $this->apiResponse(500, $e);
+            return $this->errorResponse($e->getMessage(), 500);
         }
     }
 
@@ -270,19 +272,19 @@ class AuthController extends Controller
         try {
             $user = User::find(DB::table('password_reset_tokens')->where('token', $request->token)->first()?->user_id);
             if (!$user) {
-                return $this->apiResponse(404, 'لم يتم العثور على المستخدم بهذه البيانات');
+                return $this->errorResponse('لم يتم العثور على المستخدم بهذه البيانات', 404);
             }
             $code = 1234;
             # TODO : Delete Token
             $checkOTP = ($code == $request->otp);
             if ($checkOTP) {
-                return $this->apiResponse(200, 'الكود المدخل صحيح');
+                return $this->successResponse(null, 'الكود المدخل صحيح');
             } else {
-                return $this->apiResponse(403, 'الكود المدخل غير صحيح');
+                return $this->errorResponse('الكود المدخل غير صحيح', 403);
             }
 
         } catch (\Exception $e) {
-            return $this->apiResponse(500, 'Failed to check user otp');
+            return $this->errorResponse('Failed to check user otp', 500);
         }
     }
     //    public function resendOTP(ResendOTPRequest $request)
@@ -334,23 +336,23 @@ class AuthController extends Controller
         try {
             $user = User::find(DB::table('password_reset_tokens')->where('token', $request->token)->first()?->user_id);
             if (!$user) {
-                return $this->apiResponse(404, 'هذا المستخدم غير موجود');
+                return $this->errorResponse('هذا المستخدم غير موجود', 404);
             }
 
             if ($user) {
                 $user->update([
                     'password' => Hash::make($request->password),
                 ]);
-                return $this->apiResponse(200, 'تم تغيير باسورد المستخدم.');
+                return $this->successResponse(null, 'تم تغيير باسورد المستخدم.');
             } else {
-                return $this->apiResponse(404, 'هذا المستخدم غير موجود');
+                return $this->errorResponse('هذا المستخدم غير موجود', 404);
             }
 
             # TODO : Send OTP depend on the method
 
 
         } catch (\Exception $e) {
-            return $this->apiResponse(500, 'Failed to change user password');
+            return $this->errorResponse('Failed to change user password', 500);
         }
     }
 

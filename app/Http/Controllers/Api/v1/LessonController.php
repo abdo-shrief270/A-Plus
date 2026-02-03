@@ -1,16 +1,18 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Api\v1;
 
+use App\Http\Controllers\Api\BaseApiController;
+use App\Http\Controllers\Controller;
 use App\Models\Lesson;
 use App\Models\StudentLessonProgress;
-use App\Traits\ApiResponse;
+// use App\Traits\ApiResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
-class LessonController extends Controller
+class LessonController extends BaseApiController
 {
-    use ApiResponse;
+    // use ApiResponse;
 
     public function index()
     {
@@ -18,13 +20,13 @@ class LessonController extends Controller
             $user = auth('api')->user() ?: auth('schools')->user();
 
             if (!$user) {
-                return $this->apiResponse(401, 'Unauthenticated');
+                return $this->errorResponse('Unauthenticated', 401);
             }
 
             $exam = $user->student?->exam;
 
             if (!$exam) {
-                return $this->apiResponse(404, 'No exam found for this student');
+                return $this->errorResponse('No exam found for this student', 404);
             }
 
             $lessons = $exam->lessons()
@@ -42,11 +44,11 @@ class LessonController extends Controller
                 $lesson->progress_percentage = $progress->get($lesson->id)?->progress_percentage ?? 0;
             });
 
-            return $this->apiResponse(200, 'Lessons Returned Successfully', null, [
+            return $this->successResponse([
                 'lessons' => $lessons
-            ]);
+            ], 'Lessons Returned Successfully');
         } catch (\Exception $e) {
-            return $this->apiResponse(500, 'Lessons Returning failed: ' . $e->getMessage());
+            return $this->errorResponse('Lessons Returning failed: ' . $e->getMessage(), 500);
         }
     }
 
@@ -59,11 +61,11 @@ class LessonController extends Controller
                 }
             ]);
 
-            return $this->apiResponse(200, 'Lesson Data Returned Successfully', null, [
+            return $this->successResponse([
                 'lesson' => $lesson
-            ]);
+            ], 'Lesson Data Returned Successfully');
         } catch (\Exception $e) {
-            return $this->apiResponse(500, 'Lesson Data Returning failed: ' . $e->getMessage());
+            return $this->errorResponse('Lesson Data Returning failed: ' . $e->getMessage(), 500);
         }
     }
 
@@ -80,7 +82,7 @@ class LessonController extends Controller
             $student = $user?->student;
 
             if (!$student) {
-                return $this->apiResponse(404, 'Student not found');
+                return $this->errorResponse('Student not found', 404);
             }
 
             $progress = StudentLessonProgress::updateOrCreate(
@@ -94,11 +96,11 @@ class LessonController extends Controller
                 ]
             );
 
-            return $this->apiResponse(200, 'Progress Updated Successfully', null, [
+            return $this->successResponse([
                 'progress' => $progress
-            ]);
+            ], 'Progress Updated Successfully');
         } catch (\Exception $e) {
-            return $this->apiResponse(500, 'Progress Update failed: ' . $e->getMessage());
+            return $this->errorResponse('Progress Update failed: ' . $e->getMessage(), 500);
         }
     }
 }

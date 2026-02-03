@@ -2,13 +2,14 @@
 
 namespace App\Http\Controllers\Api\v1;
 
+use App\Http\Controllers\Api\BaseApiController;
 use App\Http\Controllers\Controller;
 use App\Models\Enrollment;
 use App\Models\Payment;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 
-class PaymentController extends Controller
+class PaymentController extends BaseApiController
 {
     public function initiate(Request $request)
     {
@@ -21,11 +22,11 @@ class PaymentController extends Controller
         $user = auth('api')->user();
 
         if (!$user) {
-            return response()->json(['message' => 'Unauthenticated'], 401);
+            return $this->errorResponse('Unauthenticated', 401);
         }
 
         if ($enrollment->user_id !== $user->id) {
-            return response()->json(['message' => 'Unauthorized'], 403);
+            return $this->errorResponse('Unauthorized', 403);
         }
 
         // In a real app, we would talk to Gateway here.
@@ -45,14 +46,11 @@ class PaymentController extends Controller
         ]);
 
         // Simulating a Redirect URL for frontend
-        return response()->json([
-            'message' => 'Payment initiated',
-            'data' => [
-                'payment_id' => $payment->id,
-                'transaction_id' => $payment->transaction_id,
-                'redirect_url' => "http://aplus.test/payment/fake-gateway/{$payment->transaction_id}",
-            ]
-        ]);
+        return $this->successResponse([
+            'payment_id' => $payment->id,
+            'transaction_id' => $payment->transaction_id,
+            'redirect_url' => "http://aplus.test/payment/fake-gateway/{$payment->transaction_id}",
+        ], 'Payment initiated');
     }
 
     public function webhook(Request $request)

@@ -1,29 +1,31 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Api\v1;
 
+use App\Http\Controllers\Api\BaseApiController;
+use App\Http\Controllers\Controller;
 use App\Models\Exam;
 use App\Models\ExamSection;
 use App\Models\ExamSubject;
 use App\Models\SectionCategory;
 use App\Models\User;
-use App\Traits\ApiResponse;
+// use App\Traits\ApiResponse; // Removed
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
-class ExamController extends Controller
+class ExamController extends BaseApiController
 {
-    use ApiResponse;
+    // use ApiResponse; // Removed
     public function index()
     {
 
         try {
             $exams = Exam::active()->get();
-            return $this->apiResponse(200, 'Exams Returned Successfully', null, [
+            return $this->successResponse([
                 'exams' => $exams->makeHidden(['created_at', 'updated_at'])
-            ]);
+            ], 'Exams Returned Successfully');
         } catch (\Exception $e) {
-            return $this->apiResponse(500, 'Exams Returning failed: ' . $e->getMessage());
+            return $this->errorResponse('Exams Returning failed: ' . $e->getMessage(), 500);
         }
     }
 
@@ -35,37 +37,37 @@ class ExamController extends Controller
             $exam = $user?->student?->exam;
 
             if (!$exam) {
-                return $this->apiResponse(404, 'Exam Data Not Found');
+                return $this->errorResponse('Exam Data Not Found', 404);
             }
 
             if ($exam->subjects->count() > 0 && $exam->sections->count() > 0) {
-                return $this->apiResponse(200, 'Exam Data Returned Successfully', null, [
+                return $this->successResponse([
                     'subjects' => $exam->subjects,
                     'sections' => $exam->sectionsCategories
-                ]);
+                ], 'Exam Data Returned Successfully');
             } elseif ($exam->subjects->count() > 0) {
-                return $this->apiResponse(200, 'Exam Subjects Returned Successfully', null, [
+                return $this->successResponse([
                     'subjects' => $exam->subjects
-                ]);
+                ], 'Exam Subjects Returned Successfully');
             } else {
-                return $this->apiResponse(200, 'Exam Sections Returned Successfully', null, [
+                return $this->successResponse([
                     'sections' => $exam->sectionsCategories
-                ]);
+                ], 'Exam Sections Returned Successfully');
             }
 
         } catch (\Exception $e) {
-            return $this->apiResponse(500, 'Exams Returning failed: ' . $e->getMessage());
+            return $this->errorResponse('Exams Returning failed: ' . $e->getMessage(), 500);
         }
     }
     public function subjectData(ExamSubject $subject)
     {
 
         try {
-            return $this->apiResponse(200, 'Questions Returned Successfully', null, [
+            return $this->successResponse([
                 'questions' => $subject->questions->select('id', 'text', 'image_path')
-            ]);
+            ], 'Questions Returned Successfully');
         } catch (\Exception $e) {
-            return $this->apiResponse(500, 'Questions Returning failed: ' . $e->getMessage());
+            return $this->errorResponse('Questions Returning failed: ' . $e->getMessage(), 500);
         }
     }
 
@@ -73,11 +75,11 @@ class ExamController extends Controller
     {
 
         try {
-            return $this->apiResponse(200, 'Questions Returned Successfully', null, [
+            return $this->successResponse([
                 'questions' => $category->questions->select('id', 'text', 'image_path')
-            ]);
+            ], 'Questions Returned Successfully');
         } catch (\Exception $e) {
-            return $this->apiResponse(500, 'Questions Returning failed: ' . $e->getMessage());
+            return $this->errorResponse('Questions Returning failed: ' . $e->getMessage(), 500);
         }
     }
 }

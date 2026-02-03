@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api\v1;
 
+use App\Http\Controllers\Api\BaseApiController;
 use App\Http\Controllers\Controller;
 use App\Models\Coupon;
 use App\Models\CouponUsage;
@@ -10,7 +11,7 @@ use App\Models\Enrollment;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
-class EnrollmentController extends Controller
+class EnrollmentController extends BaseApiController
 {
     public function enroll(Request $request, Course $course)
     {
@@ -21,12 +22,12 @@ class EnrollmentController extends Controller
         $user = auth('api')->user();
 
         if (!$user) {
-            return response()->json(['message' => 'Unauthenticated'], 401);
+            return $this->errorResponse('Unauthenticated', 401);
         }
 
         // Check if already enrolled
         if (Enrollment::where('user_id', $user->id)->where('course_id', $course->id)->active()->exists()) {
-            return response()->json(['message' => 'Already enrolled'], 400);
+            return $this->errorResponse('Already enrolled', 400);
         }
 
         $price = $course->price;
@@ -38,7 +39,7 @@ class EnrollmentController extends Controller
             $coupon = Coupon::where('code', $request->coupon_code)->first();
 
             if (!$coupon->isValid()) {
-                return response()->json(['message' => 'Invalid or expired coupon'], 400);
+                return $this->errorResponse('Invalid or expired coupon', 400);
             }
 
             // Check if user already used this coupon (if limit per user exists - schema doesn't strict this but logical)
@@ -72,28 +73,22 @@ class EnrollmentController extends Controller
                     ]);
                 }
                 DB::commit();
-                return response()->json([
-                    'message' => 'Enrolled successfully',
-                    'data' => $enrollment,
-                ]);
+                return $this->successResponse($enrollment, 'Enrolled successfully');
             }
 
             // If Paid, return Enrollment ID and Amount for Payment Gateway
             DB::commit();
 
-            return response()->json([
-                'message' => 'Enrollment initiated. Proceed to payment.',
-                'data' => [
-                    'enrollment_id' => $enrollment->id,
-                    'amount' => $price,
-                    'currency' => 'SAR',
-                    'coupon_applied' => $coupon ? $coupon->code : null,
-                ]
-            ]);
+            return $this->successResponse([
+                'enrollment_id' => $enrollment->id,
+                'amount' => $price,
+                'currency' => 'SAR',
+                'coupon_applied' => $coupon ? $coupon->code : null,
+            ], 'Enrollment initiated. Proceed to payment.');
 
         } catch (\Exception $e) {
             DB::rollBack();
-            return response()->json(['message' => 'Enrollment failed: ' . $e->getMessage()], 500);
+            return $this->errorResponse('Enrollment failed: ' . $e->getMessage(), 500);
         }
     }
 

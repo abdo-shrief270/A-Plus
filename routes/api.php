@@ -1,10 +1,12 @@
 <?php
 
-use App\Http\Controllers\AuthController;
-use App\Http\Controllers\ExamController;
-use App\Http\Controllers\HomeController;
-use App\Http\Controllers\LessonController;
-use App\Http\Controllers\QuestionController;
+use App\Http\Controllers\Api\v1\AuthController;
+use App\Http\Controllers\Api\v1\EnrollmentController;
+use App\Http\Controllers\Api\v1\ExamController;
+use App\Http\Controllers\Api\v1\HomeController;
+use App\Http\Controllers\Api\v1\LessonController;
+use App\Http\Controllers\Api\v1\PaymentController;
+use App\Http\Controllers\Api\v1\QuestionController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('v1')->name('api.v1.')->group(function () {
@@ -53,17 +55,17 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
 
     // Course Cycle Routes
     Route::middleware('jwt')->prefix('courses')->group(function () {
-        Route::post('/{course}/enroll', [\App\Http\Controllers\Api\v1\EnrollmentController::class, 'enroll']);
+        Route::post('/{course}/enroll', [EnrollmentController::class, 'enroll']);
     });
 
     Route::middleware('jwt')->prefix('school')->group(function () {
-        Route::post('/enroll-bulk', [\App\Http\Controllers\Api\v1\EnrollmentController::class, 'bulkEnroll']);
+        Route::post('/enroll-bulk', [EnrollmentController::class, 'bulkEnroll']);
     });
 
     Route::middleware('jwt')->prefix('payment')->group(function () {
-        Route::post('/initiate', [\App\Http\Controllers\Api\v1\PaymentController::class, 'initiate']);
+        Route::post('/initiate', [PaymentController::class, 'initiate']);
         // Webhook usually doesn't need JWT if verified by signature, but for now...
-        Route::post('/webhook', [\App\Http\Controllers\Api\v1\PaymentController::class, 'webhook']);
+        Route::post('/webhook', [PaymentController::class, 'webhook']);
     });
 });
 
