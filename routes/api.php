@@ -58,9 +58,9 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
         });
 
 
-        Route::middleware('jwt')->prefix('user')->group(function () {
-            Route::get('/', [AuthController::class, 'getUser']);
-            Route::post('/update', [AuthController::class, 'updateUser']);
+        Route::prefix('user')->group(function () {
+            Route::get('/', [AuthController::class, 'getUser'])->middleware('jwt');
+            Route::post('/update', [AuthController::class, 'updateUser'])->middleware('jwt');
             Route::post('/reset-password', [AuthController::class, 'resetPassword']);
             Route::post('/change-password', [AuthController::class, 'changePassword']);
             Route::post('/checkOTP', [AuthController::class, 'checkOTP']);
