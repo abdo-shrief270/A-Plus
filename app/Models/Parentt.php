@@ -21,9 +21,4 @@ class Parentt extends User
             $model->type = 'parent';
         });
     }
-
-    public function user(): BelongsTo
-    {
-        return $this->belongsTo(User::class, 'user_id', 'id');
-    }
 }
