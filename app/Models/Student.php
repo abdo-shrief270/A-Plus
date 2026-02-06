@@ -51,4 +51,24 @@ class Student extends Model
             ->whereDate('scheduled_date', today())
             ->ordered();
     }
+
+    public function league(): BelongsTo
+    {
+        return $this->belongsTo(League::class, 'current_league_id');
+    }
+
+    public function scores(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(StudentScore::class);
+    }
+
+    public function wallet(): \Illuminate\Database\Eloquent\Relations\HasOne
+    {
+        return $this->hasOne(Wallet::class);
+    }
+
+    public function subscriptions(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(Subscription::class);
+    }
 }

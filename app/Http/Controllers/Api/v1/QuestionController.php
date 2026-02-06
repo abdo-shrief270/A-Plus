@@ -8,27 +8,37 @@ use App\Models\Exam;
 use App\Models\ExamSection;
 use App\Models\ExamSubject;
 use App\Models\Question;
+use App\Http\Resources\QuestionResource;
+use App\Services\WalletService;
 // use App\Traits\ApiResponse;
 use Illuminate\Support\Facades\DB;
-use function Laravel\Prompts\select;
 
 class QuestionController extends BaseApiController
 {
     // use ApiResponse;
 
-    public function questionData(Question $question)
+    protected $walletService;
+
+    public function __construct(WalletService $walletService)
     {
-        try {
-            return $this->successResponse([
-                'question' => $question->setHidden(['answers']),
-                'answers' => $question->answers->select('order', 'text')
-            ], 'Question Data Returned Successfully');
-        } catch (\Exception $e) {
-            return $this->errorResponse('Question Data Returning failed: ' . $e->getMessage(), 500);
-        }
+        $this->walletService = $walletService;
     }
 
+    public function show(Question $question)
+    {
+        $user = auth('api')->user();
 
+        // Check access/pay
+        if ($user && $question->points_cost > 0) {
+            $paid = $this->walletService->payForContent($user, $question, $question->points_cost, 'question_view');
+            if (!$paid) {
+                return $this->errorResponse('Insufficient points to view this question', 402);
+            }
+        }
 
-
+        return $this->successResponse(
+            new QuestionResource($question),
+            'Question Data Returned Successfully'
+        );
+    }
 }

@@ -35,6 +35,21 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
         Route::post('/{lesson}/progress', [LessonController::class, 'updateProgress']);
     });
 
+    // Gamification
+    Route::apiResource('leagues', \App\Http\Controllers\Api\v1\LeagueController::class);
+    Route::get('leaderboard', [\App\Http\Controllers\Api\v1\LeaderboardController::class, 'index']);
+
+    // Economy
+    Route::post('payment/initiate', [\App\Http\Controllers\Api\v1\PaymentController::class, 'initiate']);
+    Route::post('payment/callback', [\App\Http\Controllers\Api\v1\PaymentController::class, 'callback']); // Should be outside auth or handle auth checks manually if redirect
+
+    // Answers & Revision
+    Route::post('answers', [\App\Http\Controllers\Api\v1\AnswerController::class, 'submit']);
+    Route::get('revision/stats', [\App\Http\Controllers\Api\v1\RevisionController::class, 'stats']);
+    Route::get('revision/history', [\App\Http\Controllers\Api\v1\RevisionController::class, 'history']);
+
+    Route::apiResource('questions', \App\Http\Controllers\Api\v1\QuestionController::class)->only(['show']);
+
     Route::prefix('auth')->group(function () {
         Route::post('/register', [AuthController::class, 'register']);
         Route::post('/login', [AuthController::class, 'login']);
