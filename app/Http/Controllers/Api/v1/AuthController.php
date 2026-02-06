@@ -211,6 +211,7 @@ class AuthController extends BaseApiController
 
     public function resetPassword(resetPasswordRequest $request)
     {
+        $request->user_name = $request->user_name ?? $request->username;
         try {
             if (isset($request->user_name)) {
                 $user = User::where('user_name', $request->user_name)->first();
