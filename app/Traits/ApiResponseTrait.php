@@ -18,10 +18,10 @@ trait ApiResponseTrait
     protected function successResponse($data, ?string $message = null, int $code = Response::HTTP_OK): JsonResponse
     {
         return response()->json([
-            'status' => true,
+            'status' => $code,
             'message' => $message,
             'data' => $data,
-        ], $code);
+        ], Response::HTTP_OK);
     }
 
     /**
@@ -35,7 +35,7 @@ trait ApiResponseTrait
     protected function errorResponse(string $message, int $code = Response::HTTP_BAD_REQUEST, $errors = null): JsonResponse
     {
         $response = [
-            'status' => false,
+            'status' => $code,
             'message' => $message,
         ];
 
@@ -43,6 +43,6 @@ trait ApiResponseTrait
             $response['errors'] = $errors;
         }
 
-        return response()->json($response, $code);
+        return response()->json($response, 200);
     }
 }
