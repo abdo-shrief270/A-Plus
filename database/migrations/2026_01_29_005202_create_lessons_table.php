@@ -20,6 +20,7 @@ return new class extends Migration {
             $table->integer('order')->default(0); // Lesson order within exam
             $table->integer('duration_minutes')->default(30); // Expected duration
             $table->boolean('is_active')->default(true);
+            $table->integer('points_cost')->default(0);
             $table->timestamps();
 
             $table->index(['exam_id', 'order']);

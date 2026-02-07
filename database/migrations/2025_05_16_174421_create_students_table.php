@@ -4,8 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration
-{
+return new class extends Migration {
     /**
      * Run the migrations.
      */
@@ -13,10 +12,13 @@ return new class extends Migration
     {
         Schema::create('students', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->constrained('users','id')->cascadeOnDelete();
-            $table->foreignId('exam_id')->nullable()->constrained('exams','id')->nullOnDelete();
+            $table->foreignId('user_id')->constrained('users', 'id')->cascadeOnDelete();
+            $table->foreignId('exam_id')->nullable()->constrained('exams', 'id')->nullOnDelete();
             $table->timestamp('exam_date')->nullable();
             $table->string('id_number')->nullable();
+            // Gamification fields
+            $table->integer('current_score')->default(0);
+            $table->foreignId('current_league_id')->nullable()->constrained('leagues')->nullOnDelete();
             $table->timestamps();
         });
     }

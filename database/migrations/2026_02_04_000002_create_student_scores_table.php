@@ -7,9 +7,9 @@ use Illuminate\Support\Facades\Schema;
 return new class extends Migration {
     public function up(): void
     {
-        Schema::create('user_scores', function (Blueprint $table) {
+        Schema::create('student_scores', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('student_id')->constrained('students')->cascadeOnDelete();
             $table->integer('score');
             $table->string('reason')->index(); // e.g. lesson_complete, question_correct
             $table->nullableMorphs('reference'); // e.g. Lesson:1, Question:5
@@ -19,6 +19,6 @@ return new class extends Migration {
 
     public function down(): void
     {
-        Schema::dropIfExists('user_scores');
+        Schema::dropIfExists('student_scores');
     }
 };

@@ -9,7 +9,7 @@ return new class extends Migration {
     {
         Schema::create('subscriptions', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('student_id')->constrained('students')->cascadeOnDelete();
             $table->foreignId('plan_id')->constrained();
             $table->timestamp('starts_at');
             $table->timestamp('ends_at')->nullable();
