@@ -86,6 +86,30 @@ Route::prefix('v2')->name('api.v2.')->group(function () {
     Route::get('/settings', [\App\Http\Controllers\Api\v2\SettingController::class, 'index'])->name('settings.index');
     Route::get('/settings/groups', [\App\Http\Controllers\Api\v2\SettingController::class, 'groups'])->name('settings.groups');
     Route::get('/settings/{key}', [\App\Http\Controllers\Api\v2\SettingController::class, 'show'])->name('settings.show');
+
+    // =====================================================
+    // Stats & Analytics (Authenticated)
+    // =====================================================
+    Route::middleware('jwt')->group(function () {
+        // Platform Stats
+        Route::get('/stats', [\App\Http\Controllers\Api\v2\StatsController::class, 'index'])->name('stats.index');
+
+        // Trending Courses
+        Route::get('/trending-courses', [\App\Http\Controllers\Api\v2\TrendingCourseController::class, 'index'])->name('trending-courses.index');
+
+        // Student Stats (for charts)
+        Route::get('/student-stats', [\App\Http\Controllers\Api\v2\StudentStatsController::class, 'index'])->name('student-stats.index');
+
+        // Student Management (CRUD)
+        Route::apiResource('students', \App\Http\Controllers\Api\v2\StudentController::class)->except(['create', 'store']);
+
+        // Student Import
+        Route::prefix('students')->name('students.')->group(function () {
+            Route::post('/', [\App\Http\Controllers\Api\v2\StudentImportController::class, 'store'])->name('store');
+            Route::post('/bulk', [\App\Http\Controllers\Api\v2\StudentImportController::class, 'bulkStore'])->name('bulk');
+            Route::post('/import', [\App\Http\Controllers\Api\v2\StudentImportController::class, 'importFile'])->name('import');
+        });
+    });
 });
 
 /*
