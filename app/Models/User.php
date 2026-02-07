@@ -59,6 +59,22 @@ class User extends Authenticatable implements JWTSubject, FilamentUser
     }
 
 
+    /**
+     * Get all devices registered for this user.
+     */
+    public function devices()
+    {
+        return $this->hasMany(Device::class);
+    }
+
+    /**
+     * Check if user has 2FA enabled.
+     */
+    public function hasTwoFactorEnabled(): bool
+    {
+        return (bool) $this->{'2fa'};
+    }
+
     public function student()
     {
         return $this->hasOne(Student::class, 'user_id', 'id');

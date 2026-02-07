@@ -7,8 +7,58 @@ use App\Http\Controllers\Api\v1\HomeController;
 use App\Http\Controllers\Api\v1\LessonController;
 use App\Http\Controllers\Api\v1\PaymentController;
 use App\Http\Controllers\Api\v1\QuestionController;
+use App\Http\Controllers\Api\v2\Auth\AuthController as V2AuthController;
 use Illuminate\Support\Facades\Route;
 
+/*
+|--------------------------------------------------------------------------
+| V2 API Routes
+|--------------------------------------------------------------------------
+*/
+Route::prefix('v2')->name('api.v2.')->group(function () {
+    // Auth Group
+    Route::prefix('auth')->name('auth.')->group(function () {
+        // Public routes
+        Route::post('/username/check', [V2AuthController::class, 'checkUsername'])->name('username.check');
+        Route::post('/register/student', [V2AuthController::class, 'registerStudent'])->name('register.student');
+        Route::post('/register/parent', [V2AuthController::class, 'registerParent'])->name('register.parent');
+
+        // Login flow
+        Route::post('/login/check', [V2AuthController::class, 'loginCheck'])->name('login.check');
+        Route::post('/login', [V2AuthController::class, 'login'])
+            ->middleware('throttle:login')
+            ->name('login');
+
+        // OTP (Rate Limited)
+        Route::post('/otp/send', [V2AuthController::class, 'sendOtp'])
+            ->middleware('throttle:otp-send')
+            ->name('otp.send');
+        Route::post('/otp/verify', [V2AuthController::class, 'verifyOtp'])
+            ->middleware('throttle:otp-verify')
+            ->name('otp.verify');
+
+        // Password reset
+        Route::post('/password/reset', [V2AuthController::class, 'resetPassword'])->name('password.reset');
+        Route::post('/password/change', [V2AuthController::class, 'changePassword'])->name('password.change');
+
+        // Authenticated routes
+        Route::middleware('jwt')->group(function () {
+            Route::get('/me', [V2AuthController::class, 'me'])->name('me');
+            Route::put('/profile', [V2AuthController::class, 'updateProfile'])->name('profile.update');
+            Route::post('/logout', [V2AuthController::class, 'logout'])->name('logout');
+
+            // Device management
+            Route::get('/devices', [V2AuthController::class, 'devices'])->name('devices.index');
+            Route::delete('/devices/{device}', [V2AuthController::class, 'revokeDevice'])->name('devices.revoke');
+        });
+    });
+});
+
+/*
+|--------------------------------------------------------------------------
+| V1 API Routes
+|--------------------------------------------------------------------------
+*/
 Route::prefix('v1')->name('api.v1.')->group(function () {
     Route::middleware('jwt')->get('/', function () {
         return response(['message' => 'Hello world!']);
