@@ -130,10 +130,6 @@ class ExamSectionResource extends Resource
                     ->columns(2),
             ]);
     }
-    public static function canCreate(): bool
-    {
-        return false;
-    }
 
     public static function getNavigationBadge(): ?string
     {
@@ -151,6 +147,7 @@ class ExamSectionResource extends Resource
     {
         return [
             'index' => Pages\ListExamSections::route('/'),
+            'create' => Pages\CreateExamSection::route('/create'),
             'view' => Pages\ViewExamSection::route('/{record}'),
             'edit' => Pages\EditExamSection::route('/{record}/edit'),
         ];

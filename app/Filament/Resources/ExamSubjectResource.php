@@ -108,6 +108,10 @@ class ExamSubjectResource extends Resource
                         ->label('حذف المادة'),
                 ]),
             ])
+            ->headerActions([
+                Tables\Actions\CreateAction::make()
+                    ->label('اضافة مادة'),
+            ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),
@@ -146,10 +150,6 @@ class ExamSubjectResource extends Resource
                     ->columns(2),
             ]);
     }
-    public static function canCreate(): bool
-    {
-        return false;
-    }
 
     public static function getNavigationBadge(): ?string
     {
@@ -167,6 +167,7 @@ class ExamSubjectResource extends Resource
     {
         return [
             'index' => Pages\ListExamSubjects::route('/'),
+            'create' => Pages\CreateExamSubject::route('/create'),
             'view' => Pages\ViewExamSubject::route('/{record}'),
             'edit' => Pages\EditExamSubject::route('/{record}/edit'),
         ];
