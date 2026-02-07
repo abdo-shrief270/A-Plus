@@ -163,7 +163,8 @@ class QuestionTest extends TestCase
     {
         $response = $this->getJson('/api/v2/questions/search');
 
-        $response->assertStatus(422)
+        $response->assertStatus(200)
+            ->assertJson(['status' => 422])
             ->assertJsonValidationErrors(['q']);
     }
 

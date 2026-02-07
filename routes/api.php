@@ -78,6 +78,14 @@ Route::prefix('v2')->name('api.v2.')->group(function () {
         Route::get('/', [\App\Http\Controllers\Api\v2\PracticeExamController::class, 'index'])->name('index');
         Route::get('/{practiceExam}', [\App\Http\Controllers\Api\v2\PracticeExamController::class, 'show'])->name('show');
     });
+
+    // Contact Us
+    Route::post('/contact', [\App\Http\Controllers\Api\v2\ContactController::class, 'store'])->name('contact.store');
+
+    // Settings
+    Route::get('/settings', [\App\Http\Controllers\Api\v2\SettingController::class, 'index'])->name('settings.index');
+    Route::get('/settings/groups', [\App\Http\Controllers\Api\v2\SettingController::class, 'groups'])->name('settings.groups');
+    Route::get('/settings/{key}', [\App\Http\Controllers\Api\v2\SettingController::class, 'show'])->name('settings.show');
 });
 
 /*

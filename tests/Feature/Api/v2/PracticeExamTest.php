@@ -103,7 +103,8 @@ class PracticeExamTest extends TestCase
     {
         $response = $this->getJson('/api/v2/practice-exams/999');
 
-        $response->assertNotFound();
+        $response->assertStatus(200)
+            ->assertJson(['status' => 404]);
     }
 
     /** @test */

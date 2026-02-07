@@ -24,7 +24,7 @@ class ExamTest extends TestCase
 
         $response->assertOk()
             ->assertJsonStructure([
-                'success',
+                'status',
                 'message',
                 'data' => [
                     'exams' => [
@@ -60,7 +60,7 @@ class ExamTest extends TestCase
 
         $response->assertOk()
             ->assertJsonStructure([
-                'success',
+                'status',
                 'message',
                 'data' => [
                     'exam' => [

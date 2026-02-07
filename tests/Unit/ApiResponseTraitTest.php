@@ -22,7 +22,7 @@ class ApiResponseTraitTest extends TestCase
 
         $content = $response->getData(true);
 
-        $this->assertTrue($content['status']);
+        $this->assertEquals(200,$content['status']);
         $this->assertEquals($message, $content['message']);
         $this->assertEquals($data, $content['data']);
     }
@@ -35,11 +35,11 @@ class ApiResponseTraitTest extends TestCase
         $response = $this->errorResponse($message, $code);
 
         $this->assertInstanceOf(JsonResponse::class, $response);
-        $this->assertEquals($code, $response->getStatusCode());
+        $this->assertEquals(200, $response->getStatusCode());
 
         $content = $response->getData(true);
 
-        $this->assertFalse($content['status']);
+        $this->assertEquals(400,$content['status']);
         $this->assertEquals($message, $content['message']);
         $this->assertArrayNotHasKey('errors', $content);
     }
@@ -54,7 +54,7 @@ class ApiResponseTraitTest extends TestCase
 
         $content = $response->getData(true);
 
-        $this->assertFalse($content['status']);
+        $this->assertEquals(422,$content['status']);
         $this->assertEquals($errors, $content['errors']);
     }
 }
