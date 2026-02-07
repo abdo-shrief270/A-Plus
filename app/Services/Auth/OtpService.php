@@ -82,6 +82,11 @@ class OtpService
             ];
         }
 
+        // Mark as verified
+        DB::table('password_reset_tokens')
+            ->where('token', $token)
+            ->update(['verified_at' => now()]);
+
         return [
             'valid' => true,
             'user_id' => $record->user_id,

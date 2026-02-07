@@ -220,6 +220,11 @@ class AuthController extends BaseApiController
             return $this->errorResponse('رمز التحقق غير صالح أو منتهي الصلاحية', Response::HTTP_UNAUTHORIZED);
         }
 
+        // Check if OTP was verified
+        if (empty($record->verified_at)) {
+            return $this->errorResponse('يجب التحقق من رمز OTP أولاً', Response::HTTP_FORBIDDEN);
+        }
+
         $user = User::find($record->user_id);
 
         if (!$user) {

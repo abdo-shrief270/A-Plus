@@ -32,6 +32,7 @@ return new class extends Migration {
                 $table->string('otp', 6)->nullable()->after('token');
                 $table->timestamp('otp_expires_at')->nullable()->after('otp');
                 $table->enum('method', ['email', 'phone', 'whatsapp'])->nullable()->after('otp_expires_at');
+                $table->timestamp('verified_at')->nullable()->after('method');
             });
         }
     }
@@ -45,7 +46,7 @@ return new class extends Migration {
 
         if (Schema::hasColumn('password_reset_tokens', 'otp')) {
             Schema::table('password_reset_tokens', function (Blueprint $table) {
-                $table->dropColumn(['otp', 'otp_expires_at', 'method']);
+                $table->dropColumn(['otp', 'otp_expires_at', 'method', 'verified_at']);
             });
         }
     }

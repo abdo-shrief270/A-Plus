@@ -17,11 +17,19 @@ trait ApiResponseTrait
      */
     protected function successResponse($data, ?string $message = null, int $code = Response::HTTP_OK): JsonResponse
     {
+        if (isset($data)) {
+            return response()->json([
+                'status' => $code,
+                'message' => $message,
+                'data' => $data,
+            ], Response::HTTP_OK);
+        }
+
         return response()->json([
             'status' => $code,
-            'message' => $message,
-            'data' => $data,
+            'message' => $message
         ], Response::HTTP_OK);
+
     }
 
     /**
