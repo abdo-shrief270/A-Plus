@@ -62,6 +62,11 @@ class Question extends Model
         return $value ? url(Storage::url($value)) : null;
     }
 
+    public function scopeTrending($query)
+    {
+        return $query->where('is_new', true);
+    }
+
     public function articles(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
     {
         return $this->belongsToMany(Article::class);

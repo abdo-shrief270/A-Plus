@@ -52,6 +52,32 @@ Route::prefix('v2')->name('api.v2.')->group(function () {
             Route::delete('/devices/{device}', [V2AuthController::class, 'revokeDevice'])->name('devices.revoke');
         });
     });
+
+    // Exams
+    Route::prefix('exams')->name('exams.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Api\v2\ExamController::class, 'index'])->name('index');
+        Route::get('/{exam}', [\App\Http\Controllers\Api\v2\ExamController::class, 'show'])->name('show');
+        Route::get('/{exam}/subjects', [\App\Http\Controllers\Api\v2\ExamController::class, 'subjects'])->name('subjects');
+        Route::get('/{exam}/sections', [\App\Http\Controllers\Api\v2\ExamController::class, 'sections'])->name('sections');
+    });
+
+    // Questions
+    Route::prefix('questions')->name('questions.')->group(function () {
+        Route::get('/trending', [\App\Http\Controllers\Api\v2\QuestionController::class, 'trending'])->name('trending');
+        Route::get('/recent', [\App\Http\Controllers\Api\v2\QuestionController::class, 'recent'])->name('recent');
+        Route::get('/search', [\App\Http\Controllers\Api\v2\QuestionController::class, 'search'])->name('search');
+        Route::get('/{question}', [\App\Http\Controllers\Api\v2\QuestionController::class, 'show'])->name('show');
+    });
+
+    // Subject & Category Questions
+    Route::get('/subjects/{subject}/questions', [\App\Http\Controllers\Api\v2\QuestionController::class, 'bySubject'])->name('subjects.questions');
+    Route::get('/categories/{category}/questions', [\App\Http\Controllers\Api\v2\QuestionController::class, 'byCategory'])->name('categories.questions');
+
+    // Practice Exams (Models)
+    Route::prefix('practice-exams')->name('practice-exams.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Api\v2\PracticeExamController::class, 'index'])->name('index');
+        Route::get('/{practiceExam}', [\App\Http\Controllers\Api\v2\PracticeExamController::class, 'show'])->name('show');
+    });
 });
 
 /*
