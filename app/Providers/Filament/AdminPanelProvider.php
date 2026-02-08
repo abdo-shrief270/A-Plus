@@ -65,7 +65,14 @@ class AdminPanelProvider extends PanelProvider
                 DispatchServingFilamentEvent::class,
             ])
             ->plugins([
-                \BezhanSalleh\FilamentShield\FilamentShieldPlugin::make()
+                \BezhanSalleh\FilamentShield\FilamentShieldPlugin::make(),
+                \GeoSot\FilamentEnvEditor\FilamentEnvEditorPlugin::make()
+                    ->authorize(fn () => auth()->user()?->hasRole('super_admin') ?? false)
+                    ->navigationGroup('النظام')
+                    ->navigationLabel('متغيرات البيئة')
+                    ->navigationIcon('heroicon-o-cog-8-tooth')
+                    ->navigationSort(100)
+                    ->hideKeys('APP_KEY'),
             ])
             ->authGuard('web')
             ->maxContentWidth(MaxWidth::Full)

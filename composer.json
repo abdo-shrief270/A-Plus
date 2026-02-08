@@ -13,6 +13,7 @@
         "bezhansalleh/filament-shield": "^3.3",
         "filament/filament": "^3.3",
         "flowframe/laravel-trend": "^0.4.0",
+        "geo-sot/filament-env-editor": "^0.0.7",
         "laravel/framework": "^12.0",
         "laravel/sanctum": "^4.0",
         "laravel/tinker": "^2.10.1",
