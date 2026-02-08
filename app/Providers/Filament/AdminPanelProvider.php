@@ -88,6 +88,14 @@ class AdminPanelProvider extends PanelProvider
                 'المالية',
                 'النظام',
             ])
+            ->navigationItems([
+                \Filament\Navigation\NavigationItem::make('سجل النظام')
+                    ->url('/log-viewer', shouldOpenInNewTab: true)
+                    ->icon('heroicon-o-document-text')
+                    ->group('النظام')
+                    ->sort(99)
+                    ->visible(fn () => auth()->user()?->hasRole('super_admin') ?? false),
+            ])
             ->authMiddleware([
                 Authenticate::class,
             ]);
