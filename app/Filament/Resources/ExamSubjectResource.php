@@ -27,6 +27,7 @@ class ExamSubjectResource extends Resource
     protected static ?int $navigationSort = 4;
     protected static ?string $navigationGroup = 'المحتوى التعليمي';
 
+
     public static function form(Form $form): Form
     {
         return $form

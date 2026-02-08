@@ -24,10 +24,10 @@ class PracticeExamResource extends Resource
     protected static ?string $model = PracticeExam::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
-
-    protected static ?string $modelLabel = 'نموذج';
     protected static ?string $pluralModelLabel = 'النماذج';
     protected static ?string $navigationGroup = 'المحتوى التعليمي';
+    protected static ?int $navigationSort = 9;
+
 
     public static function form(Form $form): Form
     {

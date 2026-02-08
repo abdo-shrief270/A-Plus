@@ -75,9 +75,11 @@ class AdminPanelProvider extends PanelProvider
             ->topNavigation()
             ->sidebarCollapsibleOnDesktop()
             ->navigationGroups([
-                'المحتوى التعليمي',
-                'المالية',
                 'إدارة المستخدمين',
+                'المحتوى التعليمي',
+                'الدورات والمبيعات',
+                'المالية',
+                'النظام',
             ])
             ->authMiddleware([
                 Authenticate::class,

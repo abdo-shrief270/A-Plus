@@ -19,7 +19,7 @@ class LeagueResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-trophy';
 
-    // protected static ?string $navigationGroup = 'التلعيب (Gamification)';
+    protected static ?string $navigationGroup = 'إدارة المستخدمين';
 
     protected static ?int $navigationSort = 1;
 

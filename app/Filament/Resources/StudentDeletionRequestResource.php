@@ -18,11 +18,15 @@ class StudentDeletionRequestResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-trash';
 
-    protected static ?string $navigationGroup = 'Student Management';
+    protected static ?string $navigationGroup = 'إدارة المستخدمين';
 
-    protected static ?string $navigationLabel = 'Deletion Requests';
+    protected static ?string $navigationLabel = 'طلبات الحذف';
 
     protected static ?int $navigationSort = 100;
+
+    protected static ?string $modelLabel = 'طلب حذف';
+
+    protected static ?string $pluralModelLabel = 'طلبات الحذف';
 
     public static function getNavigationBadge(): ?string
     {
@@ -40,20 +44,21 @@ class StudentDeletionRequestResource extends Resource
             ->schema([
                 Forms\Components\Select::make('student_id')
                     ->relationship('student.user', 'name')
-                    ->label('Student')
+                    ->label('الطالب')
                     ->disabled(),
                 Forms\Components\Select::make('requested_by')
                     ->relationship('requester', 'name')
-                    ->label('Requested By')
+                    ->label('مقدم الطلب')
                     ->disabled(),
                 Forms\Components\Textarea::make('reason')
-                    ->label('Reason')
+                    ->label('السبب')
                     ->disabled(),
                 Forms\Components\Select::make('status')
+                    ->label('الحالة')
                     ->options([
-                        'pending' => 'Pending',
-                        'approved' => 'Approved',
-                        'rejected' => 'Rejected',
+                        'pending' => 'قيد الانتظار',
+                        'approved' => 'موافق عليه',
+                        'rejected' => 'مرفوض',
                     ])
                     ->required(),
             ]);
@@ -64,50 +69,59 @@ class StudentDeletionRequestResource extends Resource
         return $table
             ->columns([
                 Tables\Columns\TextColumn::make('student.user.name')
-                    ->label('Student Name')
+                    ->label('اسم الطالب')
                     ->searchable()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('student.user.email')
-                    ->label('Email')
+                    ->label('البريد الإلكتروني')
                     ->searchable(),
                 Tables\Columns\TextColumn::make('requester.name')
-                    ->label('Requested By')
+                    ->label('مقدم الطلب')
                     ->sortable(),
                 Tables\Columns\TextColumn::make('reason')
+                    ->label('السبب')
                     ->limit(30)
                     ->tooltip(fn($record) => $record->reason),
                 Tables\Columns\BadgeColumn::make('status')
+                    ->label('الحالة')
+                    ->formatStateUsing(fn(string $state): string => match ($state) {
+                        'pending' => 'قيد الانتظار',
+                        'approved' => 'موافق عليه',
+                        'rejected' => 'مرفوض',
+                        default => $state,
+                    })
                     ->colors([
                         'warning' => 'pending',
                         'success' => 'approved',
                         'danger' => 'rejected',
                     ]),
                 Tables\Columns\TextColumn::make('created_at')
-                    ->label('Requested At')
+                    ->label('تاريخ الطلب')
                     ->dateTime()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('reviewer.name')
-                    ->label('Reviewed By')
+                    ->label('المراجع')
                     ->placeholder('—'),
             ])
             ->filters([
                 Tables\Filters\SelectFilter::make('status')
+                    ->label('الحالة')
                     ->options([
-                        'pending' => 'Pending',
-                        'approved' => 'Approved',
-                        'rejected' => 'Rejected',
+                        'pending' => 'قيد الانتظار',
+                        'approved' => 'موافق عليه',
+                        'rejected' => 'مرفوض',
                     ])
                     ->default('pending'),
             ])
             ->actions([
                 Action::make('approve')
-                    ->label('Approve')
+                    ->label('موافقة')
                     ->icon('heroicon-o-check')
                     ->color('success')
                     ->visible(fn($record) => $record->status === 'pending')
                     ->requiresConfirmation()
-                    ->modalHeading('Approve Deletion Request')
-                    ->modalDescription('This will permanently delete the student. Are you sure?')
+                    ->modalHeading('الموافقة على طلب الحذف')
+                    ->modalDescription('سيتم حذف الطالب نهائياً. هل أنت متأكد؟')
                     ->action(function ($record) {
                         $record->update([
                             'status' => 'approved',
@@ -120,16 +134,18 @@ class StudentDeletionRequestResource extends Resource
                         $record->student?->delete();
 
                         Notification::make()
-                            ->title('Student deleted successfully')
+                            ->title('تم حذف الطالب بنجاح')
                             ->success()
                             ->send();
                     }),
                 Action::make('reject')
-                    ->label('Reject')
+                    ->label('رفض')
                     ->icon('heroicon-o-x-mark')
                     ->color('danger')
                     ->visible(fn($record) => $record->status === 'pending')
                     ->requiresConfirmation()
+                    ->modalHeading('رفض طلب الحذف')
+                    ->modalDescription('هل أنت متأكد من رفض هذا الطلب؟')
                     ->action(function ($record) {
                         $record->update([
                             'status' => 'rejected',
@@ -138,11 +154,12 @@ class StudentDeletionRequestResource extends Resource
                         ]);
 
                         Notification::make()
-                            ->title('Deletion request rejected')
+                            ->title('تم رفض طلب الحذف')
                             ->warning()
                             ->send();
                     }),
-                Tables\Actions\ViewAction::make(),
+                Tables\Actions\ViewAction::make()
+                    ->label('عرض'),
             ])
             ->bulkActions([])
             ->defaultSort('created_at', 'desc');
@@ -159,5 +176,25 @@ class StudentDeletionRequestResource extends Resource
             'index' => Pages\ListStudentDeletionRequests::route('/'),
             'view' => Pages\ViewStudentDeletionRequest::route('/{record}'),
         ];
+    }
+
+    public static function getLabel(): ?string
+    {
+        return 'طلب حذف';
+    }
+
+    public static function getModelLabel(): string
+    {
+        return 'طلب حذف';
+    }
+
+    public static function getPluralLabel(): string
+    {
+        return 'طلبات الحذف';
+    }
+
+    public static function getTitleCasePluralModelLabel(): string
+    {
+        return 'طلبات الحذف';
     }
 }

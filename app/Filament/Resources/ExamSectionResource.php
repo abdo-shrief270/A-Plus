@@ -24,8 +24,9 @@ class ExamSectionResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-group';
 
-    protected static ?int $navigationSort = 3;
+    protected static ?int $navigationSort = 2;
     protected static ?string $navigationGroup = 'المحتوى التعليمي';
+
 
     public static function form(Form $form): Form
     {

@@ -22,6 +22,8 @@ class ArticleResource extends Resource
     protected static ?string $modelLabel = 'قطعة';
     protected static ?string $pluralModelLabel = 'القطع';
     protected static ?string $navigationGroup = 'المحتوى التعليمي';
+    protected static ?int $navigationSort = 8;
+
 
     public static function form(Form $form): Form
     {

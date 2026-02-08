@@ -20,29 +20,39 @@ class CouponResource extends Resource
 
     protected static ?int $navigationSort = 2;
 
+    protected static ?string $modelLabel = 'كوبون';
+
+    protected static ?string $pluralModelLabel = 'كوبونات';
+
     public static function form(Form $form): Form
     {
         return $form
             ->schema([
                 Forms\Components\TextInput::make('code')
+                    ->label('كود الكوبون')
                     ->required()
                     ->unique(ignoreRecord: true)
                     ->maxLength(255),
                 Forms\Components\Select::make('type')
+                    ->label('النوع')
                     ->options([
-                        'fixed' => 'Fixed Amount',
-                        'percent' => 'Percentage',
+                        'fixed' => 'مبلغ ثابت',
+                        'percent' => 'نسبة مئوية',
                     ])
                     ->required(),
                 Forms\Components\TextInput::make('value')
-                    ->label('Discount Value')
+                    ->label('قيمة الخصم')
                     ->required()
                     ->numeric(),
-                Forms\Components\DateTimePicker::make('valid_from'),
-                Forms\Components\DateTimePicker::make('valid_until'),
+                Forms\Components\DateTimePicker::make('valid_from')
+                    ->label('صالح من'),
+                Forms\Components\DateTimePicker::make('valid_until')
+                    ->label('صالح حتى'),
                 Forms\Components\TextInput::make('usage_limit')
+                    ->label('حد الاستخدام')
                     ->numeric(),
                 Forms\Components\TextInput::make('times_used')
+                    ->label('مرات الاستخدام')
                     ->numeric()
                     ->disabled(),
             ]);
@@ -53,16 +63,32 @@ class CouponResource extends Resource
         return $table
             ->columns([
                 Tables\Columns\TextColumn::make('code')
+                    ->label('الكود')
                     ->searchable(),
                 Tables\Columns\TextColumn::make('type')
-                    ->badge(),
-                Tables\Columns\TextColumn::make('value'),
+                    ->label('النوع')
+                    ->badge()
+                    ->formatStateUsing(fn(string $state): string => match ($state) {
+                        'fixed' => 'مبلغ ثابت',
+                        'percent' => 'نسبة مئوية',
+                        default => $state,
+                    })
+                    ->colors([
+                        'success' => 'fixed',
+                        'primary' => 'percent',
+                    ]),
+                Tables\Columns\TextColumn::make('value')
+                    ->label('القيمة'),
                 Tables\Columns\TextColumn::make('valid_until')
+                    ->label('صالح حتى')
                     ->dateTime()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('usage_limit'),
-                Tables\Columns\TextColumn::make('times_used'),
+                Tables\Columns\TextColumn::make('usage_limit')
+                    ->label('حد الاستخدام'),
+                Tables\Columns\TextColumn::make('times_used')
+                    ->label('مرات الاستخدام'),
                 Tables\Columns\TextColumn::make('created_at')
+                    ->label('تاريخ الإضافة')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
@@ -82,12 +108,15 @@ class CouponResource extends Resource
                     ->query(fn(Builder $query) => $query->where('valid_until', '<', now())),
             ])
             ->actions([
-                Tables\Actions\EditAction::make(),
-                Tables\Actions\DeleteAction::make(),
+                Tables\Actions\EditAction::make()
+                    ->label('تعديل'),
+                Tables\Actions\DeleteAction::make()
+                    ->label('حذف'),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
+                    Tables\Actions\DeleteBulkAction::make()
+                        ->label('حذف المحدد'),
                 ]),
             ]);
     }
@@ -106,5 +135,25 @@ class CouponResource extends Resource
             'create' => Pages\CreateCoupon::route('/create'),
             'edit' => Pages\EditCoupon::route('/{record}/edit'),
         ];
+    }
+
+    public static function getLabel(): ?string
+    {
+        return 'كوبون';
+    }
+
+    public static function getModelLabel(): string
+    {
+        return 'كوبون';
+    }
+
+    public static function getPluralLabel(): string
+    {
+        return 'كوبونات';
+    }
+
+    public static function getTitleCasePluralModelLabel(): string
+    {
+        return 'الكوبونات';
     }
 }
