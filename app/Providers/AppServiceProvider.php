@@ -3,6 +3,9 @@
 namespace App\Providers;
 
 use Illuminate\Support\ServiceProvider;
+use Dedoc\Scramble\Scramble;
+use Dedoc\Scramble\Support\Generator\OpenApi;
+use Dedoc\Scramble\Support\Generator\SecurityScheme;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -42,6 +45,13 @@ class AppServiceProvider extends ServiceProvider
         \Opcodes\LogViewer\Facades\LogViewer::auth(function ($request) {
             $user = auth('web')->user();
             return $user && $user->hasRole('super_admin');
+        });
+
+        // Scramble Security Scheme
+        Scramble::extendOpenApi(function (OpenApi $openApi) {
+            $openApi->secure(
+                SecurityScheme::http('bearer')
+            );
         });
     }
 }

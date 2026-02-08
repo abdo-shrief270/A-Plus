@@ -19,6 +19,24 @@ class ChangePasswordRequest extends FormRequest
         ];
     }
 
+    public function bodyParameters(): array
+    {
+        return [
+            'token' => [
+                'description' => 'The verification token received after verifying OTP.',
+                'example' => '8a7b3c...',
+            ],
+            'password' => [
+                'description' => 'The new password (min 8 characters).',
+                'example' => 'newpassword123',
+            ],
+            'password_confirmation' => [
+                'description' => 'Confirm the new password.',
+                'example' => 'newpassword123',
+            ],
+        ];
+    }
+
     public function messages(): array
     {
         return [

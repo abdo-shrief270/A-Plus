@@ -19,6 +19,20 @@ class VerifyOtpRequest extends FormRequest
         ];
     }
 
+    public function bodyParameters(): array
+    {
+        return [
+            'token' => [
+                'description' => 'The token received from the sendOtp endpoint.',
+                'example' => '8a7b3c...',
+            ],
+            'otp' => [
+                'description' => 'The 6-digit code received via SMS/Email.',
+                'example' => '123456',
+            ],
+        ];
+    }
+
     public function messages(): array
     {
         return [

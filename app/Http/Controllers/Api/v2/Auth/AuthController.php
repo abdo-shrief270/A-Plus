@@ -33,7 +33,14 @@ class AuthController extends BaseApiController
     }
 
     /**
-     * Check if username is available.
+     * Check Username Availability
+     * 
+     * Checks if a username is available for registration.
+     * 
+     * @group Authentication
+     * @unauthenticated
+     * 
+     * @response array{status: int, message: string, data: array{available: bool}}
      */
     public function checkUsername(CheckUsernameRequest $request): JsonResponse
     {
@@ -45,7 +52,14 @@ class AuthController extends BaseApiController
     }
 
     /**
-     * Register a new student.
+     * Register Student
+     * 
+     * Registers a new student user.
+     * 
+     * @group Authentication
+     * @unauthenticated
+     * 
+     * @response array{status: int, message: string, data: array{token: string, user: \App\Models\User}}
      */
     public function registerStudent(RegisterStudentRequest $request): JsonResponse
     {
@@ -62,7 +76,14 @@ class AuthController extends BaseApiController
     }
 
     /**
-     * Register a new parent.
+     * Register Parent
+     * 
+     * Registers a new parent user.
+     * 
+     * @group Authentication
+     * @unauthenticated
+     * 
+     * @response array{status: int, message: string, data: array{token: string, user: \App\Models\User}}
      */
     public function registerParent(RegisterParentRequest $request): JsonResponse
     {
@@ -79,7 +100,15 @@ class AuthController extends BaseApiController
     }
 
     /**
-     * Check user existence and 2FA status before login.
+     * Check User for Login
+     * 
+     * Checks if the user exists and determines if 2FA or other checks are required before login.
+     * 
+     * @group Authentication
+     * @unauthenticated
+     * 
+     * @response array{status: int, message: string, data: array{exists: bool, requires_2fa: bool}}
+     * @response 404 array{status: int, message: string}
      */
     public function loginCheck(LoginCheckRequest $request): JsonResponse
     {
@@ -93,7 +122,17 @@ class AuthController extends BaseApiController
     }
 
     /**
-     * Login with password (for users without 2FA).
+     * Login
+     * 
+     * Authenticates a user using username and password. 
+     * If 2FA is enabled, returns `requires_2fa: true` instead of a token.
+     * 
+     * @group Authentication
+     * @unauthenticated
+     * 
+     * @response array{status: int, message: string, data: array{token: string, user: \App\Models\User}}
+     * @response array{status: int, message: string, data: array{requires_2fa: true, phone: string, email: string}}
+     * @response 401 array{status: int, message: string}
      */
     public function login(LoginRequest $request): JsonResponse
     {
@@ -128,7 +167,15 @@ class AuthController extends BaseApiController
     }
 
     /**
-     * Send OTP for 2FA login or password reset.
+     * Send OTP
+     * 
+     * Sends an OTP to the user via the specified method (sms, whatsapp, email) for 2FA or Password Reset.
+     * 
+     * @group Authentication
+     * @unauthenticated
+     * 
+     * @response array{status: int, message: string, data: array{token: string, expires_in: int, method: string}}
+     * @response 404 array{status: int, message: string}
      */
     public function sendOtp(SendOtpRequest $request): JsonResponse
     {
@@ -152,7 +199,17 @@ class AuthController extends BaseApiController
     }
 
     /**
-     * Verify OTP code.
+     * Verify OTP
+     * 
+     * Verifies the OTP code provided by the user.
+     * Can complete 2FA login or verified a password reset token.
+     * 
+     * @group Authentication
+     * @unauthenticated
+     * 
+     * @response array{status: int, message: string, data: array{token: string, user: \App\Models\User}}
+     * @response array{status: int, message: string, data: array{verified: bool, token: string}}
+     * @response 401 array{status: int, message: string}
      */
     public function verifyOtp(VerifyOtpRequest $request): JsonResponse
     {
@@ -189,7 +246,15 @@ class AuthController extends BaseApiController
     }
 
     /**
-     * Initiate password reset - find user and return contact options.
+     * Reset Password (Find User)
+     * 
+     * Initiates the password reset process by finding the user and returning available contact methods.
+     * 
+     * @group Authentication
+     * @unauthenticated
+     * 
+     * @response array{status: int, message: string, data: array{user_found: bool, phone: ?string, email: ?string}}
+     * @response 404 array{status: int, message: string}
      */
     public function resetPassword(ResetPasswordRequest $request): JsonResponse
     {
@@ -207,7 +272,15 @@ class AuthController extends BaseApiController
     }
 
     /**
-     * Change password after OTP verification.
+     * Change Password
+     * 
+     * Changes the user's password using the verified token from OTP verification.
+     * 
+     * @group Authentication
+     * @unauthenticated
+     * 
+     * @response array{status: int, message: string, data: null}
+     * @response 401 array{status: int, message: string}
      */
     public function changePassword(ChangePasswordRequest $request): JsonResponse
     {
@@ -242,7 +315,14 @@ class AuthController extends BaseApiController
     }
 
     /**
-     * Get current authenticated user.
+     * Get Current User (Me)
+     * 
+     * Retrieves the currently authenticated user's profile and devices.
+     * 
+     * @group Authentication
+     * 
+     * @response array{status: int, message: string, data: array{user: \App\Models\User, devices: array}}
+     * @response 401 array{status: int, message: string}
      */
     public function me(Request $request): JsonResponse
     {
@@ -264,7 +344,15 @@ class AuthController extends BaseApiController
     }
 
     /**
-     * Update user profile.
+     * Update Profile
+     * 
+     * Updates the authenticated user's profile information.
+     * 
+     * @group Authentication
+     * 
+     * @response array{status: int, message: string, data: array{user: \App\Models\User}}
+     * @response 401 array{status: int, message: string}
+     * @response 403 array{status: int, message: string}
      */
     public function updateProfile(UpdateProfileRequest $request): JsonResponse
     {
@@ -310,7 +398,14 @@ class AuthController extends BaseApiController
     }
 
     /**
-     * Logout (invalidate token).
+     * Logout
+     * 
+     * Invalidates the current JWT token.
+     * 
+     * @group Authentication
+     * 
+     * @response array{status: int, message: string, data: null}
+     * @response 500 array{status: int, message: string}
      */
     public function logout(): JsonResponse
     {
@@ -325,7 +420,14 @@ class AuthController extends BaseApiController
     }
 
     /**
-     * Get user's devices.
+     * Get User Devices
+     * 
+     * Retrieves a list of devices used by the user.
+     * 
+     * @group Authentication
+     * 
+     * @response array{status: int, message: string, data: array{devices: array}}
+     * @response 401 array{status: int, message: string}
      */
     public function devices(): JsonResponse
     {
@@ -341,7 +443,15 @@ class AuthController extends BaseApiController
     }
 
     /**
-     * Revoke a device.
+     * Revoke Device
+     * 
+     * Revokes (logs out) a specific device.
+     * 
+     * @group Authentication
+     * 
+     * @response array{status: int, message: string, data: null}
+     * @response 404 array{status: int, message: string}
+     * @response 401 array{status: int, message: string}
      */
     public function revokeDevice(int $deviceId): JsonResponse
     {
