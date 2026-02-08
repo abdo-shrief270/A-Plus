@@ -33,7 +33,7 @@ class StudentImportService
                 'phone' => $data['phone'] ?? null,
                 'password' => Hash::make($data['password'] ?? 'password123'),
                 'type' => 'student',
-                'gender' => $data['gender'] ?? null,
+                'gender' => $data['gender'] ?? 'male',
             ]);
 
             // Create student

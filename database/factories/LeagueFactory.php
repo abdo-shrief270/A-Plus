@@ -21,8 +21,7 @@ class LeagueFactory extends Factory
     {
         return [
             'name' => fake()->unique()->word() . ' League',
-            'min_points' => fake()->numberBetween(0, 1000),
-            'max_points' => fake()->numberBetween(1001, 5000),
+            'min_score' => fake()->numberBetween(0, 1000),
         ];
     }
 }

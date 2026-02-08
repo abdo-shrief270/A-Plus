@@ -62,7 +62,6 @@ class StudentImportController extends BaseApiController
             $result['total_created'],
             $result['total_failed']
         );
-        dump($result); // DEBUG
 
         return $this->successResponse($result, $message);
     }
