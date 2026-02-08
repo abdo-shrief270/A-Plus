@@ -11,6 +11,7 @@
     "require": {
         "php": "^8.2",
         "bezhansalleh/filament-shield": "^3.3",
+        "dedoc/scramble": "^0.13.12",
         "filament/filament": "^3.3",
         "flowframe/laravel-trend": "^0.4.0",
         "geo-sot/filament-env-editor": "^0.0.7",
@@ -19,6 +20,8 @@
         "laravel/tinker": "^2.10.1",
         "opcodesio/log-viewer": "^3.21",
         "openspout/openspout": "^4.28",
+        "rmsramos/activitylog": "^2.0",
+        "spatie/laravel-activitylog": "^4.11",
         "tymon/jwt-auth": "^2.2",
         "ysfkaya/filament-phone-input": "^3.1"
     },

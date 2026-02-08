@@ -35,6 +35,9 @@ class AppServiceProvider extends ServiceProvider
         \App\Models\Student::observe(\App\Observers\StudentObserver::class);
         \App\Models\School::observe(\App\Observers\SchoolObserver::class);
 
+        // Register Activity observer for sensitive action notifications
+        \Spatie\Activitylog\Models\Activity::observe(\App\Observers\ActivityNotificationObserver::class);
+
         // Log Viewer authorization - super_admin only
         \Opcodes\LogViewer\Facades\LogViewer::auth(function ($request) {
             $user = auth('web')->user();

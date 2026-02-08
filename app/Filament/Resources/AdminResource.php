@@ -114,19 +114,19 @@ class AdminResource extends Resource
 
     public static function getLabel(): ?string
     {
-        return 'مستخدم';
+        return 'مدير';
     }
     public static function getModelLabel(): string
     {
-        return 'مستخدم';
+        return 'مدير';
     }
     public static function getPluralLabel(): string
     {
-        return 'مستخدمين';
+        return 'مدراء';
     }
     public static function getTitleCasePluralModelLabel(): string
     {
-        return 'المستخدمين';
+        return 'المدراء';
     }
 
 }

@@ -112,95 +112,95 @@ Route::prefix('v2')->name('api.v2.')->group(function () {
     });
 });
 
-/*
-|--------------------------------------------------------------------------
-| V1 API Routes
-|--------------------------------------------------------------------------
-*/
-Route::prefix('v1')->name('api.v1.')->group(function () {
-    Route::middleware('jwt')->get('/', function () {
-        return response(['message' => 'Hello world!']);
-    });
+// /*
+// |--------------------------------------------------------------------------
+// | V1 API Routes
+// |--------------------------------------------------------------------------
+// */
+// Route::prefix('v1')->name('api.v1.')->group(function () {
+//     Route::middleware('jwt')->get('/', function () {
+//         return response(['message' => 'Hello world!']);
+//     });
 
-    Route::prefix('/')->group(function () {
-        Route::post('/contact', [HomeController::class, 'contactUs']);
-    });
+//     Route::prefix('/')->group(function () {
+//         Route::post('/contact', [HomeController::class, 'contactUs']);
+//     });
 
-    Route::prefix('exams')->group(function () {
-        Route::get('/', [ExamController::class, 'index']);
-        Route::get('/categories/{category}', [ExamController::class, 'categoryData']);
-        Route::get('/subjects/{subject}', [ExamController::class, 'subjectData']);
-        Route::get('/data', [ExamController::class, 'categories'])->middleware('jwt');
-    });
+//     Route::prefix('exams')->group(function () {
+//         Route::get('/', [ExamController::class, 'index']);
+//         Route::get('/categories/{category}', [ExamController::class, 'categoryData']);
+//         Route::get('/subjects/{subject}', [ExamController::class, 'subjectData']);
+//         Route::get('/data', [ExamController::class, 'categories'])->middleware('jwt');
+//     });
 
-    Route::prefix('questions')->group(function () {
-        Route::get('/{question}', [QuestionController::class, 'questionData']);
-    });
+//     Route::prefix('questions')->group(function () {
+//         Route::get('/{question}', [QuestionController::class, 'questionData']);
+//     });
 
-    Route::middleware('jwt')->prefix('lessons')->group(function () {
-        Route::get('/', [LessonController::class, 'index']);
-        Route::get('/{lesson}', [LessonController::class, 'show']);
-        Route::post('/{lesson}/progress', [LessonController::class, 'updateProgress']);
-    });
+//     Route::middleware('jwt')->prefix('lessons')->group(function () {
+//         Route::get('/', [LessonController::class, 'index']);
+//         Route::get('/{lesson}', [LessonController::class, 'show']);
+//         Route::post('/{lesson}/progress', [LessonController::class, 'updateProgress']);
+//     });
 
-    // Gamification
-    Route::apiResource('leagues', \App\Http\Controllers\Api\v1\LeagueController::class);
-    Route::get('leaderboard', [\App\Http\Controllers\Api\v1\LeaderboardController::class, 'index']);
+//     // Gamification
+//     Route::apiResource('leagues', \App\Http\Controllers\Api\v1\LeagueController::class);
+//     Route::get('leaderboard', [\App\Http\Controllers\Api\v1\LeaderboardController::class, 'index']);
 
-    // Economy
-    Route::post('payment/initiate', [\App\Http\Controllers\Api\v1\PaymentController::class, 'initiate']);
-    Route::post('payment/callback', [\App\Http\Controllers\Api\v1\PaymentController::class, 'callback']); // Should be outside auth or handle auth checks manually if redirect
+//     // Economy
+//     Route::post('payment/initiate', [\App\Http\Controllers\Api\v1\PaymentController::class, 'initiate']);
+//     Route::post('payment/callback', [\App\Http\Controllers\Api\v1\PaymentController::class, 'callback']); // Should be outside auth or handle auth checks manually if redirect
 
-    // Answers & Revision
-    Route::post('answers', [\App\Http\Controllers\Api\v1\AnswerController::class, 'submit']);
-    Route::get('revision/stats', [\App\Http\Controllers\Api\v1\RevisionController::class, 'stats']);
-    Route::get('revision/history', [\App\Http\Controllers\Api\v1\RevisionController::class, 'history']);
+//     // Answers & Revision
+//     Route::post('answers', [\App\Http\Controllers\Api\v1\AnswerController::class, 'submit']);
+//     Route::get('revision/stats', [\App\Http\Controllers\Api\v1\RevisionController::class, 'stats']);
+//     Route::get('revision/history', [\App\Http\Controllers\Api\v1\RevisionController::class, 'history']);
 
-    Route::apiResource('questions', \App\Http\Controllers\Api\v1\QuestionController::class)->only(['show']);
+//     Route::apiResource('questions', \App\Http\Controllers\Api\v1\QuestionController::class)->only(['show']);
 
-    Route::prefix('auth')->group(function () {
-        Route::post('/register', [AuthController::class, 'register']);
-        Route::post('/login', [AuthController::class, 'login']);
-        Route::prefix('username')->group(function () {
-            Route::post('/check', [AuthController::class, 'checkUserName']);
-        });
-
-
-        Route::prefix('user')->group(function () {
-            Route::get('/', [AuthController::class, 'getUser'])->middleware('jwt');
-            Route::post('/update', [AuthController::class, 'updateUser'])->middleware('jwt');
-            Route::post('/reset-password', [AuthController::class, 'resetPassword']);
-            Route::post('/change-password', [AuthController::class, 'changePassword']);
-            Route::post('/checkOTP', [AuthController::class, 'checkOTP']);
-        });
-
-    });
-
-    // Course Cycle Routes
-    Route::middleware('jwt')->prefix('courses')->group(function () {
-        Route::post('/{course}/enroll', [EnrollmentController::class, 'enroll']);
-    });
-
-    Route::middleware('jwt')->prefix('school')->group(function () {
-        Route::post('/enroll-bulk', [EnrollmentController::class, 'bulkEnroll']);
-    });
-
-    Route::middleware('jwt')->prefix('payment')->group(function () {
-        Route::post('/initiate', [PaymentController::class, 'initiate']);
-        // Webhook usually doesn't need JWT if verified by signature, but for now...
-        Route::post('/webhook', [PaymentController::class, 'webhook']);
-    });
-});
+//     Route::prefix('auth')->group(function () {
+//         Route::post('/register', [AuthController::class, 'register']);
+//         Route::post('/login', [AuthController::class, 'login']);
+//         Route::prefix('username')->group(function () {
+//             Route::post('/check', [AuthController::class, 'checkUserName']);
+//         });
 
 
+//         Route::prefix('user')->group(function () {
+//             Route::get('/', [AuthController::class, 'getUser'])->middleware('jwt');
+//             Route::post('/update', [AuthController::class, 'updateUser'])->middleware('jwt');
+//             Route::post('/reset-password', [AuthController::class, 'resetPassword']);
+//             Route::post('/change-password', [AuthController::class, 'changePassword']);
+//             Route::post('/checkOTP', [AuthController::class, 'checkOTP']);
+//         });
+
+//     });
+
+//     // Course Cycle Routes
+//     Route::middleware('jwt')->prefix('courses')->group(function () {
+//         Route::post('/{course}/enroll', [EnrollmentController::class, 'enroll']);
+//     });
+
+//     Route::middleware('jwt')->prefix('school')->group(function () {
+//         Route::post('/enroll-bulk', [EnrollmentController::class, 'bulkEnroll']);
+//     });
+
+//     Route::middleware('jwt')->prefix('payment')->group(function () {
+//         Route::post('/initiate', [PaymentController::class, 'initiate']);
+//         // Webhook usually doesn't need JWT if verified by signature, but for now...
+//         Route::post('/webhook', [PaymentController::class, 'webhook']);
+//     });
+// });
 
 
 
 
 
 
-Route::middleware('jwt')->group(function () {
-    Route::get('/user', [AuthController::class, 'getUser']);
-    Route::post('/logout', [AuthController::class, 'logout']);
-    Route::put('/user', [AuthController::class, 'updateUser']);
-});
+
+
+// Route::middleware('jwt')->group(function () {
+//     Route::get('/user', [AuthController::class, 'getUser']);
+//     Route::post('/logout', [AuthController::class, 'logout']);
+//     Route::put('/user', [AuthController::class, 'updateUser']);
+// });

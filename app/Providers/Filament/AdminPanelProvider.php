@@ -73,6 +73,14 @@ class AdminPanelProvider extends PanelProvider
                     ->navigationIcon('heroicon-o-cog-8-tooth')
                     ->navigationSort(100)
                     ->hideKeys('APP_KEY'),
+                \Rmsramos\Activitylog\ActivitylogPlugin::make()
+                    ->authorize(fn () => auth()->user()?->hasRole('super_admin') ?? false)
+                    ->navigationGroup('النظام')
+                    ->label('نشاط')
+                    ->pluralLabel('سجل النشاطات')
+                    ->navigationIcon('heroicon-o-clipboard-document-list')
+                    ->navigationSort(97)
+                    ->navigationCountBadge(true),
             ])
             ->authGuard('web')
             ->maxContentWidth(MaxWidth::Full)
@@ -94,6 +102,12 @@ class AdminPanelProvider extends PanelProvider
                     ->icon('heroicon-o-document-text')
                     ->group('النظام')
                     ->sort(99)
+                    ->visible(fn () => auth()->user()?->hasRole('super_admin') ?? false),
+                \Filament\Navigation\NavigationItem::make('توثيق API')
+                    ->url('/docs/api', shouldOpenInNewTab: true)
+                    ->icon('heroicon-o-code-bracket')
+                    ->group('النظام')
+                    ->sort(96)
                     ->visible(fn () => auth()->user()?->hasRole('super_admin') ?? false),
             ])
             ->authMiddleware([
