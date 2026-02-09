@@ -27,7 +27,7 @@ class AuthService
         return DB::transaction(function () use ($data, $request) {
             $user = User::create([
                 'name' => $data['name'],
-                'user_name' => $data['user_name'],
+                'user_name' => $data['user_name']?? $this->generateUniqueUserName($data['name']),
                 'phone' => ($data['country_code'] ?? '') . $data['phone'],
                 'email' => $data['email'] ?? null,
                 'password' => $data['password'],
@@ -62,7 +62,7 @@ class AuthService
         return DB::transaction(function () use ($data, $request) {
             $user = User::create([
                 'name' => $data['name'],
-                'user_name' => $data['user_name'],
+                'user_name' => $data['user_name']?? $this->generateUniqueUserName($data['name']),
                 'phone' => ($data['country_code'] ?? '') . $data['phone'],
                 'email' => $data['email'] ?? null,
                 'password' => $data['password'],
@@ -256,5 +256,17 @@ class AuthService
         }
 
         return $maskedName . '@' . $domain;
+    }
+
+    protected function generateUniqueUserName($name) : String
+    {
+        $base = Str::slug($name);
+
+        do {
+            $random = Str::lower(Str::random(5));
+            $username = "{$base}-{$random}";
+        } while (User::where('user_name', $username)->exists());
+
+        return $username;
     }
 }
