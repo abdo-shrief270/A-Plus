@@ -95,6 +95,10 @@ class DeviceResource extends Resource
                     ->falseIcon('heroicon-o-x-circle')
                     ->trueColor('success')
                     ->falseColor('danger'),
+                Tables\Columns\ToggleColumn::make('is_approved')
+                    ->label('تم التفعيل')
+                    ->sortable()
+                    ->toggleable(),
                 Tables\Columns\TextColumn::make('last_login_at')
                     ->label('آخر تسجيل دخول')
                     ->dateTime('Y-m-d H:i')
@@ -118,6 +122,11 @@ class DeviceResource extends Resource
                     ->placeholder('الكل')
                     ->trueLabel('موثوق')
                     ->falseLabel('محظور'),
+                Tables\Filters\TernaryFilter::make('is_approved')
+                    ->label('التفعيل')
+                    ->placeholder('الكل')
+                    ->trueLabel('مفعل')
+                    ->falseLabel('معلق'),
                 Tables\Filters\Filter::make('recent_login')
                     ->label('نشط مؤخراً')
                     ->query(fn(Builder $query): Builder => $query->where('last_login_at', '>=', now()->subDays(7))),
@@ -164,7 +173,7 @@ class DeviceResource extends Resource
     {
         return [
             'index' => Pages\ListDevices::route('/'),
-            'edit' => Pages\EditDevice::route('/{record}/edit'),
+//            'edit' => Pages\EditDevice::route('/{record}/edit'),
         ];
     }
 

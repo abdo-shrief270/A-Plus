@@ -145,7 +145,15 @@ class AuthService
 
         // Register device if new
         if ($deviceCheck['is_new']) {
-            $this->deviceService->registerDevice($user, $request);
+            $device = $this->deviceService->registerDevice($user, $request);
+
+            if (!$device->is_approved) {
+                return [
+                    'success' => false,
+                    'message' => 'هذا الجهاز قيد المراجعة من قبل الإدارة. يرجى الانتظار حتى يتم تفعيله.',
+                    'reason' => 'device_pending_approval',
+                ];
+            }
         } else {
             $deviceCheck['device']->updateLastLogin();
         }
@@ -175,7 +183,14 @@ class AuthService
         }
 
         if ($deviceCheck['is_new']) {
-            $this->deviceService->registerDevice($user, $request);
+            $device = $this->deviceService->registerDevice($user, $request);
+
+            if (!$device->is_approved) {
+                return [
+                    'success' => false,
+                    'message' => 'هذا الجهاز قيد المراجعة من قبل الإدارة. يرجى الانتظار حتى يتم تفعيله.',
+                ];
+            }
         } else {
             $deviceCheck['device']->updateLastLogin();
         }

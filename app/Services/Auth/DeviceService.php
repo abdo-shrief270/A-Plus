@@ -24,6 +24,11 @@ class DeviceService
             throw new \InvalidArgumentException('Device ID is required');
         }
 
+        // Check if user has any existing APPROVED devices (or any devices at all)
+        // If it's the first device, auto-approve it.
+        $existingDevicesCount = $user->devices()->count();
+        $isApproved = $existingDevicesCount === 0;
+
         return Device::updateOrCreate(
             [
                 'user_id' => $user->id,
@@ -36,6 +41,7 @@ class DeviceService
                 'user_agent' => $request->userAgent(),
                 'last_login_at' => now(),
                 'is_trusted' => true,
+                'is_approved' => $isApproved,
             ]
         );
     }
@@ -59,6 +65,15 @@ class DeviceService
 
         // Device exists and is trusted
         if ($device && $device->is_trusted) {
+            // Check approval status
+            if (!$device->is_approved) {
+                return [
+                    'allowed' => false,
+                    'reason' => 'device_pending_approval',
+                    'message' => 'هذا الجهاز قيد المراجعة من قبل الإدارة. يرجى الانتظار حتى يتم تفعيله.',
+                ];
+            }
+
             return [
                 'allowed' => true,
                 'device' => $device,

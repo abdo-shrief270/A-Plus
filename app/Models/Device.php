@@ -16,6 +16,7 @@ class Device extends Model
         'user_agent',
         'last_login_at',
         'is_trusted',
+        'is_approved',
     ];
 
     protected function casts(): array
@@ -23,6 +24,7 @@ class Device extends Model
         return [
             'last_login_at' => 'datetime',
             'is_trusted' => 'boolean',
+            'is_approved' => 'boolean',
         ];
     }
 
@@ -40,6 +42,14 @@ class Device extends Model
     public function scopeTrusted($query)
     {
         return $query->where('is_trusted', true);
+    }
+
+    /**
+     * Scope to filter only approved devices.
+     */
+    public function scopeApproved($query)
+    {
+        return $query->where('is_approved', true);
     }
 
     /**
