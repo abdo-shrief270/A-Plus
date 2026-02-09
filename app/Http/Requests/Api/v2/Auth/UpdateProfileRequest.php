@@ -18,6 +18,7 @@ class UpdateProfileRequest extends FormRequest
         return [
             'name' => ['sometimes', 'string', 'min:2', 'max:255'],
             'email' => ['sometimes', 'nullable', 'email', 'max:255', "unique:users,email,{$userId}"],
+            'user_name' => ['sometimes', 'string', 'max:20'],
             'phone' => ['sometimes', 'string', 'max:20'],
             'country_code' => ['required_with:phone', 'string', 'max:5'],
             'gender' => ['sometimes', 'in:male,female'],
