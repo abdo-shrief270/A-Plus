@@ -121,6 +121,11 @@ class ParentResource extends Resource
                     ->label('نشط')
                     ->sortable(),
 
+                Tables\Columns\ToggleColumn::make('2fa')
+                    ->label('2FA')
+                    ->sortable()
+                    ->toggleable(),
+
                 Tables\Columns\TextColumn::make('created_at')
                     ->label('تاريخ الاضافة')
                     ->dateTime()
