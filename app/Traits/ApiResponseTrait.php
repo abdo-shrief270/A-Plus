@@ -22,13 +22,13 @@ trait ApiResponseTrait
                 'status' => $code,
                 'message' => $message,
                 'data' => $data,
-            ], Response::HTTP_OK);
+            ], $code);
         }
 
         return response()->json([
             'status' => $code,
             'message' => $message
-        ], Response::HTTP_OK);
+        ], $code);
 
     }
 
@@ -51,6 +51,6 @@ trait ApiResponseTrait
             $response['errors'] = $errors;
         }
 
-        return response()->json($response, 200);
+        return response()->json($response, $code);
     }
 }
