@@ -16,6 +16,7 @@ class VerifyOtpRequest extends FormRequest
         return [
             'token' => ['required', 'string'],
             'otp' => ['required', 'string', 'size:6'],
+            'type' => ['sometimes', 'string', 'in:login,reset'],
         ];
     }
 
@@ -30,6 +31,10 @@ class VerifyOtpRequest extends FormRequest
                 'description' => 'The 6-digit code received via SMS/Email.',
                 'example' => '123456',
             ],
+            'type' => [
+                'description' => 'The purpose of the OTP verification (login or reset).',
+                'example' => 'login',
+            ],
         ];
     }
 
@@ -39,6 +44,7 @@ class VerifyOtpRequest extends FormRequest
             'token.required' => 'رمز التحقق مطلوب',
             'otp.required' => 'رمز OTP مطلوب',
             'otp.size' => 'رمز OTP يجب أن يكون 6 أرقام',
+            'type.in' => 'نوع التحقق غير صالح',
         ];
     }
 }

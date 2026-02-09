@@ -219,10 +219,15 @@ class AuthController extends BaseApiController
             return $this->errorResponse($result['message'], Response::HTTP_UNAUTHORIZED);
         }
 
-        // For 2FA login flow, complete the login
         $user = User::find($result['user_id']);
 
-        if ($user && $user->hasTwoFactorEnabled()) {
+        // Check if this is a login attempt
+        // We login if the type is explicitly 'login'
+        // OR if type is not 'reset' AND user has 2FA enabled (default behavior)
+        $shouldLogin = $request->type === 'login' || 
+                      ($request->type !== 'reset' && $user && $user->hasTwoFactorEnabled());
+
+        if ($shouldLogin && $user) {
             $loginResult = $this->authService->complete2FALogin($user, $request);
 
             if (!$loginResult['success']) {
@@ -238,7 +243,7 @@ class AuthController extends BaseApiController
             ], 'تم تسجيل الدخول بنجاح');
         }
 
-        // For password reset flow, keep the token valid
+        // For explicitly 'reset' or non-2FA flows, verifying is enough
         return $this->successResponse([
             'verified' => true,
             'token' => $request->token,
