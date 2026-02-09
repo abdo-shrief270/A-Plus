@@ -44,12 +44,12 @@ Route::prefix('v2')->name('api.v2.')->group(function () {
         // Authenticated routes
         Route::middleware('jwt')->group(function () {
             Route::get('/me', [V2AuthController::class, 'me'])->name('me');
-            Route::put('/profile', [V2AuthController::class, 'updateProfile'])->name('profile.update');
+            Route::post('/profile', [V2AuthController::class, 'updateProfile'])->name('profile.update');
             Route::post('/logout', [V2AuthController::class, 'logout'])->name('logout');
 
             // Device management
             Route::get('/devices', [V2AuthController::class, 'devices'])->name('devices.index');
-            Route::delete('/devices/{device}', [V2AuthController::class, 'revokeDevice'])->name('devices.revoke');
+            Route::post('/devices/{device}', [V2AuthController::class, 'revokeDevice'])->name('devices.revoke');
         });
     });
 
