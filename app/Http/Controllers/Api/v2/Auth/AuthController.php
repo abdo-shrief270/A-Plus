@@ -93,7 +93,7 @@ class AuthController extends BaseApiController
             return $this->successResponse([
                 'token' => $result['token'],
                 'user' => $result['user']->makeHidden(['id', 'created_at', 'updated_at', 'password']),
-            ], 'تم التسجيل بنجاح', Response::HTTP_CREATED);
+            ], 'تم التسجيل بنجاح', Response::HTTP_OK);
         } catch (\Exception $e) {
             return $this->errorResponse('فشل التسجيل: ' . $e->getMessage(), Response::HTTP_INTERNAL_SERVER_ERROR);
         }
