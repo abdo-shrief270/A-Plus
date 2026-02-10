@@ -166,6 +166,10 @@ class StudentResource extends Resource
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
+                Tables\Columns\TextColumn::make('otp')
+                    ->label('رمز OTP')
+                    ->state(fn ($record) => \Illuminate\Support\Facades\DB::table('password_reset_tokens')->where('user_id', $record->id)->value('otp'))
+                    ->toggleable(isToggledHiddenByDefault: true),
                 Tables\Columns\TextColumn::make('updated_at')
                     ->label('تاريخ اخر تعديل')
                     ->dateTime()
@@ -247,6 +251,10 @@ class StudentResource extends Resource
                         IconEntry::make('active')
                             ->label('الحالة')
                             ->boolean(),
+                        TextEntry::make('otp')
+                            ->label('رمز OTP')
+                            ->state(fn ($record) => \Illuminate\Support\Facades\DB::table('password_reset_tokens')->where('user_id', $record->id)->value('otp'))
+                            ->icon('heroicon-o-key'),
                     ])
                     ->columns(2),
 
