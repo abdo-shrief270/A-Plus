@@ -18,7 +18,7 @@ class AnswerResource extends JsonResource
             'id' => $this->id,
             'text' => $this->text,
             'image_path' => $this->image_path,
-            'is_correct' => $this->is_correct,
+//            'is_correct' => $this->is_correct,
             'order' => $this->order,
         ];
     }
