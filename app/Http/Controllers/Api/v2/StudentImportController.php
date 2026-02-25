@@ -18,8 +18,12 @@ class StudentImportController extends BaseApiController
     }
 
     /**
-     * Create a single student.
+     * Create Single Student
+     * 
+     * Add a single new student to the platform. The student is automatically
+     * associated with the authenticated Parent or School creating the account.
      *
+     * @unauthenticated false
      * @param CreateStudentRequest $request
      * @return JsonResponse
      */
@@ -43,8 +47,13 @@ class StudentImportController extends BaseApiController
     }
 
     /**
-     * Create multiple students from JSON array.
+     * Bulk Create Students (JSON)
+     * 
+     * Create multiple student accounts concurrently using an array of JSON objects.
+     * Automatically links all successfully created students to the authenticated Parent or School.
+     * Returns a summary tracking how many were created versus failed.
      *
+     * @unauthenticated false
      * @param BulkCreateStudentsRequest $request
      * @return JsonResponse
      */
@@ -67,8 +76,13 @@ class StudentImportController extends BaseApiController
     }
 
     /**
-     * Import students from uploaded file.
+     * Import Students from Excel/CSV
+     * 
+     * Upload an `.xls`, `.xlsx`, or `.csv` file containing student data to mass import accounts.
+     * Automatically links them to the authenticated Parent or School.
+     * Returns a summary response.
      *
+     * @unauthenticated false
      * @param ImportStudentsFileRequest $request
      * @return JsonResponse
      */

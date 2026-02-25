@@ -16,8 +16,12 @@ class StudentStatsController extends BaseApiController
     }
 
     /**
-     * Get student statistics for charts.
+     * Get Student Statistics Charts
      *
+     * Retrieve time-series data for student statistics to be used in dashboard charts.
+     * Data is scoped automatically by the authenticated School or Parent.
+     *
+     * @unauthenticated false
      * @param Request $request
      * @return JsonResponse
      */

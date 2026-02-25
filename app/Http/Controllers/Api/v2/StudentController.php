@@ -18,8 +18,14 @@ class StudentController extends BaseApiController
     }
 
     /**
-     * List students ordered by newest first.
+     * List Students
+     * 
+     * Retrieve a paginated list of students. Automatically scopes the data:
+     * - Parents see only their own children.
+     * - Schools see only their enrolled students.
+     * Supports filtering by search term (name/email/phone), league_id, or exam_id.
      *
+     * @unauthenticated false
      * @param Request $request
      * @return JsonResponse
      */
@@ -37,8 +43,12 @@ class StudentController extends BaseApiController
     }
 
     /**
-     * Get a single student.
+     * Get Student Profile
+     * 
+     * Retrieve the detailed profile of a specific student, including their linked attributes,
+     * current score, and statistics.
      *
+     * @unauthenticated false
      * @param Student $student
      * @return JsonResponse
      */
@@ -57,8 +67,12 @@ class StudentController extends BaseApiController
     }
 
     /**
-     * Update a student.
+     * Update Student Profile
+     * 
+     * Modify the details of a specific student's profile. Validates and updates
+     * basic user data (name, email, phone) as well as student-specific data (exam_id, id_number).
      *
+     * @unauthenticated false
      * @param UpdateStudentRequest $request
      * @param Student $student
      * @return JsonResponse
@@ -78,8 +92,13 @@ class StudentController extends BaseApiController
     }
 
     /**
-     * Request deletion of a student (requires admin approval).
+     * Request Student Deletion
+     * 
+     * Submits a formal request to delete a student account. This does not immediately
+     * delete the student; instead, it creates a `DeletionRequest` that site administrators
+     * must approve in the central admin panel.
      *
+     * @unauthenticated false
      * @param Request $request
      * @param Student $student
      * @return JsonResponse

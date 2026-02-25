@@ -23,9 +23,12 @@ class QuestionController extends BaseApiController
     }
 
     /**
-     * Get trending (new) questions
-     * GET /api/v2/questions/trending
+     * Get Trending Questions
+     * 
+     * Retrieve a paginated list of newly added or trending questions.
+     * Useful for 'New Questions' feeds on student dashboards.
      *
+     * @unauthenticated false
      * @param QuestionIndexRequest $request
      * @return JsonResponse
      */
@@ -52,9 +55,12 @@ class QuestionController extends BaseApiController
     }
 
     /**
-     * Get question details by ID
-     * GET /api/v2/questions/{question}
+     * Get Question Details
+     * 
+     * Retrieve full details of a specific question, including its explanation video/text,
+     * difficulty, and associated answers.
      *
+     * @unauthenticated false
      * @param Question $question
      * @return JsonResponse
      */
@@ -72,9 +78,11 @@ class QuestionController extends BaseApiController
     }
 
     /**
-     * Get questions by subject
-     * GET /api/v2/subjects/{subject}/questions
+     * Get Questions by Subject
+     * 
+     * Retrieve a paginated list of questions filtered by a specific Exam Subject UUID or ID.
      *
+     * @unauthenticated false
      * @param ExamSubject $subject
      * @param QuestionIndexRequest $request
      * @return JsonResponse
@@ -118,9 +126,11 @@ class QuestionController extends BaseApiController
     }
 
     /**
-     * Get questions by category
-     * GET /api/v2/categories/{category}/questions
+     * Get Questions by Category
+     * 
+     * Retrieve a paginated list of questions filtered by a highly specific section category.
      *
+     * @unauthenticated false
      * @param SectionCategory $category
      * @param QuestionIndexRequest $request
      * @return JsonResponse
@@ -164,9 +174,12 @@ class QuestionController extends BaseApiController
     }
 
     /**
-     * Search questions
-     * GET /api/v2/questions/search
+     * Search Questions
+     * 
+     * Perform a full-text search across the question database using the `q` query parameter.
+     * Returns a paginated list of matched questions.
      *
+     * @unauthenticated false
      * @param QuestionSearchRequest $request
      * @return JsonResponse
      */
@@ -196,9 +209,11 @@ class QuestionController extends BaseApiController
     }
 
     /**
-     * Get recent questions
-     * GET /api/v2/questions/recent
+     * Get Recent Questions
+     * 
+     * Retrieve a paginated list of questions ordered purely by their creation date.
      *
+     * @unauthenticated false
      * @param QuestionIndexRequest $request
      * @return JsonResponse
      */

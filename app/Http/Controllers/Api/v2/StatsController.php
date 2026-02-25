@@ -15,8 +15,13 @@ class StatsController extends BaseApiController
     }
 
     /**
-     * Get platform-wide statistics.
+     * Get Platform Statistics
      *
+     * Retrieve high-level platform statistics including total students, active courses, 
+     * average progress, and active enrollments. The statistics are automatically scoped
+     * based on the authenticated user's role (School or Parent).
+     *
+     * @unauthenticated false
      * @return JsonResponse
      */
     public function index(): JsonResponse

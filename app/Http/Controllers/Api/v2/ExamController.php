@@ -22,9 +22,12 @@ class ExamController extends BaseApiController
     }
 
     /**
-     * Get all exams
-     * GET /api/v2/exams
+     * Get All Exams
+     * 
+     * Retrieve a paginated list of all active exams on the platform.
+     * Use this endpoint to list exams available for students to browse or enroll in.
      *
+     * @unauthenticated false
      * @param ExamIndexRequest $request
      * @return JsonResponse
      */
@@ -43,9 +46,12 @@ class ExamController extends BaseApiController
     }
 
     /**
-     * Get exam details with unified structure (without questions)
-     * GET /api/v2/exams/{exam}
+     * Get Exam Details
+     * 
+     * Retrieve detailed information about a specific exam, including its structure
+     * but excluding the vast array of questions.
      *
+     * @unauthenticated false
      * @param Exam $exam
      * @return JsonResponse
      */
@@ -63,9 +69,12 @@ class ExamController extends BaseApiController
     }
 
     /**
-     * Get all subjects for an exam
-     * GET /api/v2/exams/{exam}/subjects
+     * Get Exam Subjects
+     * 
+     * Retrieve a list of all subjects associated with a specific exam.
+     * Useful for building subject-filtering UIs.
      *
+     * @unauthenticated false
      * @param Exam $exam
      * @return JsonResponse
      */
@@ -83,9 +92,11 @@ class ExamController extends BaseApiController
     }
 
     /**
-     * Get all sections for an exam
-     * GET /api/v2/exams/{exam}/sections
+     * Get Exam Sections
+     * 
+     * Retrieve a list of all hierarchical sections associated with a specific exam.
      *
+     * @unauthenticated false
      * @param Exam $exam
      * @return JsonResponse
      */

@@ -19,9 +19,12 @@ class PracticeExamController extends BaseApiController
     }
 
     /**
-     * Get all practice exams (models)
-     * GET /api/v2/practice-exams
+     * Get Practice Exams
+     * 
+     * Retrieve a list of practice exams available for students to test their knowledge.
+     * By default, this does not paginate unless explicitly requested.
      *
+     * @unauthenticated false
      * @param PracticeExamIndexRequest $request
      * @return JsonResponse
      */
@@ -54,9 +57,12 @@ class PracticeExamController extends BaseApiController
     }
 
     /**
-     * Get specific practice exam with questions
-     * GET /api/v2/practice-exams/{practiceExam}
+     * Get Practice Exam Details
+     * 
+     * Retrieve a specific practice exam along with all of its associated questions and choices.
+     * Used typically when a student actually starts a practice exam session.
      *
+     * @unauthenticated false
      * @param PracticeExam $practiceExam
      * @return JsonResponse
      */

@@ -16,8 +16,12 @@ class TrendingCourseController extends BaseApiController
     }
 
     /**
-     * Get trending courses ordered by enrollment count.
+     * Get Trending Courses
      *
+     * Retrieve a list of the most popular courses on the platform, ordered by
+     * the highest number of active student enrollments. Useful for dashboard widgets.
+     *
+     * @unauthenticated false
      * @param Request $request
      * @return JsonResponse
      */

@@ -18,7 +18,7 @@ class SendOtpRequest extends FormRequest
             'email' => ['required_without_all:user_name,phone', 'email', 'exists:users,email'],
             'phone' => ['required_without_all:user_name,email', 'string'],
             'country_code' => ['required_with:phone', 'string', 'max:5'],
-            'method' => ['required', 'in:email,phone,whatsapp'],
+            'method' => ['required', 'in:email,sms,whatsapp'],
         ];
     }
 

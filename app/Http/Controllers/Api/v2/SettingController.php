@@ -18,8 +18,12 @@ class SettingController extends BaseApiController
     }
 
     /**
-     * Get all settings, optionally filtered by group.
+     * Get Settings
+     * 
+     * Retrieve global platform configuration settings. You can optionally filter
+     * these settings by passing a `group` query parameter (e.g., `?group=general`).
      *
+     * @unauthenticated false
      * @param Request $request
      * @return JsonResponse
      */
@@ -36,8 +40,11 @@ class SettingController extends BaseApiController
     }
 
     /**
-     * Get a specific setting by key.
+     * Get Specific Setting
+     * 
+     * Retrieve a single global setting value by its unique key.
      *
+     * @unauthenticated false
      * @param string $key
      * @return JsonResponse
      */
@@ -59,8 +66,11 @@ class SettingController extends BaseApiController
     }
 
     /**
-     * Get all available groups.
+     * Get Setting Groups
+     * 
+     * Retrieve a list of all available setting group categories used across the platform.
      *
+     * @unauthenticated false
      * @return JsonResponse
      */
     public function groups(): JsonResponse

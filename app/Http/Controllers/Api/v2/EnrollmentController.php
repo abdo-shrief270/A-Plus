@@ -11,8 +11,15 @@ use App\Http\Resources\v2\EnrollmentResource;
 class EnrollmentController extends BaseApiController
 {
     /**
-     * List enrollments scoped by the authenticated user's type (parent/school).
+     * Get Enrollments List
      *
+     * Retrieve a paginated list of course enrollments. 
+     * The results are automatically scoped securely:
+     * - Parents see only their children's enrollments.
+     * - Schools see only their linked students' enrollments.
+     * - Students see only their own enrollments.
+     *
+     * @unauthenticated false
      * @param Request $request
      * @return JsonResponse
      */
