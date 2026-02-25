@@ -194,6 +194,7 @@ class AuthController extends BaseApiController
                 'method' => $result['method'],
             ], 'تم إرسال رمز التحقق');
         } catch (\Exception $e) {
+            logger()->error('Error sending OTP: ' . $e->getMessage());
             return $this->errorResponse('فشل إرسال رمز التحقق', Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
