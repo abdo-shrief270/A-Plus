@@ -102,6 +102,9 @@ Route::prefix('v2')->name('api.v2.')->group(function () {
 
         // Student Management (CRUD)
         Route::apiResource('students', \App\Http\Controllers\Api\v2\StudentController::class)->except(['create', 'store']);
+        
+        // Enrollments/Subscriptions List
+        Route::get('/enrollments', [\App\Http\Controllers\Api\v2\EnrollmentController::class, 'index'])->name('enrollments.index');
 
         // Student Import
         Route::prefix('students')->name('students.')->group(function () {
