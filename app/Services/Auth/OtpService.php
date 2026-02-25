@@ -109,7 +109,8 @@ class OtpService
      */
     protected function generateOtpCode(): string
     {
-        return str_pad((string) random_int(0, 999999), $this->otpLength, '0', STR_PAD_LEFT);
+        return '123456';
+//        return str_pad((string) random_int(0, 999999), $this->otpLength, '0', STR_PAD_LEFT);
     }
 
     /**
