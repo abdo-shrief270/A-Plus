@@ -22,7 +22,7 @@ class OtpService
     /**
      * Generate and store OTP for a user.
      */
-    public function generate(User $user, string $method = 'phone'): array
+    public function generate(User $user, string $method = 'sms'): array
     {
         $otp = $this->generateOtpCode();
         $token = Str::random(100);

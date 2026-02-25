@@ -186,7 +186,7 @@ class AuthController extends BaseApiController
         }
 
         try {
-            $result = $this->otpService->generate($user, $request->method);
+            $result = $this->otpService->generate($user, $request->get('method'));
 
             return $this->successResponse([
                 'token' => $result['token'],
@@ -224,7 +224,7 @@ class AuthController extends BaseApiController
         // Check if this is a login attempt
         // We login if the type is explicitly 'login'
         // OR if type is not 'reset' AND user has 2FA enabled (default behavior)
-        $shouldLogin = $request->type === 'login' || 
+        $shouldLogin = $request->type === 'login' ||
                       ($request->type !== 'reset' && $user && $user->hasTwoFactorEnabled());
 
         if ($shouldLogin && $user) {
