@@ -112,5 +112,8 @@ Route::prefix('v2')->name('api.v2.')->group(function () {
             Route::post('/bulk', [\App\Http\Controllers\Api\v2\StudentImportController::class, 'bulkStore'])->name('bulk');
             Route::post('/import', [\App\Http\Controllers\Api\v2\StudentImportController::class, 'importFile'])->name('import');
         });
+
+        // Question Answers
+        Route::post('/questions/answer', [\App\Http\Controllers\Api\v2\AnswerController::class, 'submit'])->name('questions.answer');
     });
 });
