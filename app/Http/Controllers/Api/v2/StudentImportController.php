@@ -18,14 +18,23 @@ class StudentImportController extends BaseApiController
     }
 
     /**
-     * Create Single Student
+     * Create Single Student (إضافة حساب طالب واحد)
      * 
-     * Add a single new student to the platform. The student is automatically
-     * associated with the authenticated Parent or School creating the account.
+     * يتيح للمستخدم (مدير المدرسة أو ولي الأمر) إنشاء حساب طالب جديد وإضافته إلى شبكته (Network) تلقائياً.
+     * يجب توفير بيانات الطالب الأساسية.
      *
+     * @bodyParam name string required اسم الطالب بالكامل. Example: أحمد محمد
+     * @bodyParam user_name string required اسم المستخدم الفريد. Example: ahmed2024
+     * @bodyParam password string required كلمة المرور. Example: SecurePass123!
+     * @bodyParam password_confirmation string required تأكيد كلمة المرور. Example: SecurePass123!
+     * @bodyParam gender string required نوع الجنس (`male` أو `female`). Example: male
+     * @bodyParam exam_id integer required معرف المرحلة الدراسية/الامتحان. Example: 2
+     *
+     * @group Dashboard / Users Management (إدارة المستخدمين)
      * @unauthenticated false
-     * @param CreateStudentRequest $request
-     * @return JsonResponse
+     *
+     * @response 200 array{status: int, message: string, data: array}
+     * @response 400 array{status: int, message: string}
      */
     public function store(CreateStudentRequest $request): JsonResponse
     {
@@ -47,15 +56,18 @@ class StudentImportController extends BaseApiController
     }
 
     /**
-     * Bulk Create Students (JSON)
+     * Bulk Create Students (JOSN) (إضافة مجموعة طلاب كبيانات JSON)
      * 
-     * Create multiple student accounts concurrently using an array of JSON objects.
-     * Automatically links all successfully created students to the authenticated Parent or School.
-     * Returns a summary tracking how many were created versus failed.
+     * ينشئ حسابات عدة طلاب دفعة واحدة عبر تمرير مصفوفة `students` تضم كائنات (Objects) ببيانات كل طالب.
+     * مفيد إذا كانت الواجهة الأمامية تقوم بقراءة ملف إكسل وتحويله إلى JSON قبل الإرسال.
+     * سيرجع النظام استجابة توضح عدد من تم قبولهم وإنشاؤهم وعدد من فشلت محاولة إنشائهم (بسبب تكرار اسم المستخدم مثلاً).
      *
+     * @bodyParam students array required مصفوفة تضم كائنات الطلاب.
+     *
+     * @group Dashboard / Users Management (إدارة المستخدمين)
      * @unauthenticated false
-     * @param BulkCreateStudentsRequest $request
-     * @return JsonResponse
+     *
+     * @response 200 array{status: int, message: string, data: array{total_created: int, total_failed: int}}
      */
     public function bulkStore(BulkCreateStudentsRequest $request): JsonResponse
     {
@@ -76,15 +88,18 @@ class StudentImportController extends BaseApiController
     }
 
     /**
-     * Import Students from Excel/CSV
+     * Import Students from Excel/CSV (استيراد الطلاب من ملفات الجداول)
      * 
-     * Upload an `.xls`, `.xlsx`, or `.csv` file containing student data to mass import accounts.
-     * Automatically links them to the authenticated Parent or School.
-     * Returns a summary response.
+     * يقوم بتحليل ملف بصيغة `.xls`, `.xlsx`, أو `.csv` مُرفق بالطب واستخراج بيانات الطلاب وإنشاء حساباتهم.
+     * الملف يجب أن يكون مُنسقاً بأعمدة متعارف عليها (Name, UserName, Password, ExamID, Gender).
+     * 
+     * @bodyParam file file required ملف الجداول المُراد استيراده.
      *
+     * @group Dashboard / Users Management (إدارة المستخدمين)
      * @unauthenticated false
-     * @param ImportStudentsFileRequest $request
-     * @return JsonResponse
+     *
+     * @response 200 array{status: int, message: string, data: array{total_created: int, total_failed: int}}
+     * @response 400 array{status: int, message: string}
      */
     public function importFile(ImportStudentsFileRequest $request): JsonResponse
     {

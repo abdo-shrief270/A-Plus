@@ -19,14 +19,21 @@ class PracticeExamController extends BaseApiController
     }
 
     /**
-     * Get Practice Exams
+     * Get Practice Exams (نماذج الامتحانات والاختبارات التجريبية)
      * 
-     * Retrieve a list of practice exams available for students to test their knowledge.
-     * By default, this does not paginate unless explicitly requested.
+     * يجلب قائمة بنماذج الامتحانات التدريبية المتوفرة للطلاب ليختبروا بها أنفسهم.
+     * يمكن التصفح بدون تسجيل دخول.
+     * يدعم الفلترة، وبشكل افتراضي لا يقوم بتقسيم النتائج إلى صفحات (Pagination) إلا إذا طُلب ذلك.
      *
-     * @unauthenticated false
-     * @param PracticeExamIndexRequest $request
-     * @return JsonResponse
+     * @queryParam search string optional نص للبحث عن نموذج معين عن طريق عنوانه. Example: Physics
+     * @queryParam paginate boolean optional مرر `true` للحصول على استجابة مقسمة بصفحات. Example: true
+     * @queryParam per_page integer optional عدد العناصر في الصفحة الواحدة في حال تفعيل `paginate`. Example: 10
+     *
+     * @group Browsing / Practice Exams (الاختبارات التجريبية)
+     * @unauthenticated
+     *
+     * @response 200 array{status: int, message: string, data: array{practice_exams: array, pagination?: array}}
+     * @response 500 array{status: int, message: string}
      */
     public function index(PracticeExamIndexRequest $request): JsonResponse
     {
@@ -57,14 +64,18 @@ class PracticeExamController extends BaseApiController
     }
 
     /**
-     * Get Practice Exam Details
+     * Get Practice Exam Details (تفاصيل النموذج التجريبي وأسئلته)
      * 
-     * Retrieve a specific practice exam along with all of its associated questions and choices.
-     * Used typically when a student actually starts a practice exam session.
+     * يجلب تفاصيل نموذج الاختبار التدريبي مع كافة الأسئلة والخيارات المرتبطة به.
+     * يجب استخدام هذه النهاية (Endpoint) عندما يبدأ الطالب جلسة اختبار للبدء في حل الأسئلة.
      *
-     * @unauthenticated false
-     * @param PracticeExam $practiceExam
-     * @return JsonResponse
+     * @pathParam practice_exam integer required المعرف الافتراضي لنموذج الاختبار المُراد جلبه. Example: 3
+     *
+     * @group Browsing / Practice Exams (الاختبارات التجريبية)
+     * @unauthenticated
+     *
+     * @response 200 array{status: int, message: string, data: array{practice_exam: array}}
+     * @response 404 array{status: int, message: string}
      */
     public function show(PracticeExam $practiceExam): JsonResponse
     {

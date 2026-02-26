@@ -18,16 +18,23 @@ class StudentController extends BaseApiController
     }
 
     /**
-     * List Students
+     * List Students (قائمة الطلاب)
      * 
-     * Retrieve a paginated list of students. Automatically scopes the data:
-     * - Parents see only their own children.
-     * - Schools see only their enrolled students.
-     * Supports filtering by search term (name/email/phone), league_id, or exam_id.
+     * يجلب قائمة مقسمة بصفحات (Paginated) ببيانات الطلاب. 
+     * هذه النهاية الطرفية آمنة ومدعمة بالصلاحيات التلقائية:
+     * - إذا كان المستخدم (ولي أمر)، سيرى فقط أبناءه المسجلين.
+     * - إذا كان المستخدم (مدرسة/مدير)، سيرى طلاب مدرسته فقط.
+     * من خلال هذا المسار يمكن للواجهة الأمامية بناء جداول الفلترة والبحث للطلاب.
      *
+     * @queryParam search string optional كلمة بحث للبحث التلقائي بالاسم، الهاتف، أو إيميل الطالب. Example: ahmed
+     * @queryParam league_id integer optional للفلترة بناءً على الدوري أو المستوى الذي وصله الطالب. Example: 2
+     * @queryParam exam_id integer optional للفلترة بناءً على المرحلة الدراسية المحددة للطالب. Example: 1
+     * @queryParam per_page integer optional عدد العناصر في الصفحة الواحدة (الافتراضي 15). Example: 10
+     *
+     * @group Dashboard / Students (الطلاب)
      * @unauthenticated false
-     * @param Request $request
-     * @return JsonResponse
+     *
+     * @response 200 array{status: int, message: string, data: array{data: array, meta: array}}
      */
     public function index(Request $request): JsonResponse
     {
@@ -43,14 +50,18 @@ class StudentController extends BaseApiController
     }
 
     /**
-     * Get Student Profile
+     * Get Student Profile (بيانات الطالب)
      * 
-     * Retrieve the detailed profile of a specific student, including their linked attributes,
-     * current score, and statistics.
+     * يجلب ملف البيانات الكامل لطالب معين. سيتم إرفاق علاقات الجدول الخاصة بالطالب مثل المدرسة، الدوري (League)، و المرحلة الدراسية (`exam`).
+     * يستخدم هذا المسار عادة في صفحة (عرض تفاصيل حساب الطالب).
      *
+     * @pathParam student integer required المعرف الفريد للطالب (ID). Example: 5
+     *
+     * @group Dashboard / Students (الطلاب)
      * @unauthenticated false
-     * @param Student $student
-     * @return JsonResponse
+     *
+     * @response 200 array{status: int, message: string, data: array}
+     * @response 404 array{status: int, message: string} - الطالب غير موجود
      */
     public function show(Student $student): JsonResponse
     {
@@ -67,15 +78,25 @@ class StudentController extends BaseApiController
     }
 
     /**
-     * Update Student Profile
+     * Update Student Profile (تعديل بيانات الطالب)
      * 
-     * Modify the details of a specific student's profile. Validates and updates
-     * basic user data (name, email, phone) as well as student-specific data (exam_id, id_number).
+     * يتطلب هذا المسار صلاحيات وصول كافية (مثل كون المستخدم هو ولي الأمر الخاص بالطالب أو آدمن).
+     * يمكن من خلاله تحديث بيانات المستخدم الأساسية (اسم، هاتف، بريد) بالإضافة لبيانات الطالب (الصف المدرسي `exam_id`).
      *
+     * @pathParam student integer required المعرف الفريد للطالب المطلوب تعديله. Example: 5
+     * 
+     * @bodyParam exam_id integer optional الصف/المرحلة الدراسية للطالب. Example: 1
+     * @bodyParam id_number string optional الرقم القومي أو المعرف المدني. Example: 2990101010101
+     * @bodyParam name string optional الاسم الكامل للتحديث. Example: أحمد حسن
+     * @bodyParam email string optional عنوان البريد الإلكتروني. Example: user@example.com
+     * @bodyParam phone string optional رقم الهاتف. Example: 01012345678
+     *
+     * @group Dashboard / Students (الطلاب)
      * @unauthenticated false
-     * @param UpdateStudentRequest $request
-     * @param Student $student
-     * @return JsonResponse
+     *
+     * @response 200 array{status: int, message: string, data: array}
+     * @response 404 array{status: int, message: string}
+     * @response 422 array{status: int, message: string, errors: array} - البيانات المدخلة غير صحيحة
      */
     public function update(UpdateStudentRequest $request, Student $student): JsonResponse
     {
@@ -92,16 +113,19 @@ class StudentController extends BaseApiController
     }
 
     /**
-     * Request Student Deletion
+     * Request Student Deletion (طلب حذف حساب طالب)
      * 
-     * Submits a formal request to delete a student account. This does not immediately
-     * delete the student; instead, it creates a `DeletionRequest` that site administrators
-     * must approve in the central admin panel.
+     * لأغراض الحماية وعدم مسح بيانات مالية أو أرصدة بالخطأ، هذا المسار لا يقوم فعليًا بمسح الـ Record من الداتابيز،
+     * بل يقدم (Deletion Request) طلب حذف لإدارة الدعم لمراجعته. سيتم تعليق الحساب ريثما تتم الموافقة.
      *
+     * @pathParam student integer required المعرف الفريد للطالب المُراد تقديم طلب بحذفه. Example: 5
+     * 
+     * @bodyParam reason string optional سبب الرغبة في حذف هذا الحساب (لأجل قسم الجودة/الدعم). Example: الطالب تخرج العام الماضي ولم يعد بحاجة للمنصة.
+     *
+     * @group Dashboard / Students (الطلاب)
      * @unauthenticated false
-     * @param Request $request
-     * @param Student $student
-     * @return JsonResponse
+     *
+     * @response 200 array{status: int, message: string, data: array{deletion_request_id: int, status: string, message: string}}
      */
     public function destroy(Request $request, Student $student): JsonResponse
     {

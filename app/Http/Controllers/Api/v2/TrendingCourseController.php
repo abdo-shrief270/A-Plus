@@ -16,14 +16,17 @@ class TrendingCourseController extends BaseApiController
     }
 
     /**
-     * Get Trending Courses
+     * Get Trending Courses (الدورات الأكثر إقبالاً)
      *
-     * Retrieve a list of the most popular courses on the platform, ordered by
-     * the highest number of active student enrollments. Useful for dashboard widgets.
+     * يجلب قائمة مقسمة بأكثر الدورات شعبية على المنصة استناداً إلى عدد الطلاب النشطين المسجلين فيها.
+     * يستخدم عادًة لعرض قسم (الدورات الأكثر طلباً) في الواجهة الرئيسية.
      *
+     * @queryParam limit integer optional العدد الأقصى للدورات في القائمة الراجعة (الافتراضي 10). Example: 5
+     *
+     * @group Dashboard / Analytics (الإحصائيات ولوحة التحكم)
      * @unauthenticated false
-     * @param Request $request
-     * @return JsonResponse
+     *
+     * @response 200 array{status: int, message: string, data: array}
      */
     public function index(Request $request): JsonResponse
     {

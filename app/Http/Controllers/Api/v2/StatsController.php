@@ -15,14 +15,16 @@ class StatsController extends BaseApiController
     }
 
     /**
-     * Get Platform Statistics
+     * Get Platform Statistics (إحصائيات المنصة)
      *
-     * Retrieve high-level platform statistics including total students, active courses, 
-     * average progress, and active enrollments. The statistics are automatically scoped
-     * based on the authenticated user's role (School or Parent).
+     * يجلب إحصائيات عامة وعالية المستوى للمنصة تتضمن (إجمالي الطلاب، الدورات النشطة، متوسط التقدم، والتسجيلات النشطة).
+     * يتم فلترة البيانات المرجعة تلقائياً بناءً على دور المستخدم المسجل الدخول (مدير مدرسة School سيراها فقط لطلابه، أما ولي الأمر Parent سيراها لأبنائه فحسب).
      *
+     * @group Dashboard / Analytics (الإحصائيات ولوحة التحكم)
      * @unauthenticated false
-     * @return JsonResponse
+     *
+     * @response 200 array{status: int, message: string, data: array{total_students: int, active_courses: int, active_enrollments: int, average_progress: int}}
+     * @response 401 array{status: int, message: string}
      */
     public function index(): JsonResponse
     {

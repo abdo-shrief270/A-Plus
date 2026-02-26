@@ -16,14 +16,19 @@ class StudentStatsController extends BaseApiController
     }
 
     /**
-     * Get Student Statistics Charts
+     * Get Student Statistics Charts (رسوم بيانية لتقدم الطلاب)
      *
-     * Retrieve time-series data for student statistics to be used in dashboard charts.
-     * Data is scoped automatically by the authenticated School or Parent.
+     * يجلب بيانات متسلسلة زمنياً (Time-series) لإحصائيات تقدم الطلاب ليتم استخدامها في رسم المخططات البيانية (Charts) بالواجهة الأمامية.
+     * يدعم فترات زمنية محددة. ويُفلتر النتائج حصرًا لدور المستخدم (ولي الأمر لطلابه، أو المدرسة لطلاب مدرستها).
      *
+     * @queryParam period string optional الفترة الزمنية المطلوبة للمخطط البياني. القيم المتاحة: `week`, `month`, `3months`, `year`. Example: month
+     *
+     * @group Dashboard / Analytics (الإحصائيات ولوحة التحكم)
      * @unauthenticated false
-     * @param Request $request
-     * @return JsonResponse
+     *
+     * @response 200 array{status: int, message: string, data: array{labels: array, dataset: array}}
+     * @response 400 array{status: int, message: string} - في حال طلب فترة غير صحيحة
+     * @response 401 array{status: int, message: string}
      */
     public function index(Request $request): JsonResponse
     {

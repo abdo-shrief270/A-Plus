@@ -23,14 +23,18 @@ class QuestionController extends BaseApiController
     }
 
     /**
-     * Get Trending Questions
+     * Get Trending Questions (الأسئلة الشائعة والأكثر حلاً)
      * 
-     * Retrieve a paginated list of newly added or trending questions.
-     * Useful for 'New Questions' feeds on student dashboards.
+     * يجلب قائمة مقسمة بصفحات بالأسئلة التي يكثر حلها حالياً على المنصة.
+     * مفيد لعرض "الأسئلة الرائجة" في واجهة الطالب الرئيسية (Student Dashboard).
      *
-     * @unauthenticated false
-     * @param QuestionIndexRequest $request
-     * @return JsonResponse
+     * @queryParam per_page integer optional عدد العناصر في الصفحة الواحدة. Default: 15
+     *
+     * @group Browsing / Questions (الأسئلة)
+     * @unauthenticated
+     *
+     * @response 200 array{status: int, message: string, data: array{questions: array, pagination?: array}}
+     * @response 500 array{status: int, message: string}
      */
     public function trending(QuestionIndexRequest $request): JsonResponse
     {
@@ -55,14 +59,18 @@ class QuestionController extends BaseApiController
     }
 
     /**
-     * Get Question Details
+     * Get Question Details (تفاصيل السؤال)
      * 
-     * Retrieve full details of a specific question, including its explanation video/text,
-     * difficulty, and associated answers.
+     * يجلب كافة تفاصيل سؤال معين بناءً على الـ ID الخاص به، يتضمن الإجابات المحتملة (Answers) بدون توضيح أيها الصحيح (لأغراض أمنية)، 
+     * بالإضافة لنص السؤال، مستوى الصعوبة، والفيديو التوضيحي للحل (إن وُجد).
      *
-     * @unauthenticated false
-     * @param Question $question
-     * @return JsonResponse
+     * @pathParam question integer required المعرف الافتراضي للسؤال المُراد جلبه. Example: 150
+     *
+     * @group Browsing / Questions (الأسئلة)
+     * @unauthenticated
+     *
+     * @response 200 array{status: int, message: string, data: array{question: array}}
+     * @response 404 array{status: int, message: string}
      */
     public function show(Question $question): JsonResponse
     {
@@ -78,14 +86,19 @@ class QuestionController extends BaseApiController
     }
 
     /**
-     * Get Questions by Subject
+     * Get Questions by Subject (أسئلة مادة معينة)
      * 
-     * Retrieve a paginated list of questions filtered by a specific Exam Subject UUID or ID.
+     * يجلب الأسئلة المُصفاة بناءً على مادة دراسية تابعة لامتحان/مرحلة (Exam Subject).
+     * يدعم تقسيم الصفحات (Pagination) بشكل افتراضي.
      *
-     * @unauthenticated false
-     * @param ExamSubject $subject
-     * @param QuestionIndexRequest $request
-     * @return JsonResponse
+     * @pathParam subject integer required المعرف الافتراضي للمادة (Exam Subject). Example: 10
+     * @queryParam per_page integer optional عدد العناصر.
+     *
+     * @group Browsing / Questions (الأسئلة)
+     * @unauthenticated
+     *
+     * @response 200 array{status: int, message: string, data: array{subject: array, questions: array, pagination?: array}}
+     * @response 404 array{status: int, message: string}
      */
     public function bySubject(ExamSubject $subject, QuestionIndexRequest $request): JsonResponse
     {
@@ -126,14 +139,17 @@ class QuestionController extends BaseApiController
     }
 
     /**
-     * Get Questions by Category
+     * Get Questions by Category (أسئلة تصنيف فرعي)
      * 
-     * Retrieve a paginated list of questions filtered by a highly specific section category.
+     * يجلب قائمة بالأسئلة التابعة لقسم/تصنيف فرعي معين (Section Category). 
+     * مثل الأسئلة المتعلقة بـ "قسم الجبر" المتفرع من مستوى أعلى.
      *
-     * @unauthenticated false
-     * @param SectionCategory $category
-     * @param QuestionIndexRequest $request
-     * @return JsonResponse
+     * @pathParam category integer required المعرف الافتراضي للقسم الفرعي. Example: 5
+     *
+     * @group Browsing / Questions (الأسئلة)
+     * @unauthenticated
+     *
+     * @response 200 array{status: int, message: string, data: array{category: array, questions: array, pagination?: array}}
      */
     public function byCategory(SectionCategory $category, QuestionIndexRequest $request): JsonResponse
     {
@@ -174,14 +190,19 @@ class QuestionController extends BaseApiController
     }
 
     /**
-     * Search Questions
+     * Search Questions (البحث في بنك الأسئلة)
      * 
-     * Perform a full-text search across the question database using the `q` query parameter.
-     * Returns a paginated list of matched questions.
+     * يُمكن هذا المسار الطالب من البحث النصي الشامل عن الأسئلة عبر النظام باستخدام معامل البحث `q`.
+     * يتم إرجاع النتائج المقتربة، مع ترقيم صفحات (Pagination).
      *
-     * @unauthenticated false
-     * @param QuestionSearchRequest $request
-     * @return JsonResponse
+     * @queryParam q string required نص البحث المُراد البحث عنه في نصوص الأسئلة. Example: التفاضل
+     * @queryParam per_page integer optional
+     *
+     * @group Browsing / Questions (الأسئلة)
+     * @unauthenticated
+     *
+     * @response 200 array{status: int, message: string, data: array{search_query: string, questions: array, pagination: array}}
+     * @response 422 array{status: int, message: string} - إذا لم يتم تمرير حقل `q`
      */
     public function search(QuestionSearchRequest $request): JsonResponse
     {
@@ -209,13 +230,16 @@ class QuestionController extends BaseApiController
     }
 
     /**
-     * Get Recent Questions
+     * Get Recent Questions (أحدث الأسئلة المُضافة)
      * 
-     * Retrieve a paginated list of questions ordered purely by their creation date.
+     * يجلب الأسئلة فرزاً من الأحدث إلى الأقدم بناءً على تاريخ إنشائها في قاعدة البيانات.
      *
-     * @unauthenticated false
-     * @param QuestionIndexRequest $request
-     * @return JsonResponse
+     * @queryParam per_page integer optional
+     *
+     * @group Browsing / Questions (الأسئلة)
+     * @unauthenticated
+     *
+     * @response 200 array{status: int, message: string, data: array{questions: array, pagination: array}}
      */
     public function recent(QuestionIndexRequest $request): JsonResponse
     {

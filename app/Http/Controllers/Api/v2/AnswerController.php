@@ -23,12 +23,31 @@ class AnswerController extends BaseApiController
     }
 
     /**
-     * تسجيل إجابة الطالب
+     * Submit Question Answer (إرسال إجابة السؤال)
      * 
-     * يقوم هذا المسار بتسجيل إجابة الطالب على سؤال معين. إذا كانت الإجابة صحيحة وكان الطالب يجيب لأول مرة، سيحصل على نقاط تُضاف إلى رصيده (Gamification). يتم تحديد النقاط المكتسبة بناءً على مستوى صعوبة السؤال (سهل: 10، متوسط: 15، صعب: 20).
+     * يُستخدم هذا المسار لدورة الإجابة على الأسئلة (The Answer Cycle).
+     * عندما يقوم الطالب بالإجابة على سؤال، يتم استدعاء هذا المسار لتسجيل إجابته والتحقق من صحتها.
      * 
-     * @param SubmitAnswerRequest $request
-     * @return JsonResponse
+     * **منطق التلعيب (Gamification):**
+     * إذا كانت الإجابة صحيحة حصراً (ولم يسبق له الإجابة عليها صحيحاً من قبل)، سيحصل على نقاط تُضاف إلى رصيده.
+     * تُحدد النقاط المكتسبة بناءً على مستوى صعوبة السؤال:
+     * - سؤال سهل (`easy`) = 10 نقاط.
+     * - سؤال متوسط (`medium`) = 15 نقطة.
+     * - سؤال صعب (`hard`) = 20 نقطة.
+     *
+     * على الواجهة الأمامية (Frontend) التحقق من مفتاح `score_earned` داخل الاستجابة، وإذا كان أكبر من 0 يجب إطلاق تأثير حركي (Celebration Animation) لإظهار النقاط المكتسبة للطالب.
+     * أما إذا كانت الإجابة خاطئة، سيرجع النظام مفتاح `correct_answer` ليتم تظليل الإجابة الصحيحة أمام الطالب.
+     * 
+     * @bodyParam question_id integer required المعرف الافتراضي للسؤال المُراد الإجابة عليه. Example: 154
+     * @bodyParam answer_id integer optional المعرف الافتراضي للإجابة المختارة (في حالة أسئلة الاختيار من متعدد). Example: 512
+     * @bodyParam user_answer string optional نص الإجابة في حال كان السؤال مقالياً ويتطلب كتابة. Example: الحل هو 4
+     * 
+     * @group Gamification / Answer Cycle (دورة الإجابة والتلعيب)
+     * @unauthenticated false
+     *
+     * @response 200 array{status: int, message: string, data: array{is_correct: bool, score_earned: int, correct_answer?: int}}
+     * @response 401 array{status: int, message: string}
+     * @response 422 array{status: int, message: string, errors: array} - المدخلات غير صالحة أو السؤال غير موجود
      */
     public function submit(SubmitAnswerRequest $request): JsonResponse
     {

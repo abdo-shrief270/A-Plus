@@ -18,10 +18,21 @@ class ContactController extends BaseApiController
     }
 
     /**
-     * Submit a contact form.
+     * Submit Contact Form (نموذج اتصل بنا)
      *
-     * @param ContactRequest $request
-     * @return JsonResponse
+     * يقوم بتسجيل وإرسال رسالة تواصل من الواجهة الأمامية أو التطبيق إلى لوحة تحكم الإدارة.
+     *
+     * @bodyParam type string required نوع الرسالة (`complaint`, `suggestion`, `inquiry`). Example: inquiry
+     * @bodyParam name string required اسم المُرسل. Example: عبدالله أحمد
+     * @bodyParam email string optional البريد الإلكتروني (إن وُجد). Example: test@test.com
+     * @bodyParam phone string optional الهاتف رقم (إن وُجد). Example: 0110000000
+     * @bodyParam message string required نص الرسالة بحد أقصى 1000 حرف. Example: أواجه مشكلة في تسجيل الدخول.
+     *
+     * @group Support & Settings (الإعدادات والدعم)
+     * @unauthenticated
+     *
+     * @response 201 array{status: int, message: string, data: array}
+     * @response 422 array{status: int, message: string, errors: array}
      */
     public function store(ContactRequest $request): JsonResponse
     {

@@ -11,17 +11,20 @@ use App\Http\Resources\v2\EnrollmentResource;
 class EnrollmentController extends BaseApiController
 {
     /**
-     * Get Enrollments List
+     * Get Enrollments List (قائمة الاشتراكات بالدورات)
      *
-     * Retrieve a paginated list of course enrollments. 
-     * The results are automatically scoped securely:
-     * - Parents see only their children's enrollments.
-     * - Schools see only their linked students' enrollments.
-     * - Students see only their own enrollments.
+     * يجلب قائمة بجميع الدورات المشترك بها الطلاب بداخل النظام.
+     * يتم فلترة هذه الاستجابة تلقائياً لتكون آمنة:
+     * - ولي الأمر سيشاهد فقط دورات أبنائه.
+     * - المدرسة ستشاهد فقط دورات طلابها.
+     * - الطالب سيشاهد الاشتراكات الخاصة به.
      *
+     * @queryParam per_page integer optional عدد العناصر في الصفحة. Default: 15
+     *
+     * @group Dashboard / Enrollments (الاشتراكات)
      * @unauthenticated false
-     * @param Request $request
-     * @return JsonResponse
+     *
+     * @response 200 array{status: int, message: string, data: array}
      */
     public function index(Request $request): JsonResponse
     {

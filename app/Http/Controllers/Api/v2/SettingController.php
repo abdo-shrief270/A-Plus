@@ -18,14 +18,18 @@ class SettingController extends BaseApiController
     }
 
     /**
-     * Get Settings
+     * Get Settings (إعدادات المنصة)
      * 
-     * Retrieve global platform configuration settings. You can optionally filter
-     * these settings by passing a `group` query parameter (e.g., `?group=general`).
+     * يجلب إعدادات التكوين العامة للمنصة. 
+     * يمكن للواجهة الأمامية استخدام هذا المسار لجلب نصوص الشروط والأحكام، روابط مواقع التواصل، وغيرها.
+     * يمكن الاستعلام عن مجموعة محددة بتمرير `group` كمعامل استعلام.
      *
-     * @unauthenticated false
-     * @param Request $request
-     * @return JsonResponse
+     * @queryParam group string optional التصنيف/المجموعة المُراد جلب إعداداتها فقط (مثال: general). Example: general
+     *
+     * @group Support & Settings (الإعدادات والدعم)
+     * @unauthenticated
+     *
+     * @response 200 array{status: int, message: string, data: array{settings: array}}
      */
     public function index(Request $request): JsonResponse
     {
@@ -40,13 +44,17 @@ class SettingController extends BaseApiController
     }
 
     /**
-     * Get Specific Setting
+     * Get Specific Setting (جلب إعداد بعينه)
      * 
-     * Retrieve a single global setting value by its unique key.
+     * يجلب قيمة محددة مفردة بناءً على المفتاح (Key) الفريد الخاص بها.
      *
-     * @unauthenticated false
-     * @param string $key
-     * @return JsonResponse
+     * @pathParam key string required مفتاح الإعداد المُراد جلبه. Example: site_name
+     *
+     * @group Support & Settings (الإعدادات والدعم)
+     * @unauthenticated
+     *
+     * @response 200 array{status: int, message: string, data: array{setting: array}}
+     * @response 404 array{status: int, message: string}
      */
     public function show(string $key): JsonResponse
     {
@@ -66,12 +74,15 @@ class SettingController extends BaseApiController
     }
 
     /**
-     * Get Setting Groups
+     * Get Setting Groups (مجموعات الإعدادات)
      * 
-     * Retrieve a list of all available setting group categories used across the platform.
+     * يجلب قائمة بجميع أنواع مجموعات الإعدادات المتوفرة في النظام 
+     * (مثل: general, social_links, terms).
      *
-     * @unauthenticated false
-     * @return JsonResponse
+     * @group Support & Settings (الإعدادات والدعم)
+     * @unauthenticated
+     *
+     * @response 200 array{status: int, message: string, data: array{groups: array}}
      */
     public function groups(): JsonResponse
     {

@@ -35,12 +35,15 @@ class AuthController extends BaseApiController
     /**
      * Check Username Availability
      *
-     * Checks if a username is available for registration.
+     * تتحقق هذه النهاية الطرفية مما إذا كان اسم المستخدم المقترح متاحًا للتسجيل أم لا.
+     * يمكن للواجهة الأمامية استخدام هذا المسار (Endpoint) ليتم استدعاؤه بشكل ديناميكي أثناء كتابة المستخدم لاسم لتقديم ملاحظات فورية.
+     * 
+     * @bodyParam user_name string required اسم المستخدم الذي يجب التحقق منه. يجب ألا يحتوي على مسافات، فقط أحرف، أرقام، وشرطات سفلية. Example: ahmed_ali123
      *
-     * @group Authentication
+     * @group Authentication (المصادقة)
      * @unauthenticated
      *
-     * @response array{status: int, message: string, data: array{available: bool}}
+     * @response 200 array{status: int, message: string, data: array{available: bool}}
      */
     public function checkUsername(CheckUsernameRequest $request): JsonResponse
     {
@@ -54,12 +57,24 @@ class AuthController extends BaseApiController
     /**
      * Register Student
      *
-     * Registers a new student user.
+     * يقوم بتسجيل حساب طالب جديد في المنصة. 
+     * يجب على الواجهة الأمامية تقديم جميع البيانات الإلزامية مثل الاسم، واسم المستخدم، وكلمة المرور.
+     * بالإضافة إلى ذلك، يجب ربط الطالب بامتحان معين (`exam_id`).
+     * 
+     * @bodyParam name string required اسم الطالب بالكامل. Example: أحمد علي
+     * @bodyParam user_name string required اسم المستخدم (فريد). يجب استخدام مسار Check Username للتأكد من توفره. Example: ahmed_ali
+     * @bodyParam phone string optional رقم هاتف الطالب للاتصال به (لحالات الـ OTP لاحقاً). Example: 01012345678
+     * @bodyParam gender string required جنس الطالب (`male` أو `female`). Example: male
+     * @bodyParam password string required كلمة المرور (يجب أن تحتوي على 8 أحرف على الأقل، حرفيات، وأرقام). Example: Password123!
+     * @bodyParam password_confirmation string required تأكيد كلمة المرور المطابق لـ password. Example: Password123!
+     * @bodyParam exam_id integer required معرف الامتحان (الصف/المرحلة الدراسية) الذي يسجل فيه الطالب. Example: 1
+     * @bodyParam fcm_token string optional رمز Firebase لإرسال الإشعارات لهاتف المستخدم. Example: cksb...
      *
-     * @group Authentication
+     * @group Authentication (المصادقة)
      * @unauthenticated
      *
-     * @response array{status: int, message: string, data: array{token: string, user: \App\Models\User}}
+     * @response 200 array{status: int, message: string, data: array{token: string, user: \App\Models\User}}
+     * @response 422 array{status: int, message: string, errors: array} - أخطاء التحقق من البيانات
      */
     public function registerStudent(RegisterStudentRequest $request): JsonResponse
     {
@@ -100,15 +115,18 @@ class AuthController extends BaseApiController
     }
 
     /**
-     * Check User for Login
+     * Pre-Login Check (التحقق قبل تسجيل الدخول)
      *
-     * Checks if the user exists and determines if 2FA or other checks are required before login.
+     * يتحقق هذا المسار من وجود اسم المستخدم المعطى وما إذا كان هذا الحساب يلزمه تفعيل المصادقة الثنائية (2FA) قبل إتمام تسجيل الدخول.
+     * مفيد لتقسيم واجهة تسجيل الدخول إلى خطوات مستقلة.
+     * 
+     * @bodyParam user_name string required اسم المستخدم المسجل في النظام المراد التحقق منه. Example: ahmed_ali
      *
-     * @group Authentication
+     * @group Authentication (المصادقة)
      * @unauthenticated
      *
-     * @response array{status: int, message: string, data: array{exists: bool, requires_2fa: bool}}
-     * @response 404 array{status: int, message: string}
+     * @response 200 array{status: int, message: string, data: array{exists: bool, requires_2fa: bool}}
+     * @response 404 array{status: int, message: string} - إذا لم يكن اسم المستخدم موجوداً
      */
     public function loginCheck(LoginCheckRequest $request): JsonResponse
     {
@@ -122,17 +140,27 @@ class AuthController extends BaseApiController
     }
 
     /**
-     * Login
+     * Login Authentication (تسجيل الدخول)
      *
-     * Authenticates a user using username and password.
-     * If 2FA is enabled, returns `requires_2fa: true` instead of a token.
+     * يصادق المستخدم باستخدام (اسم المستخدم) و (كلمة المرور).
+     * يحتوي هذا المسار أيضاً على فحص للأجهزة المسجلة (Device Management)، حيث سيتم ربط الجهاز الجديد بحساب المستخدم. 
+     * إذا اكتشف النظام أن المستخدم يسجل من جهاز ثانٍ تجاوز الحد المسموح به، فسيتم إرجاع خطأ `403` بأن الجهاز بانتظار موافقة الإدارة (Pending Approval).
+     * 
+     * إذا كان النظام يتطلب 2FA، فسيقوم الحقل `requires_2fa: true` بالرجوع بدون الـ JWT token، لبدء مسار الـ OTP.
+     * 
+     * @bodyParam user_name string required اسم المستخدم. Example: ahmed_ali
+     * @bodyParam password string required كلمة المرور المرتبطة بهذا الحساب. Example: Password123!
+     * @bodyParam device_name string optional اسم الجهاز المراد تسجيله (مثال: iPhone 14 Pro). Example: iPhone 13
+     * @bodyParam device_id string optional المعرف الفريد للجهاز (UUID). ضروري لتتبع الأجهزة المسجلة والموافقة عليها. Example: 1234-uuid-abcd
+     * @bodyParam fcm_token string optional رمز الاستجابة لإشعارات Firebase الخاصة بالجهاز الدخيل. Example: dummy_fcm_code
      *
-     * @group Authentication
+     * @group Authentication (المصادقة)
      * @unauthenticated
      *
-     * @response array{status: int, message: string, data: array{token: string, user: \App\Models\User}}
-     * @response array{status: int, message: string, data: array{requires_2fa: true, phone: string, email: string}}
-     * @response 401 array{status: int, message: string}
+     * @response 200 array{status: int, message: string, data: array{token: string, user: \App\Models\User}}
+     * @response 200 array{status: int, message: string, data: array{requires_2fa: true, phone: string, email: string}}
+     * @response 401 array{status: int, message: string} - بيانات غير صحيحة
+     * @response 403 array{status: int, message: string} - الجهاز بانتظار موافقة أو محظور (Pending admin approval)
      */
     public function login(LoginRequest $request): JsonResponse
     {
@@ -167,15 +195,20 @@ class AuthController extends BaseApiController
     }
 
     /**
-     * Send OTP
+     * Send OTP Code (إرسال رمز التحقق)
      *
-     * Sends an OTP to the user via the specified method (sms, whatsapp, email) for 2FA or Password Reset.
+     * يرسل رمز تحقق مكون من 6 أرقام (OTP) إلى الهاتف أو البريد الإلكتروني.
+     * يتم استخدام هذا المسار لإتمام إجراءات المصادقة الثنائية (2FA) أو استعادة كلمة المرور (Password Reset).
+     * يجب على الواجهة الأمامية حفظ الـ `token` الذي سيتم إرجاعه لأنه يُستخدم لاحقاً مع مسار `verifyOtp`.
+     * 
+     * @bodyParam user_name string required اسم المستخدم المراد إرسال الرمز المرتبط به (في حال استعادة كلمة المرور). Example: ahmed_ali
+     * @bodyParam method string required طريقة إرسال الرمز: 'sms' للرسائل القصيرة، 'whatsapp' للواتساب، 'email' للبريد الإلكتروني. Example: sms
      *
-     * @group Authentication
+     * @group Authentication (المصادقة)
      * @unauthenticated
      *
-     * @response array{status: int, message: string, data: array{token: string, expires_in: int, method: string}}
-     * @response 404 array{status: int, message: string}
+     * @response 200 array{status: int, message: string, data: array{token: string, expires_in: int, method: string}}
+     * @response 404 array{status: int, message: string} - في حال لم يسجل المستخدم
      */
     public function sendOtp(SendOtpRequest $request): JsonResponse
     {
@@ -200,17 +233,22 @@ class AuthController extends BaseApiController
     }
 
     /**
-     * Verify OTP
+     * Verify OTP Code (التحقق من رمز OTP)
      *
-     * Verifies the OTP code provided by the user.
-     * Can complete 2FA login or verified a password reset token.
+     * يتم إرسال الرمز المرسل من المستخدم (`otp`) مع الـ (`token`) الذي تم إرجاعه من مسار الإرسال `sendOtp`.
+     * إذا كان السياق هو استرجاع كلمة مرور `type=reset`، فسيرجع المسار مفتاحاً مؤكداً لعملية تغيير الكلمة `verified=true`.
+     * أما إذا كان سياق المستخدم `type=login`، فسيُرجع المسار مباشرة الـ JWT لتسجيل الدخول النهائي.
+     * 
+     * @bodyParam token string required مفتاح التحقق الذي تم إرجاعه من خطوة `sendOtp`. Example: otp-token-uuid
+     * @bodyParam otp string required رمز الـ OTP المكون من 6 أرقام المدخل من المستخدم. Example: 123456
+     * @bodyParam type string optional نوع التحقق، استخدم `login` لاستكمال تسجيل الدخول، أو `reset` لاسترجاع كلمة المرور. قيم أخرى ستفترض أنها مسار دخول عادي. Example: login
      *
-     * @group Authentication
+     * @group Authentication (المصادقة)
      * @unauthenticated
      *
-     * @response array{status: int, message: string, data: array{token: string, user: \App\Models\User}}
-     * @response array{status: int, message: string, data: array{verified: bool, token: string}}
-     * @response 401 array{status: int, message: string}
+     * @response 200 array{status: int, message: string, data: array{token: string, user: \App\Models\User}} - (في حالة تسجيل دخول 2FA)
+     * @response 200 array{status: int, message: string, data: array{verified: bool, token: string}} - (مفتاح مؤكد لعمليات تغيير كلمة المرور)
+     * @response 401 array{status: int, message: string} - الكود خاطئ أو منتهي الصلاحية
      */
     public function verifyOtp(VerifyOtpRequest $request): JsonResponse
     {
@@ -252,15 +290,18 @@ class AuthController extends BaseApiController
     }
 
     /**
-     * Reset Password (Find User)
+     * Reset Password Init (بدء استرجاع كلمة المرور)
      *
-     * Initiates the password reset process by finding the user and returning available contact methods.
+     * الخطوة الأولى لاسترجاع المفقود، يقوم النظام بالبحث عن المستخدم بناءً على الحقل المدخل (user_name، أو email، أو phone)
+     * ويرجع للواجهة الأمامية أجزاء مخفية من البريد أو الهاتف (Masked) ليقوم المستخدم باختيار أي وسيلة استقبال كود الـ OTP يرغب بها باستخدام مسار الإرسال `sendOtp`.
+     * 
+     * @bodyParam user_name string required اسم المستخدم المفقود كلمة مروره. يمكن تمرير الهاتف أو الإيميل مكانه وسيتم البحث عنهما أيضاً. Example: ahmed_ali
      *
-     * @group Authentication
+     * @group Authentication (المصادقة)
      * @unauthenticated
      *
-     * @response array{status: int, message: string, data: array{user_found: bool, phone: ?string, email: ?string}}
-     * @response 404 array{status: int, message: string}
+     * @response 200 array{status: int, message: string, data: array{user_found: bool, phone: ?string, email: ?string}}
+     * @response 404 array{status: int, message: string} - لم يتم العثور على الحساب
      */
     public function resetPassword(ResetPasswordRequest $request): JsonResponse
     {
@@ -278,15 +319,19 @@ class AuthController extends BaseApiController
     }
 
     /**
-     * Change Password
+     * Change Password After OTP (تغيير كلمة المرور الجديدة)
      *
-     * Changes the user's password using the verified token from OTP verification.
+     * يتيح للمستخدم ضبط كلمة مرور جديدة بعد إتمامه لعملية التحقق وإرسال مفتاح الـ `token` المعادل (Verified) من خطوة `verifyOtp`.
+     * 
+     * @bodyParam token string required مفتاح التحقق المصدق بنجاح في الخطوة السابقة. Example: otp-token-uuid
+     * @bodyParam password string required كلمة المرور الجديدة القوية. Example: NewPassword123!
+     * @bodyParam password_confirmation string required تأكيد كلمة المرور الجديدة لتجنب الأخطاء المطبعية. Example: NewPassword123!
      *
-     * @group Authentication
+     * @group Authentication (المصادقة)
      * @unauthenticated
      *
-     * @response array{status: int, message: string, data: null}
-     * @response 401 array{status: int, message: string}
+     * @response 200 array{status: int, message: string, data: null} - تم التغيير بنجاح
+     * @response 401 array{status: int, message: string} - رمز موثوقية غير صالح
      */
     public function changePassword(ChangePasswordRequest $request): JsonResponse
     {
@@ -321,14 +366,16 @@ class AuthController extends BaseApiController
     }
 
     /**
-     * Get Current User (Me)
+     * Get Current Profile (حسابي)
      *
-     * Retrieves the currently authenticated user's profile and devices.
+     * يجلب بيانات المستخدم المسجل دخوله حالياً باستخدام الـ Token المرسل في הـ Header.
+     * تُرجع هذه النهاية بيانات المستخدم الأساسية، بالإضافة إلى سجل الأجهزة المرتبطة بحسابه (`devices`).
+     * إذا كان المستخدم طالباً، سيتم أيضاً تضمين كائن `student` الذي يشمل بيانات المرحلة الدراسية.
      *
-     * @group Authentication
+     * @group Authentication (المصادقة)
      *
-     * @response array{status: int, message: string, data: array{user: \App\Models\User, devices: array}}
-     * @response 401 array{status: int, message: string}
+     * @response 200 array{status: int, message: string, data: array{user: \App\Models\User, devices: array}}
+     * @response 401 array{status: int, message: string} - يتطلب إرسال Authorization Header
      */
     public function me(Request $request): JsonResponse
     {
@@ -350,15 +397,26 @@ class AuthController extends BaseApiController
     }
 
     /**
-     * Update Profile
+     * Update Profile (تحديث الملف الشخصي)
      *
-     * Updates the authenticated user's profile information.
+     * يتيح للمستخدم تحديث بيانات حسابه. جميع الحقول اختيارية، ويتم تحديث ما يُرسل فقط.
+     * في حال الرغبة بتغيير كلمة المرور، يجب إرسال `password` الجديدة مع إرسال `old_password`.
+     * بالنسبة للطلاب، يمكنهم أيضاً تحديث `exam_id` أو `exam_date` الخاصة بالمرحلة الدراسية من خلال هذا المسار.
+     * 
+     * @bodyParam name string optional الاسم الكامل الجديد. Example: أحمد علي
+     * @bodyParam phone string optional رقم الهاتف الجديد. Example: 01012345678
+     * @bodyParam country_code string optional كود الدولة للهاتف في حال تواجده. Example: +20
+     * @bodyParam email string optional البريد الإلكتروني. Example: user@example.com
+     * @bodyParam password string optional كلمة المرور الجديدة. Example: NewPassword123!
+     * @bodyParam old_password string optional كلمة المرور الحالية (مطلوبة فقط إذا تم إرسال password للتبديل). Example: OldPass123!
+     * @bodyParam exam_id integer optional لتحديث الصف الدراسي للطالب. Example: 2
      *
-     * @group Authentication
+     * @group Authentication (المصادقة)
      *
-     * @response array{status: int, message: string, data: array{user: \App\Models\User}}
+     * @response 200 array{status: int, message: string, data: array{user: \App\Models\User}}
      * @response 401 array{status: int, message: string}
-     * @response 403 array{status: int, message: string}
+     * @response 403 array{status: int, message: string} - كلمة المرور القديمة غير صحيحة
+     * @response 422 array{status: int, message: string, errors: array}
      */
     public function updateProfile(UpdateProfileRequest $request): JsonResponse
     {
@@ -404,14 +462,15 @@ class AuthController extends BaseApiController
     }
 
     /**
-     * Logout
+     * Logout Securely (تسجيل الخروج)
      *
-     * Invalidates the current JWT token.
+     * يبطل صلاحية الـ JWT Token الحالي بشكل فوري لمنع أي استخدام مستقبلي له.
+     * مفيد لإنهاء الجلسة وتسجيل الخروج من الجهاز المعني.
      *
-     * @group Authentication
+     * @group Authentication (المصادقة)
      *
-     * @response array{status: int, message: string, data: null}
-     * @response 500 array{status: int, message: string}
+     * @response 200 array{status: int, message: string, data: null} - تم تسجيل الخروج بنجاح
+     * @response 500 array{status: int, message: string} - خطأ داخلي
      */
     public function logout(): JsonResponse
     {
@@ -426,13 +485,14 @@ class AuthController extends BaseApiController
     }
 
     /**
-     * Get User Devices
+     * Get Registered Devices (أجهزتي المعرفة)
      *
-     * Retrieves a list of devices used by the user.
+     * يجلب قائمة بالأجهزة التي سجل المستخدم الدخول منها.
+     * مفيد لعرض "إدارة الأجهزة" داخل واجهة التطبيق، حيث يظهر لكل جهاز اسمه (مثل iPhone) وآخر نشاط له، وحالته (موافق عليه، محظور، بانتظار الموافقة).
      *
-     * @group Authentication
+     * @group Authentication / Devices (الأجهزة)
      *
-     * @response array{status: int, message: string, data: array{devices: array}}
+     * @response 200 array{status: int, message: string, data: array{devices: array}}
      * @response 401 array{status: int, message: string}
      */
     public function devices(): JsonResponse
@@ -449,14 +509,15 @@ class AuthController extends BaseApiController
     }
 
     /**
-     * Revoke Device
+     * Revoke / Remove Device (حذف جهاز نشط)
      *
-     * Revokes (logs out) a specific device.
+     * يتيح للمستخدم طرد / إزالة جهاز معين من قائمة أجهزته النشطة.
+     * سيتم فوراً منع الجهاز المحذوف من استخدام الـ Token الخاصة به (إذا كانت مخزنة)، وسجل الجهاز سيُمسح من قاعدة البيانات.
      *
-     * @group Authentication
+     * @group Authentication / Devices (الأجهزة)
      *
-     * @response array{status: int, message: string, data: null}
-     * @response 404 array{status: int, message: string}
+     * @response 200 array{status: int, message: string, data: null} - تم إزالة الجهاز
+     * @response 404 array{status: int, message: string} - الجهاز المذكور غير موجود
      * @response 401 array{status: int, message: string}
      */
     public function revokeDevice(int $deviceId): JsonResponse

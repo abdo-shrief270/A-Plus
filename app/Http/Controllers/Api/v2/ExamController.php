@@ -22,14 +22,20 @@ class ExamController extends BaseApiController
     }
 
     /**
-     * Get All Exams
+     * Get All Exams (قائمة الامتحانات/المراحل الدراسية)
      * 
-     * Retrieve a paginated list of all active exams on the platform.
-     * Use this endpoint to list exams available for students to browse or enroll in.
+     * يجلب قائمة بجميع الامتحانات أو المراحل الدراسية (مثل: الصف الأول الثانوي، اختبار القدرات العامة) المتاحة على المنصة.
+     * يمكن التصفح بدون تسجيل دخول لزوار المنصة.
+     * يدعم الفلترة عبر إرسال معلمات البحث.
      *
-     * @unauthenticated false
-     * @param ExamIndexRequest $request
-     * @return JsonResponse
+     * @queryParam search string optional نص للبحث عن امتحان بعينه بواسطة اسمه. Example: Math
+     * @queryParam per_page integer optional عدد العناصر المطلوبة في الصفحة الواحدة. Example: 10
+     *
+     * @group Browsing / Exams (الامتحانات)
+     * @unauthenticated
+     *
+     * @response 200 array{status: int, message: string, data: array{exams: array}}
+     * @response 500 array{status: int, message: string}
      */
     public function index(ExamIndexRequest $request): JsonResponse
     {
@@ -46,14 +52,18 @@ class ExamController extends BaseApiController
     }
 
     /**
-     * Get Exam Details
+     * Get Exam Details (تفاصيل الامتحان/المرحلة)
      * 
-     * Retrieve detailed information about a specific exam, including its structure
-     * but excluding the vast array of questions.
+     * يجلب كافة التفاصيل المتاحة عن امتحان أو صف دراسي معين. يتضمن ذلك البيانات الأساسية،
+     * والهيكل التابع له (بدون سرد ملايين الأسئلة المتعلقة به مباشرة للحفاظ على الأداء).
      *
-     * @unauthenticated false
-     * @param Exam $exam
-     * @return JsonResponse
+     * @pathParam exam integer required المعرف الافتراضي للامتحان المُراد جلبه. Example: 1
+     *
+     * @group Browsing / Exams (الامتحانات)
+     * @unauthenticated
+     *
+     * @response 200 array{status: int, message: string, data: array{exam: array}}
+     * @response 404 array{status: int, message: string}
      */
     public function show(Exam $exam): JsonResponse
     {
@@ -69,14 +79,18 @@ class ExamController extends BaseApiController
     }
 
     /**
-     * Get Exam Subjects
+     * Get Exam Subjects (المواد التابعة للامتحان)
      * 
-     * Retrieve a list of all subjects associated with a specific exam.
-     * Useful for building subject-filtering UIs.
+     * يجلب قائمة بالمواد الدراسية (Subjects) المنسوبة إلى هذا الامتحان/المرحلة الدراسية.
+     * على سبيل المثال، للصف الأول الثانوي سيرجع: (رياضيات، فيزياء، لغة عربية، الخ).
      *
-     * @unauthenticated false
-     * @param Exam $exam
-     * @return JsonResponse
+     * @pathParam exam integer required المعرف الافتراضي للامتحان. Example: 1
+     *
+     * @group Browsing / Exams (الامتحانات)
+     * @unauthenticated
+     *
+     * @response 200 array{status: int, message: string, data: array{subjects: array}}
+     * @response 404 array{status: int, message: string}
      */
     public function subjects(Exam $exam): JsonResponse
     {
@@ -92,13 +106,18 @@ class ExamController extends BaseApiController
     }
 
     /**
-     * Get Exam Sections
+     * Get Exam Sections (أقسام الامتحان)
      * 
-     * Retrieve a list of all hierarchical sections associated with a specific exam.
+     * يجلب قائمة بالأقسام الهرمية/الأجزاء (Sections) التي يتفرع إليها هذا الامتحان.
+     * مفيد في بناء واجهات الفلترة الجانبية Sidebar للمستخدمين.
      *
-     * @unauthenticated false
-     * @param Exam $exam
-     * @return JsonResponse
+     * @pathParam exam integer required المعرف الافتراضي للامتحان. Example: 1
+     *
+     * @group Browsing / Exams (الامتحانات)
+     * @unauthenticated
+     *
+     * @response 200 array{status: int, message: string, data: array{sections: array}}
+     * @response 404 array{status: int, message: string}
      */
     public function sections(Exam $exam): JsonResponse
     {
