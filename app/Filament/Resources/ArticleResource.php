@@ -5,6 +5,8 @@ namespace App\Filament\Resources;
 use App\Filament\Resources\ArticleResource\Pages;
 use App\Filament\Resources\ArticleResource\RelationManagers;
 use App\Models\Article;
+use App\Models\ExamSection;
+use App\Models\SectionCategory;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
@@ -31,6 +33,18 @@ class ArticleResource extends Resource
             ->schema([
                 Forms\Components\Section::make()
                     ->schema([
+                        Forms\Components\Select::make('section_category_id')
+                            ->label('الفئة')
+                            ->searchable()
+                            ->required()
+                            ->options(function () {
+                                return SectionCategory::with('section.exam')
+                                    ->get()
+                                    ->mapWithKeys(function ($cat) {
+                                        $label = ($cat->section?->exam?->name ?? '') . ' > ' . ($cat->section?->name ?? '') . ' > ' . $cat->name;
+                                        return [$cat->id => $label];
+                                    });
+                            }),
                         Forms\Components\TextInput::make('title')
                             ->label('عنوان القطعة')
                             ->required()
@@ -51,6 +65,9 @@ class ArticleResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
+            ->modifyQueryUsing(
+                fn(Builder $query) => $query->with('category.section.exam')->withCount('questions')
+            )
             ->columns([
                 Tables\Columns\TextColumn::make('id')
                     ->label('ID')
@@ -65,9 +82,14 @@ class ArticleResource extends Resource
                     ->boolean()
                     ->trueColor('success')
                     ->falseColor('danger'),
+                Tables\Columns\TextColumn::make('category.name')
+                    ->label('الفئة')
+                    ->description(fn ($record) => $record->category?->section?->name)
+                    ->searchable()
+                    ->sortable()
+                    ->toggleable(),
                 Tables\Columns\TextColumn::make('questions_count')
                     ->label('عدد الأسئلة')
-                    ->counts('questions')
                     ->badge(),
                 Tables\Columns\TextColumn::make('created_at')
                     ->label('تاريخ الإضافة')

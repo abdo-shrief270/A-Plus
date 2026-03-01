@@ -58,7 +58,7 @@ class SectionCategoryResource extends Resource
         return $table
             ->modifyQueryUsing(
                 fn(Builder $query) =>
-                $query->with('section')->withCount('questions')
+                $query->with('section')->withCount(['questions', 'articles'])
             )
             ->columns([
                 Tables\Columns\TextColumn::make('name')
@@ -82,6 +82,12 @@ class SectionCategoryResource extends Resource
 
                 Tables\Columns\TextColumn::make('questions_count')
                     ->label('عدد الأسئلة')
+                    ->searchable()
+                    ->sortable()
+                    ->toggleable(),
+
+                Tables\Columns\TextColumn::make('articles_count')
+                    ->label('عدد القطع')
                     ->searchable()
                     ->sortable()
                     ->toggleable(),
@@ -125,6 +131,7 @@ class SectionCategoryResource extends Resource
     {
         return [
             RelationManagers\QuestionsRelationManager::class,
+            RelationManagers\ArticlesRelationManager::class,
         ];
     }
 

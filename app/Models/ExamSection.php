@@ -20,7 +20,7 @@ class ExamSection extends Model
 
     public function categoriesData(): HasMany
     {
-        return $this->hasMany(SectionCategory::class, 'exam_section_id', 'id')->select('id', 'name', 'exam_section_id', 'description')->with('questions');
+        return $this->hasMany(SectionCategory::class, 'exam_section_id', 'id')->select('id', 'name', 'exam_section_id', 'description')->with(['questions', 'articles']);
     }
     public function exam(): BelongsTo
     {

@@ -71,6 +71,15 @@ Route::prefix('v2')->name('api.v2.')->group(function () {
     // Category Questions
     Route::get('/categories/{category}/questions', [\App\Http\Controllers\Api\v2\QuestionController::class, 'byCategory'])->name('categories.questions');
 
+    // Category Articles
+    Route::get('/categories/{category}/articles', [\App\Http\Controllers\Api\v2\ArticleController::class, 'byCategory'])->name('categories.articles');
+
+    // Articles
+    Route::prefix('articles')->name('articles.')->group(function () {
+        Route::get('/{article}', [\App\Http\Controllers\Api\v2\ArticleController::class, 'show'])->name('show');
+        Route::get('/{article}/questions', [\App\Http\Controllers\Api\v2\ArticleController::class, 'questions'])->name('questions');
+    });
+
     // Practice Exams (Models)
     Route::prefix('practice-exams')->name('practice-exams.')->group(function () {
         Route::get('/', [\App\Http\Controllers\Api\v2\PracticeExamController::class, 'index'])->name('index');

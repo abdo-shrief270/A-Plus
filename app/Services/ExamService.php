@@ -44,7 +44,7 @@ class ExamService
             $details['structure']['sections'] = $exam->sections()
                 ->with([
                     'categories' => function ($query) {
-                        $query->withCount('questions');
+                        $query->withCount(['questions', 'articles']);
                     }
                 ])
                 ->get()
@@ -57,7 +57,9 @@ class ExamService
                                 'id' => $category->id,
                                 'name' => $category->name,
                                 'description' => $category->description,
-                                'questions_count' => $category->questions_count
+                                'questions_count' => $category->questions_count,
+                                'articles_count' => $category->articles_count,
+                                'has_articles' => $category->articles_count > 0,
                             ];
                         })
                     ];
@@ -78,7 +80,7 @@ class ExamService
         return $exam->sections()
             ->with([
                 'categories' => function ($query) {
-                    $query->withCount('questions');
+                    $query->withCount(['questions', 'articles']);
                 }
             ])
             ->get();

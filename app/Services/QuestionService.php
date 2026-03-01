@@ -69,7 +69,15 @@ class QuestionService
      */
     public function getQuestionsByCategory(SectionCategory $category, array $filters = []): LengthAwarePaginator|Collection
     {
-        $query = $category->questions()
+        // Get question IDs from direct category pivot AND from articles under this category
+        $directQuestionIds = $category->questions()->pluck('questions.id');
+        $articleQuestionIds = Question::whereHas('articles', function ($q) use ($category) {
+            $q->where('section_category_id', $category->id);
+        })->pluck('id');
+
+        $allQuestionIds = $directQuestionIds->merge($articleQuestionIds)->unique();
+
+        $query = Question::whereIn('id', $allQuestionIds)
             ->with([
                 'answers' => function ($query) {
                     $query->orderBy('order');
@@ -155,14 +163,40 @@ class QuestionService
     }
 
     /**
-     * Get question's parent context (category)
+     * Get question's parent context (article -> category -> section -> exam)
      *
      * @param Question $question
      * @return array|null
      */
     public function getQuestionContext(Question $question): ?array
     {
-        // Check if question belongs to a category
+        // Check if question belongs to an article
+        $article = $question->articles()->with('category.section.exam')->first();
+        if ($article && $article->category) {
+            $category = $article->category;
+            return [
+                'type' => 'article',
+                'article' => [
+                    'id' => $article->id,
+                    'title' => $article->title,
+                ],
+                'category' => [
+                    'id' => $category->id,
+                    'name' => $category->name,
+                    'description' => $category->description,
+                ],
+                'section' => [
+                    'id' => $category->section->id,
+                    'name' => $category->section->name,
+                ],
+                'exam' => [
+                    'id' => $category->section->exam->id,
+                    'name' => $category->section->exam->name,
+                ],
+            ];
+        }
+
+        // Check if question belongs to a category directly
         $category = $question->categories()->with('section.exam')->first();
         if ($category) {
             return [
@@ -184,3 +218,4 @@ class QuestionService
         return null;
     }
 }
+

@@ -19,6 +19,8 @@ class CategoryResource extends JsonResource
             'name' => $this->name,
             'description' => $this->description,
             'questions_count' => $this->when(isset($this->questions_count), $this->questions_count, 0),
+            'articles_count' => $this->when(isset($this->articles_count), $this->articles_count, 0),
+            'has_articles' => $this->when(isset($this->articles_count), $this->articles_count > 0, false),
             'section' => $this->when($this->relationLoaded('section'), function () {
                 return [
                     'id' => $this->section->id,

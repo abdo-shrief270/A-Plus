@@ -24,6 +24,11 @@ class SectionCategory extends Model
         );
     }
 
+    public function articles(): HasMany
+    {
+        return $this->hasMany(Article::class, 'section_category_id');
+    }
+
     public function section(): BelongsTo
     {
         return $this->belongsTo(ExamSection::class, 'exam_section_id', 'id');
