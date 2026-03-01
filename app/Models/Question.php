@@ -14,7 +14,7 @@ class Question extends Model
     use HasFactory, LogsActivity;
 
     protected $fillable = [
-        'text',
+        'text','uuid','question_type_id',
         'image_path',
         'explanation_text',
         'explanation_text_image_path',

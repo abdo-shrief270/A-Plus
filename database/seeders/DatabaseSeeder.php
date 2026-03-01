@@ -184,7 +184,7 @@ class DatabaseSeeder extends Seeder
         // $this->call(LessonSeeder::class);
         $this->call(SuperAdminSeeder::class);
         $this->call(QuestionTypeSeeder::class);
-        $this->call(DummyDataSeeder::class);
-        $this->call(LessonSeeder::class);
+//        $this->call(DummyDataSeeder::class);
+//        $this->call(LessonSeeder::class);
     }
 }

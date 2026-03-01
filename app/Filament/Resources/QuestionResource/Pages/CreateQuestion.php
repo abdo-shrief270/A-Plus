@@ -14,8 +14,6 @@ class CreateQuestion extends CreateRecord
     protected function mutateFormDataBeforeCreate(array $data): array
     {
         $data['uuid'] = Str::uuid();
-        dd($data);
-        $data['password'] = $data['user_name'];
         return $data;
     }
 }

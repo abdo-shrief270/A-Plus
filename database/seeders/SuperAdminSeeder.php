@@ -49,6 +49,15 @@ class SuperAdminSeeder extends Seeder
         // Assign super_admin role
         $admin->assignRole('super_admin');
 
+        $admin = Admin::firstOrCreate(
+            ['email' => 'kareem@apls-edu.com'],
+            [
+                'name' => 'Kareem Mohamed',
+                'password' => Hash::make('12345678'),
+                'active' => true,
+            ]
+        );
+
         // Make this user the Filament super admin
         Artisan::call('shield:super-admin', [
             '--user' => $admin->id,

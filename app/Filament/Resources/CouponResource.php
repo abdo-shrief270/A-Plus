@@ -18,6 +18,8 @@ class CouponResource extends Resource
 
     protected static ?string $navigationGroup = 'الدورات والمبيعات';
 
+    protected static ?string $navigationIcon = 'heroicon-o-chat-bubble-left-right';
+
     protected static ?int $navigationSort = 2;
 
     protected static ?string $modelLabel = 'كوبون';
