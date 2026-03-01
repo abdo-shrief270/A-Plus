@@ -21,7 +21,11 @@ class Question extends Model
         'explanation_video_url',
         'difficulty',
         'is_new',
-        'practice_exam_id'
+        'practice_exam_id',
+        'comparison_value_1',
+        'comparison_image_1',
+        'comparison_value_2',
+        'comparison_image_2',
     ];
     protected $hidden = ['pivot'];
     protected $casts = [

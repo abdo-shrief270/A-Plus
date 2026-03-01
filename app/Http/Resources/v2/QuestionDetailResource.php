@@ -24,6 +24,19 @@ class QuestionDetailResource extends JsonResource
             'image_path' => $this->image_path,
             'difficulty' => $this->difficulty,
             'is_new' => $this->is_new,
+            'comparison' => $this->when(
+                $this->comparison_value_1 || $this->comparison_image_1 || $this->comparison_value_2 || $this->comparison_image_2,
+                [
+                    'value_1' => [
+                        'text' => $this->comparison_value_1,
+                        'image' => $this->comparison_image_1,
+                    ],
+                    'value_2' => [
+                        'text' => $this->comparison_value_2,
+                        'image' => $this->comparison_image_2,
+                    ],
+                ]
+            ),
             'explanation' => [
                 'text' => $this->explanation_text,
                 'image_path' => $this->explanation_text_image_path,

@@ -19,16 +19,17 @@ class EditQuestion extends EditRecord
 
     protected function afterSave(): void
     {
-        $data = $this->form->getState();
+        $formData = $this->data;
+        $assignTo = $formData['assign_to'] ?? 'category';
 
-        if (($data['assign_to'] ?? 'category') === 'category') {
-            $this->record->categories()->sync($data['category_ids'] ?? []);
-            $this->record->articles()->detach(); // Clear articles if switching to category
+        if ($assignTo === 'category') {
+            $this->record->categories()->sync($formData['category_ids'] ?? []);
+            $this->record->articles()->detach();
         }
 
-        if (($data['assign_to'] ?? '') === 'article') {
-            $this->record->articles()->sync($data['article_ids'] ?? []);
-            $this->record->categories()->detach(); // Clear categories if switching to article
+        if ($assignTo === 'article') {
+            $this->record->articles()->sync($formData['article_ids'] ?? []);
+            $this->record->categories()->detach();
         }
     }
 

@@ -158,6 +158,43 @@ class QuestionResource extends Resource
                                 ->previewable(true)
                                 ->moveFiles()
                                 ->formatStateUsing(fn($state, $record) => $record?->getRawOriginal('image_path') ? [$record->getRawOriginal('image_path')] : null),
+
+                            // Comparison values — only for مقارنة type
+                            Forms\Components\Section::make('القيم المقارنة')
+                                ->description('أدخل القيمتين اللتين سيتم المقارنة بينهما')
+                                ->visible(fn(Forms\Get $get) => QuestionType::find($get('question_type_id'))?->name == 'مقارنة')
+                                ->schema([
+                                    Forms\Components\Fieldset::make('القيمة الأولى')
+                                        ->schema([
+                                            Forms\Components\Textarea::make('comparison_value_1')
+                                                ->label('نص القيمة الأولى')
+                                                ->rows(3),
+                                            Forms\Components\FileUpload::make('comparison_image_1')
+                                                ->label('صورة القيمة الأولى')
+                                                ->image()
+                                                ->imageEditor()
+                                                ->directory('comparison_images')
+                                                ->disk('public')
+                                                ->imageEditorEmptyFillColor('#000000')
+                                                ->moveFiles(),
+                                        ])->columns(2),
+                                    Forms\Components\Fieldset::make('القيمة الثانية')
+                                        ->schema([
+                                            Forms\Components\Textarea::make('comparison_value_2')
+                                                ->label('نص القيمة الثانية')
+                                                ->rows(3),
+                                            Forms\Components\FileUpload::make('comparison_image_2')
+                                                ->label('صورة القيمة الثانية')
+                                                ->image()
+                                                ->imageEditor()
+                                                ->directory('comparison_images')
+                                                ->disk('public')
+                                                ->imageEditorEmptyFillColor('#000000')
+                                                ->moveFiles(),
+                                        ])->columns(2),
+                                ])
+                                ->columns(1),
+
                             Forms\Components\Toggle::make('is_new')
                                 ->label('سؤال جديد (Trending)')
                                 ->default(false),
@@ -364,6 +401,27 @@ class QuestionResource extends Resource
                             ->disk('public')
                             ->columnSpanFull(),
                     ]),
+
+                Section::make('القيم المقارنة')
+                    ->schema([
+                        Grid::make(2)
+                            ->schema([
+                                TextEntry::make('comparison_value_1')
+                                    ->label('نص القيمة الأولى')
+                                    ->placeholder('-'),
+                                TextEntry::make('comparison_value_2')
+                                    ->label('نص القيمة الثانية')
+                                    ->placeholder('-'),
+                                ImageEntry::make('comparison_image_1')
+                                    ->label('صورة القيمة الأولى')
+                                    ->disk('public'),
+                                ImageEntry::make('comparison_image_2')
+                                    ->label('صورة القيمة الثانية')
+                                    ->disk('public'),
+                            ]),
+                    ])
+                    ->visible(fn($record) => $record->type?->name === 'مقارنة')
+                    ->collapsible(),
 
                 Section::make('الشرح')
                     ->schema([

@@ -19,15 +19,17 @@ class CreateQuestion extends CreateRecord
 
     protected function afterCreate(): void
     {
-        $data = $this->form->getState();
+        $formData = $this->data;
 
         // Sync categories or articles based on assignment type
-        if (($data['assign_to'] ?? 'category') === 'category' && !empty($data['category_ids'])) {
-            $this->record->categories()->sync($data['category_ids']);
+        $assignTo = $formData['assign_to'] ?? 'category';
+
+        if ($assignTo === 'category' && !empty($formData['category_ids'])) {
+            $this->record->categories()->sync($formData['category_ids']);
         }
 
-        if (($data['assign_to'] ?? '') === 'article' && !empty($data['article_ids'])) {
-            $this->record->articles()->sync($data['article_ids']);
+        if ($assignTo === 'article' && !empty($formData['article_ids'])) {
+            $this->record->articles()->sync($formData['article_ids']);
         }
     }
 }
