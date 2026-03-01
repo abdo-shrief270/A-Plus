@@ -242,7 +242,7 @@ class QuestionResource extends Resource
                                         ->distinct()
                                         ->live()
                                         ->visible(fn(Forms\Get $get) => QuestionType::find($get('../../question_type_id'))?->name == 'نصي' || QuestionType::find($get('../../question_type_id'))?->name == 'مقارنة')
-                                        ->disabled(fn(Forms\Get $get) => QuestionType::find($get('../../question_type_id'))?->name == 'مقارنة')
+                                        ->readOnly(fn(Forms\Get $get) => QuestionType::find($get('../../question_type_id'))?->name == 'مقارنة')
                                         ->required(fn(Forms\Get $get) => QuestionType::find($get('../../question_type_id'))?->name == 'نصي'),
 
                                     Forms\Components\FileUpload::make('image_path')
