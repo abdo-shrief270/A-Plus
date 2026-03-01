@@ -390,11 +390,11 @@ class QuestionResource extends Resource
                             ->schema([
                                 TextEntry::make('text')
                                     ->label('نص الإجابة')
-                                    ->visible(fn($record) => !empty($record->text)),
+                                    ->placeholder('-'),
                                 ImageEntry::make('image_path')
                                     ->label('صورة الإجابة')
                                     ->disk('public')
-                                    ->visible(fn($record) => !empty($record->image_path)),
+                                    ->defaultImageUrl(null),
                                 IconEntry::make('is_correct')
                                     ->label('صحيحة؟')
                                     ->boolean(),
