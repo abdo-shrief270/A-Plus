@@ -372,6 +372,74 @@ class QuestionResource extends Resource
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
+                    Tables\Actions\BulkAction::make('change_difficulty')
+                        ->label('تغيير مستوى الصعوبة')
+                        ->icon('heroicon-o-star')
+                        ->form([
+                            Forms\Components\Select::make('difficulty')
+                                ->label('مستوى الصعوبة')
+                                ->options([
+                                    1 => '1 - سهل جداً',
+                                    2 => '2 - سهل',
+                                    3 => '3 - متوسط',
+                                    4 => '4 - صعب',
+                                    5 => '5 - صعب جداً',
+                                ])
+                                ->required(),
+                        ])
+                        ->action(function (\Illuminate\Database\Eloquent\Collection $records, array $data): void {
+                            foreach ($records as $record) {
+                                $record->update(['difficulty' => $data['difficulty']]);
+                            }
+                        })
+                        ->deselectRecordsAfterCompletion(),
+
+                    Tables\Actions\BulkAction::make('mark_as_trending')
+                        ->label('تغيير حالة (Trending)')
+                        ->icon('heroicon-o-fire')
+                        ->form([
+                            Forms\Components\Toggle::make('is_new')
+                                ->label('سؤال جديد؟')
+                                ->default(true),
+                        ])
+                        ->action(function (\Illuminate\Database\Eloquent\Collection $records, array $data): void {
+                            foreach ($records as $record) {
+                                $record->update(['is_new' => $data['is_new']]);
+                            }
+                        })
+                        ->deselectRecordsAfterCompletion(),
+
+                    Tables\Actions\BulkAction::make('assign_to_practice_exam')
+                        ->label('تعيين إلى نموذج')
+                        ->icon('heroicon-o-document-text')
+                        ->form([
+                            Forms\Components\Select::make('practice_exam_id')
+                                ->label('النموذج')
+                                ->options(function () {
+                                    return \App\Models\PracticeExam::query()->pluck('title', 'id');
+                                })
+                                ->searchable()
+                                ->required(),
+                        ])
+                        ->action(function (\Illuminate\Database\Eloquent\Collection $records, array $data): void {
+                            foreach ($records as $record) {
+                                $record->update(['practice_exam_id' => $data['practice_exam_id']]);
+                            }
+                        })
+                        ->deselectRecordsAfterCompletion(),
+
+                    Tables\Actions\BulkAction::make('remove_from_practice_exam')
+                        ->label('إزالة من النموذج')
+                        ->icon('heroicon-o-x-circle')
+                        ->color('danger')
+                        ->requiresConfirmation()
+                        ->action(function (\Illuminate\Database\Eloquent\Collection $records): void {
+                            foreach ($records as $record) {
+                                $record->update(['practice_exam_id' => null]);
+                            }
+                        })
+                        ->deselectRecordsAfterCompletion(),
+
                     Tables\Actions\DeleteBulkAction::make(),
                 ]),
             ]);
