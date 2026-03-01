@@ -89,6 +89,7 @@ class QuestionsRelationManager extends RelationManager
                     ->label('الإجابات')
                     ->columnSpanFull()
                     ->relationship('answers')
+                    ->orderColumn('order')
                     ->schema([
                         Forms\Components\TextInput::make('text')
                             ->label('نص الإجابة')

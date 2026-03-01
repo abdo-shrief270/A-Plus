@@ -235,6 +235,7 @@ class QuestionResource extends Resource
                             Forms\Components\Repeater::make('answers')
                                 ->label('الإجابات')
                                 ->relationship('answers')
+                                ->orderColumn('order')
                                 ->schema([
                                     Forms\Components\TextInput::make('text')
                                         ->label('نص الإجابة')
