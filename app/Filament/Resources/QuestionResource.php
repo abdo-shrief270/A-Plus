@@ -4,8 +4,10 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\QuestionResource\Pages;
 use App\Filament\Resources\QuestionResource\RelationManagers;
+use App\Models\Article;
 use App\Models\Question;
 use App\Models\QuestionType;
+use App\Models\SectionCategory;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
@@ -42,136 +44,213 @@ class QuestionResource extends Resource
     {
         return $form
             ->schema([
-                Forms\Components\Tabs::make('Question Details')
-                    ->tabs([
-                        Forms\Components\Tabs\Tab::make('السؤال')
-                            ->schema([
-                                Forms\Components\Select::make('question_type_id')
-                                    ->label('نوع السؤال')
-                                    ->options(function () {
-                                        return QuestionType::query()
-                                            ->get()
-                                            ->pluck('name', 'id');
-                                    })
-                                    ->live()
-                                    ->afterStateUpdated(function ($state, callable $set) {
-                                        $type = QuestionType::find($state);
-                                        if ($type && $type->name == 'مقارنة') {
-                                            $set('answers', [
-                                                ['text' => 'القيمة الأولى أكبر', 'is_correct' => false, 'order' => 1],
-                                                ['text' => 'القيمة الثانية أكبر', 'is_correct' => false, 'order' => 2],
-                                                ['text' => 'القيمتان متساويتان', 'is_correct' => false, 'order' => 3],
-                                                ['text' => 'المعطيات غير كافية', 'is_correct' => false, 'order' => 4],
-                                            ]);
-                                        } elseif ($type && ($type->name == 'نصي' || $type->name == 'صوري')) {
-                                            $set('answers', [
-                                                ['text' => '', 'is_correct' => false, 'order' => 1],
-                                                ['text' => '', 'is_correct' => false, 'order' => 2],
-                                                ['text' => '', 'is_correct' => false, 'order' => 3],
-                                                ['text' => '', 'is_correct' => false, 'order' => 4],
-                                            ]);
-                                        }
-                                    })
-                                    ->required(),
-                                Forms\Components\Textarea::make('text')
-                                    ->label('نص السؤال')
-                                    ->rows(5)
-                                    ->required(),
-                                Forms\Components\FileUpload::make('image_path')
-                                    ->label('صورة مرفقة')
-                                    ->image()
-                                    ->imageEditor()
-                                    ->directory('question_images')
-                                    ->disk('public')
-                                    ->imageEditorEmptyFillColor('#000000')
-                                    ->previewable(true)
-                                    ->moveFiles()
-                                    ->formatStateUsing(fn($state, $record) => $record?->getRawOriginal('image_path') ? [$record->getRawOriginal('image_path')] : null),
-                                Forms\Components\Toggle::make('is_new')
-                                    ->label('سؤال جديد (Trending)')
-                                    ->default(false),
-                                Forms\Components\Select::make('practice_exam_id')
-                                    ->label('النموذج')
-                                    ->relationship('practiceExam', 'title')
-                                    ->searchable()
-                                    ->preload(),
-                            ]),
-                        Forms\Components\Tabs\Tab::make('الشرح')
-                            ->schema([
-                                Forms\Components\Textarea::make('explanation_text')
-                                    ->label('شرح السؤال')
-                                    ->rows(5),
-                                Forms\Components\FileUpload::make('explanation_text_image_path')
-                                    ->label('صورة مرفقة لشرح السؤال')
-                                    ->image()
-                                    ->imageEditor()
-                                    ->disk('public')
-                                    ->imageEditorEmptyFillColor('#000000')
-                                    ->moveFiles()
-                                    ->previewable(true)
-                                    ->directory('question_explanation_images')
-                                    ->formatStateUsing(fn($state, $record) => $record?->getRawOriginal('explanation_text_image_path') ? [$record->getRawOriginal('explanation_text_image_path')] : null),
-                                Forms\Components\TextInput::make('explanation_video_url')
-                                    ->label('فيديو شرح السؤال')
-                                    ->url()
-                                    ->activeUrl(),
-                            ]),
-                        Forms\Components\Tabs\Tab::make('الإجابات')
-                            ->schema([
-                                Forms\Components\Repeater::make('answers')
-                                    ->label('الإجابات')
-                                    ->relationship('answers')
-                                    ->schema([
-                                        Forms\Components\TextInput::make('text')
-                                            ->label('نص الإجابة')
-                                            ->columnSpan(2)
-                                            ->distinct()
-                                            ->live()
-                                            ->visible(fn(Forms\Get $get) => QuestionType::find($get('../../question_type_id'))?->name == 'نصي' || QuestionType::find($get('../../question_type_id'))?->name == 'مقارنة')
-                                            ->disabled(fn(Forms\Get $get) => QuestionType::find($get('../../question_type_id'))?->name == 'مقارنة')
-                                            ->required(fn(Forms\Get $get) => QuestionType::find($get('../../question_type_id'))?->name == 'نصي'),
+                Forms\Components\Wizard::make([
+                    Forms\Components\Wizard\Step::make('التصنيف')
+                        ->icon('heroicon-o-tag')
+                        ->description('اختر الفئة أو القطعة')
+                        ->schema([
+                            Forms\Components\Radio::make('assign_to')
+                                ->label('ربط السؤال بـ')
+                                ->options([
+                                    'category' => 'فئة (تصنيف فرعي)',
+                                    'article' => 'قطعة',
+                                ])
+                                ->default('category')
+                                ->required()
+                                ->live()
+                                ->dehydrated(false)
+                                ->afterStateHydrated(function (Forms\Components\Radio $component, Forms\Get $get, ?Question $record) {
+                                    if ($record) {
+                                        $hasArticle = $record->articles()->exists();
+                                        $component->state($hasArticle ? 'article' : 'category');
+                                    }
+                                }),
 
-                                        Forms\Components\FileUpload::make('image_path')
-                                            ->label('صورة الإجابة')
-                                            ->image()
-                                            ->imageEditor()
-                                            ->directory('answer_images')
-                                            ->disk('public')
-                                            ->columnSpan(2)
-                                            ->visible(fn(Forms\Get $get) => QuestionType::find($get('../../question_type_id'))?->name == 'صوري')
-                                            ->required(fn(Forms\Get $get) => QuestionType::find($get('../../question_type_id'))?->name == 'صوري'),
+                            Forms\Components\Select::make('category_ids')
+                                ->label('الفئة')
+                                ->searchable()
+                                ->multiple()
+                                ->required(fn(Forms\Get $get) => $get('assign_to') === 'category')
+                                ->visible(fn(Forms\Get $get) => $get('assign_to') === 'category')
+                                ->options(function () {
+                                    return SectionCategory::with('section.exam')
+                                        ->get()
+                                        ->mapWithKeys(function ($cat) {
+                                            $label = ($cat->section?->exam?->name ?? '') . ' > ' . ($cat->section?->name ?? '') . ' > ' . $cat->name;
+                                            return [$cat->id => $label];
+                                        });
+                                })
+                                ->dehydrated(false)
+                                ->afterStateHydrated(function (Forms\Components\Select $component, ?Question $record) {
+                                    if ($record) {
+                                        $component->state($record->categories()->pluck('section_categories.id')->toArray());
+                                    }
+                                }),
 
-                                        Forms\Components\Toggle::make('is_correct')
-                                            ->label('الإجابة صحيحة؟')
-                                            ->inline(false)
-                                            ->live()
-                                            ->afterStateUpdated(function (Forms\Components\Component $component, $state, Forms\Get $get, Forms\Set $set) {
-                                                if ($state) {
-                                                    $answers = $get('../../answers');
-                                                    preg_match('/answers\.([^.]+)\.is_correct/', $component->getId(), $matches);
-                                                    $id = $matches[1] ?? null;
-                                                    foreach ($answers as $key => &$value) {
-                                                        if ($key == $id)
-                                                            continue;
-                                                        $value['is_correct'] = false;
-                                                    }
-                                                    $set('../../answers', $answers);
+                            Forms\Components\Select::make('article_ids')
+                                ->label('القطعة')
+                                ->searchable()
+                                ->multiple()
+                                ->required(fn(Forms\Get $get) => $get('assign_to') === 'article')
+                                ->visible(fn(Forms\Get $get) => $get('assign_to') === 'article')
+                                ->options(function () {
+                                    return Article::with('category.section.exam')
+                                        ->where('is_active', true)
+                                        ->get()
+                                        ->mapWithKeys(function ($article) {
+                                            $label = ($article->category?->section?->exam?->name ?? '') . ' > '
+                                                . ($article->category?->section?->name ?? '') . ' > '
+                                                . ($article->category?->name ?? '') . ' > '
+                                                . $article->title;
+                                            return [$article->id => $label];
+                                        });
+                                })
+                                ->dehydrated(false)
+                                ->afterStateHydrated(function (Forms\Components\Select $component, ?Question $record) {
+                                    if ($record) {
+                                        $component->state($record->articles()->pluck('articles.id')->toArray());
+                                    }
+                                }),
+                        ]),
+
+                    Forms\Components\Wizard\Step::make('السؤال')
+                        ->icon('heroicon-o-question-mark-circle')
+                        ->description('بيانات السؤال الأساسية')
+                        ->schema([
+                            Forms\Components\Select::make('question_type_id')
+                                ->label('نوع السؤال')
+                                ->options(function () {
+                                    return QuestionType::query()
+                                        ->get()
+                                        ->pluck('name', 'id');
+                                })
+                                ->live()
+                                ->afterStateUpdated(function ($state, callable $set) {
+                                    $type = QuestionType::find($state);
+                                    if ($type && $type->name == 'مقارنة') {
+                                        $set('answers', [
+                                            ['text' => 'القيمة الأولى أكبر', 'is_correct' => false, 'order' => 1],
+                                            ['text' => 'القيمة الثانية أكبر', 'is_correct' => false, 'order' => 2],
+                                            ['text' => 'القيمتان متساويتان', 'is_correct' => false, 'order' => 3],
+                                            ['text' => 'المعطيات غير كافية', 'is_correct' => false, 'order' => 4],
+                                        ]);
+                                    } elseif ($type && ($type->name == 'نصي' || $type->name == 'صوري')) {
+                                        $set('answers', [
+                                            ['text' => '', 'is_correct' => false, 'order' => 1],
+                                            ['text' => '', 'is_correct' => false, 'order' => 2],
+                                            ['text' => '', 'is_correct' => false, 'order' => 3],
+                                            ['text' => '', 'is_correct' => false, 'order' => 4],
+                                        ]);
+                                    }
+                                })
+                                ->required(),
+                            Forms\Components\Textarea::make('text')
+                                ->label('نص السؤال')
+                                ->rows(5)
+                                ->required(),
+                            Forms\Components\FileUpload::make('image_path')
+                                ->label('صورة مرفقة')
+                                ->image()
+                                ->imageEditor()
+                                ->directory('question_images')
+                                ->disk('public')
+                                ->imageEditorEmptyFillColor('#000000')
+                                ->previewable(true)
+                                ->moveFiles()
+                                ->formatStateUsing(fn($state, $record) => $record?->getRawOriginal('image_path') ? [$record->getRawOriginal('image_path')] : null),
+                            Forms\Components\Toggle::make('is_new')
+                                ->label('سؤال جديد (Trending)')
+                                ->default(false),
+                            Forms\Components\Select::make('practice_exam_id')
+                                ->label('النموذج')
+                                ->relationship('practiceExam', 'title')
+                                ->searchable()
+                                ->preload(),
+                        ]),
+
+                    Forms\Components\Wizard\Step::make('الشرح')
+                        ->icon('heroicon-o-light-bulb')
+                        ->description('شرح السؤال والتوضيح')
+                        ->schema([
+                            Forms\Components\Textarea::make('explanation_text')
+                                ->label('شرح السؤال')
+                                ->rows(5),
+                            Forms\Components\FileUpload::make('explanation_text_image_path')
+                                ->label('صورة مرفقة لشرح السؤال')
+                                ->image()
+                                ->imageEditor()
+                                ->disk('public')
+                                ->imageEditorEmptyFillColor('#000000')
+                                ->moveFiles()
+                                ->previewable(true)
+                                ->directory('question_explanation_images')
+                                ->formatStateUsing(fn($state, $record) => $record?->getRawOriginal('explanation_text_image_path') ? [$record->getRawOriginal('explanation_text_image_path')] : null),
+                            Forms\Components\TextInput::make('explanation_video_url')
+                                ->label('فيديو شرح السؤال')
+                                ->url()
+                                ->activeUrl(),
+                        ]),
+
+                    Forms\Components\Wizard\Step::make('الإجابات')
+                        ->icon('heroicon-o-check-circle')
+                        ->description('إجابات السؤال')
+                        ->schema([
+                            Forms\Components\Repeater::make('answers')
+                                ->label('الإجابات')
+                                ->relationship('answers')
+                                ->schema([
+                                    Forms\Components\TextInput::make('text')
+                                        ->label('نص الإجابة')
+                                        ->columnSpan(2)
+                                        ->distinct()
+                                        ->live()
+                                        ->visible(fn(Forms\Get $get) => QuestionType::find($get('../../question_type_id'))?->name == 'نصي' || QuestionType::find($get('../../question_type_id'))?->name == 'مقارنة')
+                                        ->disabled(fn(Forms\Get $get) => QuestionType::find($get('../../question_type_id'))?->name == 'مقارنة')
+                                        ->required(fn(Forms\Get $get) => QuestionType::find($get('../../question_type_id'))?->name == 'نصي'),
+
+                                    Forms\Components\FileUpload::make('image_path')
+                                        ->label('صورة الإجابة')
+                                        ->image()
+                                        ->imageEditor()
+                                        ->directory('answer_images')
+                                        ->disk('public')
+                                        ->columnSpan(2)
+                                        ->visible(fn(Forms\Get $get) => QuestionType::find($get('../../question_type_id'))?->name == 'صوري')
+                                        ->required(fn(Forms\Get $get) => QuestionType::find($get('../../question_type_id'))?->name == 'صوري'),
+
+                                    Forms\Components\Toggle::make('is_correct')
+                                        ->label('الإجابة صحيحة؟')
+                                        ->inline(false)
+                                        ->live()
+                                        ->afterStateUpdated(function (Forms\Components\Component $component, $state, Forms\Get $get, Forms\Set $set) {
+                                            if ($state) {
+                                                $answers = $get('../../answers');
+                                                preg_match('/answers\.([^.]+)\.is_correct/', $component->getId(), $matches);
+                                                $id = $matches[1] ?? null;
+                                                foreach ($answers as $key => &$value) {
+                                                    if ($key == $id)
+                                                        continue;
+                                                    $value['is_correct'] = false;
                                                 }
-                                            })
-                                            ->required(),
-                                    ])
-                                    ->itemLabel(function (array $state, callable $get, string $uuid) {
-                                        $index = array_search($uuid, array_keys($get('answers') ?? []));
-                                        return 'إجابة ' . ($index + 1);
-                                    })
-                                    ->defaultItems(4)
-                                    ->minItems(4)
-                                    ->maxItems(4)
-                                    ->addable(fn(Forms\Get $get) => QuestionType::find($get('../question_type_id'))?->name != 'مقارنة')
-                                    ->deletable(fn(Forms\Get $get) => QuestionType::find($get('../question_type_id'))?->name != 'مقارنة')
-                                    ->columns(3),
-                            ]),
-                    ])->columnSpanFull(),
+                                                $set('../../answers', $answers);
+                                            }
+                                        })
+                                        ->required(),
+                                ])
+                                ->itemLabel(function (array $state, callable $get, string $uuid) {
+                                    $index = array_search($uuid, array_keys($get('answers') ?? []));
+                                    return 'إجابة ' . ($index + 1);
+                                })
+                                ->defaultItems(4)
+                                ->minItems(4)
+                                ->maxItems(4)
+                                ->addable(fn(Forms\Get $get) => QuestionType::find($get('../question_type_id'))?->name != 'مقارنة')
+                                ->deletable(fn(Forms\Get $get) => QuestionType::find($get('../question_type_id'))?->name != 'مقارنة')
+                                ->columns(3),
+                        ]),
+                ])
+                ->skippable(fn (string $operation) => $operation === 'edit')
+                ->columnSpanFull(),
             ]);
     }
 
