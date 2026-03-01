@@ -3,11 +3,13 @@
 namespace App\Filament\Resources\QuestionResource\Widgets;
 
 use App\Models\Question;
+use BezhanSalleh\FilamentShield\Traits\HasWidgetShield;
 use Filament\Widgets\StatsOverviewWidget as BaseWidget;
 use Filament\Widgets\StatsOverviewWidget\Stat;
 
 class QuestionStatsOverview extends BaseWidget
 {
+    use HasWidgetShield;
     protected function getStats(): array
     {
         $totalQuestions = Question::count();

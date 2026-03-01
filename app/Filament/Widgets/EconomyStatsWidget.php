@@ -5,11 +5,13 @@ namespace App\Filament\Widgets;
 use App\Models\Plan;
 use App\Models\Subscription;
 use App\Models\Wallet;
+use BezhanSalleh\FilamentShield\Traits\HasWidgetShield;
 use Filament\Widgets\StatsOverviewWidget as BaseWidget;
 use Filament\Widgets\StatsOverviewWidget\Stat;
 
 class EconomyStatsWidget extends BaseWidget
 {
+    use HasWidgetShield;
     protected static ?int $sort = 1;
 
     protected function getStats(): array

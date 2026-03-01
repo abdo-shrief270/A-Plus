@@ -4,11 +4,13 @@ namespace App\Filament\Resources\LessonResource\Widgets;
 
 use App\Models\Lesson;
 use App\Models\LessonPage;
+use BezhanSalleh\FilamentShield\Traits\HasWidgetShield;
 use Filament\Widgets\StatsOverviewWidget as BaseWidget;
 use Filament\Widgets\StatsOverviewWidget\Stat;
 
 class LessonStatsOverview extends BaseWidget
 {
+    use HasWidgetShield;
     protected function getStats(): array
     {
         $totalLessons = Lesson::count();

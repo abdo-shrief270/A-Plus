@@ -8,7 +8,6 @@ use App\Http\Requests\v2\QuestionSearchRequest;
 use App\Http\Resources\v2\QuestionDetailResource;
 use App\Http\Resources\v2\QuestionResource;
 use App\Models\Question;
-use App\Models\ExamSubject;
 use App\Models\SectionCategory;
 use App\Services\QuestionService;
 use Illuminate\Http\JsonResponse;
@@ -85,58 +84,6 @@ class QuestionController extends BaseApiController
         }
     }
 
-    /**
-     * Get Questions by Subject (أسئلة مادة معينة)
-     * 
-     * يجلب الأسئلة المُصفاة بناءً على مادة دراسية تابعة لامتحان/مرحلة (Exam Subject).
-     * يدعم تقسيم الصفحات (Pagination) بشكل افتراضي.
-     *
-     * @pathParam subject integer required المعرف الافتراضي للمادة (Exam Subject). Example: 10
-     * @queryParam per_page integer optional عدد العناصر.
-     *
-     * @group Browsing / Questions (الأسئلة)
-     * @unauthenticated
-     *
-     * @response 200 array{status: int, message: string, data: array{subject: array, questions: array, pagination?: array}}
-     * @response 404 array{status: int, message: string}
-     */
-    public function bySubject(ExamSubject $subject, QuestionIndexRequest $request): JsonResponse
-    {
-        try {
-            $filters = $request->validated();
-            $filters['paginate'] = $filters['paginate'] ?? true;
-
-            $questions = $this->questionService->getQuestionsBySubject($subject, $filters);
-
-            if ($questions instanceof \Illuminate\Pagination\LengthAwarePaginator) {
-                return $this->successResponse([
-                    'subject' => [
-                        'id' => $subject->id,
-                        'name' => $subject->name,
-                        'description' => $subject->description,
-                    ],
-                    'questions' => QuestionDetailResource::collection($questions->items()),
-                    'pagination' => [
-                        'current_page' => $questions->currentPage(),
-                        'per_page' => $questions->perPage(),
-                        'total' => $questions->total(),
-                        'last_page' => $questions->lastPage(),
-                    ]
-                ], 'Subject questions retrieved successfully');
-            }
-
-            return $this->successResponse([
-                'subject' => [
-                    'id' => $subject->id,
-                    'name' => $subject->name,
-                    'description' => $subject->description,
-                ],
-                'questions' => QuestionDetailResource::collection($questions)
-            ], 'Subject questions retrieved successfully');
-        } catch (\Exception $e) {
-            return $this->errorResponse('Failed to retrieve subject questions: ' . $e->getMessage(), 500);
-        }
-    }
 
     /**
      * Get Questions by Category (أسئلة تصنيف فرعي)

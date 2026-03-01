@@ -6,11 +6,13 @@ use App\Models\Exam;
 use App\Models\Question;
 use App\Models\School;
 use App\Models\User;
+use BezhanSalleh\FilamentShield\Traits\HasWidgetShield;
 use Filament\Widgets\StatsOverviewWidget as BaseWidget;
 use Filament\Widgets\StatsOverviewWidget\Stat;
 
 class StatsOverview extends BaseWidget
 {
+    use HasWidgetShield;
     protected function getStats(): array
     {
         return [

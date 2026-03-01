@@ -3,12 +3,14 @@
 namespace App\Filament\Resources\ExamSectionResource\Widgets;
 
 use App\Models\ExamSection;
+use BezhanSalleh\FilamentShield\Traits\HasWidgetShield;
 use Illuminate\Support\Facades\DB;
 use Filament\Widgets\StatsOverviewWidget as BaseWidget;
 use Filament\Widgets\StatsOverviewWidget\Stat;
 
 class ExamSectionStatsOverview extends BaseWidget
 {
+    use HasWidgetShield;
     protected function getStats(): array
     {
         $totalSections = ExamSection::count();

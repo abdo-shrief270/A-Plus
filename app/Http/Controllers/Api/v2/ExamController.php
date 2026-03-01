@@ -7,7 +7,6 @@ use App\Http\Requests\v2\ExamIndexRequest;
 use App\Http\Resources\v2\ExamDetailResource;
 use App\Http\Resources\v2\ExamResource;
 use App\Http\Resources\v2\SectionResource;
-use App\Http\Resources\v2\SubjectResource;
 use App\Models\Exam;
 use App\Services\ExamService;
 use Illuminate\Http\JsonResponse;
@@ -75,33 +74,6 @@ class ExamController extends BaseApiController
             ], 'Exam details retrieved successfully');
         } catch (\Exception $e) {
             return $this->errorResponse('Failed to retrieve exam details: ' . $e->getMessage(), 500);
-        }
-    }
-
-    /**
-     * Get Exam Subjects (المواد التابعة للامتحان)
-     * 
-     * يجلب قائمة بالمواد الدراسية (Subjects) المنسوبة إلى هذا الامتحان/المرحلة الدراسية.
-     * على سبيل المثال، للصف الأول الثانوي سيرجع: (رياضيات، فيزياء، لغة عربية، الخ).
-     *
-     * @pathParam exam integer required المعرف الافتراضي للامتحان. Example: 1
-     *
-     * @group Browsing / Exams (الامتحانات)
-     * @unauthenticated
-     *
-     * @response 200 array{status: int, message: string, data: array{subjects: array}}
-     * @response 404 array{status: int, message: string}
-     */
-    public function subjects(Exam $exam): JsonResponse
-    {
-        try {
-            $subjects = $this->examService->getExamSubjects($exam);
-
-            return $this->successResponse([
-                'subjects' => SubjectResource::collection($subjects)
-            ], 'Exam subjects retrieved successfully');
-        } catch (\Exception $e) {
-            return $this->errorResponse('Failed to retrieve exam subjects: ' . $e->getMessage(), 500);
         }
     }
 

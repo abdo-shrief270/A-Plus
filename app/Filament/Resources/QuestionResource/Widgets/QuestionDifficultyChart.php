@@ -3,10 +3,12 @@
 namespace App\Filament\Resources\QuestionResource\Widgets;
 
 use App\Models\Question;
+use BezhanSalleh\FilamentShield\Traits\HasWidgetShield;
 use Filament\Widgets\ChartWidget;
 
 class QuestionDifficultyChart extends ChartWidget
 {
+    use HasWidgetShield;
     protected static ?string $heading = 'توزيع صعوبة الأسئلة';
 
     protected static ?int $sort = 2;

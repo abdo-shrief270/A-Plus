@@ -3,10 +3,12 @@
 namespace App\Filament\Widgets;
 
 use App\Models\School;
+use BezhanSalleh\FilamentShield\Traits\HasWidgetShield;
 use Filament\Widgets\ChartWidget;
 
 class SchoolsChart extends ChartWidget
 {
+    use HasWidgetShield;
     protected static ?string $heading = 'أعلى المدارس تسجيلاً';
     protected static ?int $sort = 2;
 

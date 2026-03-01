@@ -3,10 +3,12 @@
 namespace App\Filament\Resources\LessonResource\Widgets;
 
 use App\Models\LessonPage;
+use BezhanSalleh\FilamentShield\Traits\HasWidgetShield;
 use Filament\Widgets\ChartWidget;
 
 class LessonPageTypeChart extends ChartWidget
 {
+    use HasWidgetShield;
     protected static ?string $heading = 'توزيع أنواع الصفحات';
 
     protected static ?int $sort = 2;

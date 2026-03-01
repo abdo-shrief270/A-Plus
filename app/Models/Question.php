@@ -47,11 +47,6 @@ class Question extends Model
         return $this->belongsTo(QuestionType::class, 'question_type_id', 'id');
     }
 
-    public function subjects()
-    {
-        return $this->belongsToMany(ExamSubject::class, 'subject_questions', 'question_id', 'exam_subject_id');
-    }
-
     public function categories()
     {
         return $this->belongsToMany(SectionCategory::class, 'category_questions', 'question_id', 'section_category_id');

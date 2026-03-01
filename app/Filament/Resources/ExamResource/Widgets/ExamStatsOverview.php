@@ -4,11 +4,13 @@ namespace App\Filament\Resources\ExamResource\Widgets;
 
 use App\Models\Exam;
 use App\Models\Question;
+use BezhanSalleh\FilamentShield\Traits\HasWidgetShield;
 use Filament\Widgets\StatsOverviewWidget as BaseWidget;
 use Filament\Widgets\StatsOverviewWidget\Stat;
 
 class ExamStatsOverview extends BaseWidget
 {
+    use HasWidgetShield;
     protected function getStats(): array
     {
         $totalExams = Exam::count();

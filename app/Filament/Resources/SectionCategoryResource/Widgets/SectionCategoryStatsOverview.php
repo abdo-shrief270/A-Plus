@@ -3,11 +3,13 @@
 namespace App\Filament\Resources\SectionCategoryResource\Widgets;
 
 use App\Models\SectionCategory;
+use BezhanSalleh\FilamentShield\Traits\HasWidgetShield;
 use Filament\Widgets\StatsOverviewWidget as BaseWidget;
 use Filament\Widgets\StatsOverviewWidget\Stat;
 
 class SectionCategoryStatsOverview extends BaseWidget
 {
+    use HasWidgetShield;
     protected function getStats(): array
     {
         $totalCategories = SectionCategory::count();

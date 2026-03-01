@@ -3,10 +3,12 @@
 namespace App\Filament\Resources\StudentResource\Widgets;
 
 use App\Models\Student;
+use BezhanSalleh\FilamentShield\Traits\HasWidgetShield;
 use Filament\Widgets\ChartWidget;
 
 class StudentGenderChart extends ChartWidget
 {
+    use HasWidgetShield;
     protected static ?string $heading = 'توزيع الطلاب حسب الجنس';
 
     protected static ?int $sort = 2;

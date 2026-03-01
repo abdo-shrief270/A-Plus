@@ -47,7 +47,7 @@ class ExamResource extends Resource
         return $table
             ->modifyQueryUsing(
                 fn(Builder $query) =>
-                $query->withCount('sections')->withCount('subjects')
+                $query->withCount('sections')
             )
             ->headerActions([
                 ExportAction::make()->exporter(ExamExporter::class),
@@ -64,10 +64,6 @@ class ExamResource extends Resource
                     ->searchable(),
                 Tables\Columns\TextColumn::make('sections_count')
                     ->label('عدد الأقسام')
-                    ->sortable()
-                    ->searchable(),
-                Tables\Columns\TextColumn::make('subjects_count')
-                    ->label('عدد المواد')
                     ->sortable()
                     ->searchable(),
             ])
@@ -99,8 +95,6 @@ class ExamResource extends Resource
                             ->label('كود الاختبار'),
                         TextEntry::make('sections_count')
                             ->label('عدد الأقسام'),
-                        TextEntry::make('subjects_count')
-                            ->label('عدد المواد'),
                     ])
                     ->columns(2),
 
@@ -139,7 +133,6 @@ class ExamResource extends Resource
 //        {
         return [
             RelationManagers\SectionsRelationManager::class,
-            RelationManagers\SubjectsRelationManager::class,
         ];
         //        }
 

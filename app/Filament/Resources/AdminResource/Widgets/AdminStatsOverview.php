@@ -3,11 +3,13 @@
 namespace App\Filament\Resources\AdminResource\Widgets;
 
 use App\Models\Admin;
+use BezhanSalleh\FilamentShield\Traits\HasWidgetShield;
 use Filament\Widgets\StatsOverviewWidget as BaseWidget;
 use Filament\Widgets\StatsOverviewWidget\Stat;
 
 class AdminStatsOverview extends BaseWidget
 {
+    use HasWidgetShield;
     protected function getStats(): array
     {
         $totalAdmins = Admin::count();

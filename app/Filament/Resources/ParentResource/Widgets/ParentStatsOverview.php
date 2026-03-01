@@ -4,11 +4,13 @@ namespace App\Filament\Resources\ParentResource\Widgets;
 
 use App\Models\Parentt;
 use App\Models\StudentParent;
+use BezhanSalleh\FilamentShield\Traits\HasWidgetShield;
 use Filament\Widgets\StatsOverviewWidget as BaseWidget;
 use Filament\Widgets\StatsOverviewWidget\Stat;
 
 class ParentStatsOverview extends BaseWidget
 {
+    use HasWidgetShield;
     protected function getStats(): array
     {
         $totalParents = Parentt::count();

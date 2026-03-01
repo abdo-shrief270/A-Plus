@@ -57,7 +57,6 @@ Route::prefix('v2')->name('api.v2.')->group(function () {
     Route::prefix('exams')->name('exams.')->group(function () {
         Route::get('/', [\App\Http\Controllers\Api\v2\ExamController::class, 'index'])->name('index');
         Route::get('/{exam}', [\App\Http\Controllers\Api\v2\ExamController::class, 'show'])->name('show');
-        Route::get('/{exam}/subjects', [\App\Http\Controllers\Api\v2\ExamController::class, 'subjects'])->name('subjects');
         Route::get('/{exam}/sections', [\App\Http\Controllers\Api\v2\ExamController::class, 'sections'])->name('sections');
     });
 
@@ -69,8 +68,7 @@ Route::prefix('v2')->name('api.v2.')->group(function () {
         Route::get('/{question}', [\App\Http\Controllers\Api\v2\QuestionController::class, 'show'])->name('show');
     });
 
-    // Subject & Category Questions
-    Route::get('/subjects/{subject}/questions', [\App\Http\Controllers\Api\v2\QuestionController::class, 'bySubject'])->name('subjects.questions');
+    // Category Questions
     Route::get('/categories/{category}/questions', [\App\Http\Controllers\Api\v2\QuestionController::class, 'byCategory'])->name('categories.questions');
 
     // Practice Exams (Models)

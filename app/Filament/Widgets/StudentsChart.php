@@ -3,12 +3,14 @@
 namespace App\Filament\Widgets;
 
 use App\Models\User;
+use BezhanSalleh\FilamentShield\Traits\HasWidgetShield;
 use Filament\Widgets\ChartWidget;
 use Flowframe\Trend\Trend;
 use Flowframe\Trend\TrendValue;
 
 class StudentsChart extends ChartWidget
 {
+    use HasWidgetShield;
     protected static ?string $heading = 'تسجيل الطلاب خلال العام';
     protected static ?int $sort = 1; // After StatsOverview
 
