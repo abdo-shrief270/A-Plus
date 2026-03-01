@@ -440,6 +440,65 @@ class QuestionResource extends Resource
                         })
                         ->deselectRecordsAfterCompletion(),
 
+                    Tables\Actions\BulkAction::make('assign_to_category')
+                        ->label('تعيين إلى فئة')
+                        ->icon('heroicon-o-tag')
+                        ->form([
+                            Forms\Components\Select::make('category_id')
+                                ->label('الفئة (Category)')
+                                ->options(function () {
+                                    return \App\Models\SectionCategory::with(['section.exam'])
+                                        ->get()
+                                        ->mapWithKeys(function ($category) {
+                                            $path = optional(optional($category->section)->exam)->name . ' > ' .
+                                                optional($category->section)->name . ' > ' .
+                                                $category->name;
+                                            return [$category->id => $path];
+                                        });
+                                })
+                                ->searchable()
+                                ->required(),
+                        ])
+                        ->action(function (\Illuminate\Database\Eloquent\Collection $records, array $data): void {
+                            foreach ($records as $record) {
+                                // Add category without removing existing ones
+                                $record->categories()->syncWithoutDetaching([$data['category_id']]);
+                                // Remove from articles since it's now in a category
+                                $record->articles()->detach();
+                            }
+                        })
+                        ->deselectRecordsAfterCompletion(),
+
+                    Tables\Actions\BulkAction::make('assign_to_article')
+                        ->label('تعيين إلى قطعة')
+                        ->icon('heroicon-o-document-duplicate')
+                        ->form([
+                            Forms\Components\Select::make('article_id')
+                                ->label('القطعة (Article)')
+                                ->options(function () {
+                                    return \App\Models\Article::with(['category.section.exam'])
+                                        ->get()
+                                        ->mapWithKeys(function ($article) {
+                                            $path = optional(optional(optional($article->category)->section)->exam)->name . ' > ' .
+                                                optional(optional($article->category)->section)->name . ' > ' .
+                                                optional($article->category)->name . ' > ' .
+                                                $article->title;
+                                            return [$article->id => $path];
+                                        });
+                                })
+                                ->searchable()
+                                ->required(),
+                        ])
+                        ->action(function (\Illuminate\Database\Eloquent\Collection $records, array $data): void {
+                            foreach ($records as $record) {
+                                // Add article without removing existing ones
+                                $record->articles()->syncWithoutDetaching([$data['article_id']]);
+                                // Remove from categories since it's now in an article
+                                $record->categories()->detach();
+                            }
+                        })
+                        ->deselectRecordsAfterCompletion(),
+
                     Tables\Actions\DeleteBulkAction::make(),
                 ]),
             ]);
