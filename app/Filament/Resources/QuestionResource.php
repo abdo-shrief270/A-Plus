@@ -144,10 +144,26 @@ class QuestionResource extends Resource
                                     }
                                 })
                                 ->required(),
-                            Forms\Components\Textarea::make('text')
+                            Forms\Components\RichEditor::make('text')
                                 ->label('نص السؤال')
-                                ->rows(5)
-                                ->required(),
+                                ->required()
+                                ->fileAttachmentsDisk('public')
+                                ->fileAttachmentsDirectory('question_text_images')
+                                ->fileAttachmentsVisibility('public')
+                                ->toolbarButtons([
+                                    'bold',
+                                    'italic',
+                                    'underline',
+                                    'strike',
+                                    'link',
+                                    'orderedList',
+                                    'bulletList',
+                                    'attachFiles',
+                                    'redo',
+                                    'undo',
+                                ])
+                                ->helperText('للكسور والمعادلات استخدم صيغة LaTeX مثل: $\frac{1}{2}$ أو $$\frac{1 + \frac{1}{2}}{\frac{1}{4}}$$')
+                                ->columnSpanFull(),
                             Forms\Components\FileUpload::make('image_path')
                                 ->label('صورة مرفقة')
                                 ->image()
@@ -166,9 +182,13 @@ class QuestionResource extends Resource
                                 ->schema([
                                     Forms\Components\Fieldset::make('القيمة الأولى')
                                         ->schema([
-                                            Forms\Components\Textarea::make('comparison_value_1')
+                                            Forms\Components\RichEditor::make('comparison_value_1')
                                                 ->label('نص القيمة الأولى')
-                                                ->rows(3),
+                                                ->fileAttachmentsDisk('public')
+                                                ->fileAttachmentsDirectory('comparison_text_images')
+                                                ->fileAttachmentsVisibility('public')
+                                                ->toolbarButtons(['bold', 'italic', 'attachFiles', 'undo', 'redo'])
+                                                ->helperText('للكسور: $\frac{بسط}{مقام}$'),
                                             Forms\Components\FileUpload::make('comparison_image_1')
                                                 ->label('صورة القيمة الأولى')
                                                 ->image()
@@ -180,9 +200,13 @@ class QuestionResource extends Resource
                                         ])->columns(2),
                                     Forms\Components\Fieldset::make('القيمة الثانية')
                                         ->schema([
-                                            Forms\Components\Textarea::make('comparison_value_2')
+                                            Forms\Components\RichEditor::make('comparison_value_2')
                                                 ->label('نص القيمة الثانية')
-                                                ->rows(3),
+                                                ->fileAttachmentsDisk('public')
+                                                ->fileAttachmentsDirectory('comparison_text_images')
+                                                ->fileAttachmentsVisibility('public')
+                                                ->toolbarButtons(['bold', 'italic', 'attachFiles', 'undo', 'redo'])
+                                                ->helperText('للكسور: $\frac{بسط}{مقام}$'),
                                             Forms\Components\FileUpload::make('comparison_image_2')
                                                 ->label('صورة القيمة الثانية')
                                                 ->image()
@@ -209,9 +233,25 @@ class QuestionResource extends Resource
                         ->icon('heroicon-o-light-bulb')
                         ->description('شرح السؤال والتوضيح')
                         ->schema([
-                            Forms\Components\Textarea::make('explanation_text')
+                            Forms\Components\RichEditor::make('explanation_text')
                                 ->label('شرح السؤال')
-                                ->rows(5),
+                                ->fileAttachmentsDisk('public')
+                                ->fileAttachmentsDirectory('explanation_text_images')
+                                ->fileAttachmentsVisibility('public')
+                                ->toolbarButtons([
+                                    'bold',
+                                    'italic',
+                                    'underline',
+                                    'strike',
+                                    'link',
+                                    'orderedList',
+                                    'bulletList',
+                                    'attachFiles',
+                                    'redo',
+                                    'undo',
+                                ])
+                                ->helperText('للكسور والمعادلات استخدم صيغة LaTeX مثل: $\frac{1}{2}$')
+                                ->columnSpanFull(),
                             Forms\Components\FileUpload::make('explanation_text_image_path')
                                 ->label('صورة مرفقة لشرح السؤال')
                                 ->image()
@@ -237,13 +277,22 @@ class QuestionResource extends Resource
                                 ->relationship('answers')
                                 ->orderColumn('order')
                                 ->schema([
-                                    Forms\Components\TextInput::make('text')
+                                    Forms\Components\RichEditor::make('text')
                                         ->label('نص الإجابة')
                                         ->columnSpan(2)
-                                        ->distinct()
-                                        ->live()
+                                        ->fileAttachmentsDisk('public')
+                                        ->fileAttachmentsDirectory('answer_text_images')
+                                        ->fileAttachmentsVisibility('public')
+                                        ->toolbarButtons([
+                                            'bold',
+                                            'italic',
+                                            'attachFiles',
+                                            'undo',
+                                            'redo',
+                                        ])
+                                        ->helperText('للكسور: $\frac{بسط}{مقام}$')
                                         ->visible(fn(Forms\Get $get) => QuestionType::find($get('../../question_type_id'))?->name == 'نصي' || QuestionType::find($get('../../question_type_id'))?->name == 'مقارنة')
-                                        ->readOnly(fn(Forms\Get $get) => QuestionType::find($get('../../question_type_id'))?->name == 'مقارنة')
+                                        ->disabled(fn(Forms\Get $get) => QuestionType::find($get('../../question_type_id'))?->name == 'مقارنة')
                                         ->required(fn(Forms\Get $get) => QuestionType::find($get('../../question_type_id'))?->name == 'نصي'),
 
                                     Forms\Components\FileUpload::make('image_path')
@@ -523,6 +572,7 @@ class QuestionResource extends Resource
                         TextEntry::make('text')
                             ->label('نص السؤال')
                             ->columnSpanFull()
+                            ->html()
                             ->prose(),
                         ImageEntry::make('image_path')
                             ->label('صورة مرفقة')
@@ -556,6 +606,7 @@ class QuestionResource extends Resource
                         TextEntry::make('explanation_text')
                             ->label('شرح السؤال')
                             ->columnSpanFull()
+                            ->html()
                             ->prose(),
                         ImageEntry::make('explanation_text_image_path')
                             ->label('صورة مرفقة للشرح')
