@@ -172,15 +172,16 @@
             <!-- Segmented Control Tabs -->
             <div class="p-4 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800">
                 <div class="flex p-1 bg-gray-200 dark:bg-gray-950 rounded-lg">
-                    <button type="button" @click="activeTab = 'video'; $nextTick(() => MathJax?.typesetPromise?.())"
-                        :class="activeTab === 'video' ? 'bg-white dark:bg-gray-800 text-gray-900 dark:text-white shadow-sm' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'"
-                        class="flex-1 py-2 text-center text-sm font-bold rounded-md transition-all duration-200">
+                    <button type="button"
+                            @click="activeTab = 'video'; $nextTick(() => MathJax?.typesetPromise?.())"
+                            :class="activeTab === 'video' ? 'bg-white dark:bg-gray-800 text-gray-900 dark:text-white shadow-sm' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'"
+                            class="flex-1 py-2 text-center text-sm font-bold rounded-md transition-all duration-200">
                         فيديو
                     </button>
-                    <button type="button" @click="activeTab = 'text'; $nextTick(() => MathJax?.typesetPromise?.())"
-
+                    <button type="button"
+                            @click="activeTab = 'text'; $nextTick(() => MathJax?.typesetPromise?.())"
                             :class="activeTab === 'text' ? 'bg-white dark:bg-gray-800 text-gray-900 dark:text-white shadow-sm' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'"
-                        class="flex-1 py-2 text-center text-sm font-bold rounded-md transition-all duration-200">
+                            class="flex-1 py-2 text-center text-sm font-bold rounded-md transition-all duration-200">
                         نص
                     </button>
                 </div>
