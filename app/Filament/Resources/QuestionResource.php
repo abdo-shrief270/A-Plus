@@ -233,7 +233,7 @@ class QuestionResource extends Resource
                         ->icon('heroicon-o-light-bulb')
                         ->description('شرح السؤال والتوضيح')
                         ->schema([
-                            Forms\Components\RichEditor::make('explanation_text')
+                            Forms\Components\MarkdownEditor::make('explanation_text')
                                 ->label('شرح السؤال')
                                 ->fileAttachmentsDisk('public')
                                 ->fileAttachmentsDirectory('explanation_text_images')
@@ -241,7 +241,6 @@ class QuestionResource extends Resource
                                 ->toolbarButtons([
                                     'bold',
                                     'italic',
-                                    'underline',
                                     'strike',
                                     'link',
                                     'orderedList',
@@ -361,6 +360,9 @@ class QuestionResource extends Resource
                     ->toggleable(),
                 Tables\Columns\TextColumn::make('text')
                     ->label('نص السؤال')
+                    ->formatStateUsing(fn (string $state): string =>
+                    preg_replace('/\$\$?.+?\$\$?|\\\\\(.+?\\\\\)|\\\\\[.+?\\\\\]/s', '[معادلة]', strip_tags($state))
+                    )
                     ->limit(50)
                     ->searchable()
                     ->sortable()
