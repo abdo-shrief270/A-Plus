@@ -4,10 +4,10 @@
     $hasVideo = !empty($record->explanation_video_url);
 @endphp
 
-<div x-data="{ 
-    showExplanation: false, 
-    activeTab: 'video', 
-    selectedAnswer: null, 
+<div x-data="{
+    showExplanation: false,
+    activeTab: 'video',
+    selectedAnswer: null,
     checkAnswer() {
         // Mock checking logic
     }
@@ -22,8 +22,37 @@
             },
             svg: {
                 fontCache: 'global'
+            },
+            startup: {
+                ready() {
+                    MathJax.startup.defaultReady();
+                }
             }
         };
+
+        // Re-typeset when Alpine shows hidden elements (modals, tabs, etc.)
+        document.addEventListener('alpine:initialized', () => {
+            Alpine.effect(() => {
+                setTimeout(() => {
+                    if (window.MathJax?.typesetPromise) {
+                        MathJax.typesetPromise();
+                    }
+                }, 100);
+            });
+        });
+
+        // Re-typeset after Livewire updates
+        document.addEventListener('livewire:navigated', () => {
+            if (window.MathJax?.typesetPromise) {
+                MathJax.typesetPromise();
+            }
+        });
+
+        document.addEventListener('livewire:update', () => {
+            if (window.MathJax?.typesetPromise) {
+                MathJax.typesetPromise();
+            }
+        });
     </script>
     <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
 
@@ -43,8 +72,8 @@
                     <x-heroicon-o-exclamation-triangle class="w-4 h-4" />
                     <span>تبليغ عن خطأ</span>
                 </button>
-                <button type="button" @click.stop="showExplanation = true"
-                    class="flex items-center gap-1 hover:text-info-600 dark:hover:text-info-400 text-info-600 dark:text-info-500 font-bold">
+                <button type="button" @click.stop="showExplanation = true; $nextTick(() => MathJax?.typesetPromise?.())"
+                        class="flex items-center gap-1 hover:text-info-600 dark:hover:text-info-400 text-info-600 dark:text-info-500 font-bold">
                     <x-heroicon-o-play-circle class="w-4 h-4" />
                     <span>عرض الشرح</span>
                 </button>
@@ -79,7 +108,7 @@
                 @php
                     $char = match ($index) { 0 => 'أ', 1 => 'ب', 2 => 'ج', 3 => 'د', default => '-'};
                 @endphp
-                <div @click="selectedAnswer = {{ $answer->id }}" :class="{ 
+                <div @click="selectedAnswer = {{ $answer->id }}" :class="{
                                                                 'ring-2 ring-primary-500 bg-primary-50 dark:bg-primary-900/20 dark:ring-primary-400': selectedAnswer === {{ $answer->id }},
                                                                 'hover:bg-gray-50 dark:hover:bg-gray-800': selectedAnswer !== {{ $answer->id }}
                                                             }"
@@ -143,13 +172,14 @@
             <!-- Segmented Control Tabs -->
             <div class="p-4 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800">
                 <div class="flex p-1 bg-gray-200 dark:bg-gray-950 rounded-lg">
-                    <button type="button" @click="activeTab = 'video'"
+                    <button type="button" @click="activeTab = 'video'; $nextTick(() => MathJax?.typesetPromise?.())"
                         :class="activeTab === 'video' ? 'bg-white dark:bg-gray-800 text-gray-900 dark:text-white shadow-sm' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'"
                         class="flex-1 py-2 text-center text-sm font-bold rounded-md transition-all duration-200">
                         فيديو
                     </button>
-                    <button type="button" @click="activeTab = 'text'"
-                        :class="activeTab === 'text' ? 'bg-white dark:bg-gray-800 text-gray-900 dark:text-white shadow-sm' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'"
+                    <button type="button" @click="activeTab = 'text'; $nextTick(() => MathJax?.typesetPromise?.())"
+
+                            :class="activeTab === 'text' ? 'bg-white dark:bg-gray-800 text-gray-900 dark:text-white shadow-sm' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'"
                         class="flex-1 py-2 text-center text-sm font-bold rounded-md transition-all duration-200">
                         نص
                     </button>

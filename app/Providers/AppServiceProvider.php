@@ -2,6 +2,9 @@
 
 namespace App\Providers;
 
+use Filament\Support\Assets\Css;
+use Filament\Support\Assets\Js;
+use Filament\Support\Facades\FilamentAsset;
 use Illuminate\Support\ServiceProvider;
 use Dedoc\Scramble\Scramble;
 use Dedoc\Scramble\Support\Generator\OpenApi;
@@ -53,5 +56,11 @@ class AppServiceProvider extends ServiceProvider
                 SecurityScheme::http('bearer')
             );
         });
+
+        FilamentAsset::register([
+            Css::make('katex-css', 'https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css'),
+            Js::make('katex-js', 'https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js'),
+            Js::make('katex-auto-render', 'https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js'),
+        ]);
     }
 }
