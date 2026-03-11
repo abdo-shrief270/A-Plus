@@ -144,6 +144,10 @@ class QuestionResource extends Resource
                                     }
                                 })
                                 ->required(),
+                            Forms\Components\ViewField::make('equation_quick_access_question')
+                                ->view('filament.forms.equation-quick-access')
+                                ->dehydrated(false)
+                                ->columnSpanFull(),
                             Forms\Components\RichEditor::make('text')
                                 ->label('نص السؤال')
                                 ->required()
@@ -249,6 +253,10 @@ class QuestionResource extends Resource
                         ->icon('heroicon-o-light-bulb')
                         ->description('شرح السؤال والتوضيح')
                         ->schema([
+                            Forms\Components\ViewField::make('equation_quick_access_explanation')
+                                ->view('filament.forms.equation-quick-access')
+                                ->dehydrated(false)
+                                ->columnSpanFull(),
                             Forms\Components\MarkdownEditor::make('explanation_text')
                                 ->label('شرح السؤال')
                                 ->live(onBlur: true)
@@ -293,6 +301,10 @@ class QuestionResource extends Resource
                         ->icon('heroicon-o-check-circle')
                         ->description('إجابات السؤال')
                         ->schema([
+                            Forms\Components\ViewField::make('equation_quick_access_answers')
+                                ->view('filament.forms.equation-quick-access')
+                                ->dehydrated(false)
+                                ->columnSpanFull(),
                             Forms\Components\Repeater::make('answers')
                                 ->label('الإجابات')
                                 ->relationship('answers')
