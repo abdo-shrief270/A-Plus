@@ -147,6 +147,7 @@ class QuestionResource extends Resource
                             Forms\Components\RichEditor::make('text')
                                 ->label('نص السؤال')
                                 ->required()
+                                ->live(onBlur: true)
                                 ->fileAttachmentsDisk('public')
                                 ->fileAttachmentsDirectory('question_text_images')
                                 ->fileAttachmentsVisibility('public')
@@ -163,6 +164,11 @@ class QuestionResource extends Resource
                                     'undo',
                                 ])
                                 ->helperText('للكسور والمعادلات استخدم صيغة LaTeX مثل: $\frac{1}{2}$ أو $$\frac{1 + \frac{1}{2}}{\frac{1}{4}}$$')
+                                ->columnSpanFull(),
+                            Forms\Components\ViewField::make('text_preview')
+                                ->view('filament.forms.math-preview')
+                                ->statePath('text')
+                                ->dehydrated(false)
                                 ->columnSpanFull(),
                             Forms\Components\FileUpload::make('image_path')
                                 ->label('صورة مرفقة')
@@ -184,11 +190,16 @@ class QuestionResource extends Resource
                                         ->schema([
                                             Forms\Components\RichEditor::make('comparison_value_1')
                                                 ->label('نص القيمة الأولى')
+                                                ->live(onBlur: true)
                                                 ->fileAttachmentsDisk('public')
                                                 ->fileAttachmentsDirectory('comparison_text_images')
                                                 ->fileAttachmentsVisibility('public')
                                                 ->toolbarButtons(['bold', 'italic', 'attachFiles', 'undo', 'redo'])
                                                 ->helperText('للكسور: $\frac{بسط}{مقام}$'),
+                                            Forms\Components\ViewField::make('comparison_value_1_preview')
+                                                ->view('filament.forms.math-preview')
+                                                ->statePath('comparison_value_1')
+                                                ->dehydrated(false),
                                             Forms\Components\FileUpload::make('comparison_image_1')
                                                 ->label('صورة القيمة الأولى')
                                                 ->image()
@@ -202,11 +213,16 @@ class QuestionResource extends Resource
                                         ->schema([
                                             Forms\Components\RichEditor::make('comparison_value_2')
                                                 ->label('نص القيمة الثانية')
+                                                ->live(onBlur: true)
                                                 ->fileAttachmentsDisk('public')
                                                 ->fileAttachmentsDirectory('comparison_text_images')
                                                 ->fileAttachmentsVisibility('public')
                                                 ->toolbarButtons(['bold', 'italic', 'attachFiles', 'undo', 'redo'])
                                                 ->helperText('للكسور: $\frac{بسط}{مقام}$'),
+                                            Forms\Components\ViewField::make('comparison_value_2_preview')
+                                                ->view('filament.forms.math-preview')
+                                                ->statePath('comparison_value_2')
+                                                ->dehydrated(false),
                                             Forms\Components\FileUpload::make('comparison_image_2')
                                                 ->label('صورة القيمة الثانية')
                                                 ->image()
@@ -235,6 +251,7 @@ class QuestionResource extends Resource
                         ->schema([
                             Forms\Components\MarkdownEditor::make('explanation_text')
                                 ->label('شرح السؤال')
+                                ->live(onBlur: true)
                                 ->fileAttachmentsDisk('public')
                                 ->fileAttachmentsDirectory('explanation_text_images')
                                 ->fileAttachmentsVisibility('public')
@@ -250,6 +267,11 @@ class QuestionResource extends Resource
                                     'undo',
                                 ])
                                 ->helperText('للكسور والمعادلات استخدم صيغة LaTeX مثل: $\frac{1}{2}$')
+                                ->columnSpanFull(),
+                            Forms\Components\ViewField::make('explanation_text_preview')
+                                ->view('filament.forms.markdown-math-preview')
+                                ->statePath('explanation_text')
+                                ->dehydrated(false)
                                 ->columnSpanFull(),
                             Forms\Components\FileUpload::make('explanation_text_image_path')
                                 ->label('صورة مرفقة لشرح السؤال')
@@ -279,6 +301,7 @@ class QuestionResource extends Resource
                                     Forms\Components\RichEditor::make('text')
                                         ->label('نص الإجابة')
                                         ->columnSpan(2)
+                                        ->live(onBlur: true)
                                         ->fileAttachmentsDisk('public')
                                         ->fileAttachmentsDirectory('answer_text_images')
                                         ->fileAttachmentsVisibility('public')
@@ -293,6 +316,12 @@ class QuestionResource extends Resource
                                         ->visible(fn(Forms\Get $get) => QuestionType::find($get('../../question_type_id'))?->name == 'نصي' || QuestionType::find($get('../../question_type_id'))?->name == 'مقارنة')
                                         ->disabled(fn(Forms\Get $get) => QuestionType::find($get('../../question_type_id'))?->name == 'مقارنة')
                                         ->required(fn(Forms\Get $get) => QuestionType::find($get('../../question_type_id'))?->name == 'نصي'),
+                                    Forms\Components\ViewField::make('text_math_preview')
+                                        ->view('filament.forms.answer-math-preview')
+                                        ->statePath('text')
+                                        ->dehydrated(false)
+                                        ->columnSpan(2)
+                                        ->visible(fn(Forms\Get $get) => QuestionType::find($get('../../question_type_id'))?->name == 'نصي' || QuestionType::find($get('../../question_type_id'))?->name == 'مقارنة'),
 
                                     Forms\Components\FileUpload::make('image_path')
                                         ->label('صورة الإجابة')
@@ -360,10 +389,30 @@ class QuestionResource extends Resource
                     ->toggleable(),
                 Tables\Columns\TextColumn::make('text')
                     ->label('نص السؤال')
-                    ->formatStateUsing(fn (string $state): string =>
-                    preg_replace('/\$\$?.+?\$\$?|\\\\\(.+?\\\\\)|\\\\\[.+?\\\\\]/s', '[معادلة]', strip_tags($state))
-                    )
-                    ->limit(50)
+                    ->formatStateUsing(function (string $state): string {
+                        $text = strip_tags($state);
+                        $text = \Illuminate\Support\Str::limit($text, 100);
+                        $escaped = e($text);
+                        return '<span class="math-content" x-data x-init="
+                            let el = $el;
+                            function tryRender() {
+                                if (typeof renderMathInElement !== \'undefined\') {
+                                    renderMathInElement(el, {
+                                        delimiters: [
+                                            {left: \'$$\', right: \'$$\', display: true},
+                                            {left: \'$\', right: \'$\', display: false},
+                                        ],
+                                        throwOnError: false
+                                    });
+                                } else {
+                                    setTimeout(tryRender, 300);
+                                }
+                            }
+                            tryRender();
+                        ">' . $escaped . '</span>';
+                    })
+                    ->html()
+                    ->wrap()
                     ->searchable()
                     ->sortable()
                     ->toggleable(),
@@ -588,9 +637,13 @@ class QuestionResource extends Resource
                             ->schema([
                                 TextEntry::make('comparison_value_1')
                                     ->label('نص القيمة الأولى')
+                                    ->html()
+                                    ->prose()
                                     ->placeholder('-'),
                                 TextEntry::make('comparison_value_2')
                                     ->label('نص القيمة الثانية')
+                                    ->html()
+                                    ->prose()
                                     ->placeholder('-'),
                                 ImageEntry::make('comparison_image_1')
                                     ->label('صورة القيمة الأولى')
@@ -629,6 +682,8 @@ class QuestionResource extends Resource
                             ->schema([
                                 TextEntry::make('text')
                                     ->label('نص الإجابة')
+                                    ->html()
+                                    ->prose()
                                     ->placeholder('-'),
                                 ImageEntry::make('image_path')
                                     ->label('صورة الإجابة')

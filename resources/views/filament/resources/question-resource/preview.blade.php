@@ -13,42 +13,6 @@
     }
 }" class="w-full font-cairo" dir="rtl">
 
-    <!-- MathJax Configuration -->
-    <script>
-        window.MathJax = {
-            tex: {
-                inlineMath: [['$', '$'], ['\\(', '\\)']],
-                displayMath: [['$$', '$$'], ['\\[', '\\]']],
-                processEscapes: true,
-            },
-            options: {
-                skipHtmlTags: ['script', 'noscript', 'style', 'textarea'],
-            },
-            svg: { fontCache: 'global' },
-            startup: {
-                ready() {
-                    MathJax.startup.defaultReady();
-                    MathJax.startup.promise.then(() => typesetMath());
-                }
-            }
-        };
-
-        function typesetMath() {
-            if (window.MathJax?.typesetPromise) {
-                MathJax.typesetPromise().then(() => {
-                    document.querySelectorAll('mjx-container').forEach(el => {
-                        el.style.direction = 'ltr';
-                        el.style.display = 'inline-block';
-                    });
-                });
-            }
-        }
-
-        document.addEventListener('livewire:navigated', typesetMath);
-        document.addEventListener('livewire:update', typesetMath);
-    </script>
-    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
-
     <!-- Question Card -->
     <div class="bg-white dark:bg-gray-900 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
         <!-- Header Actions -->
@@ -65,7 +29,7 @@
                     <x-heroicon-o-exclamation-triangle class="w-4 h-4" />
                     <span>تبليغ عن خطأ</span>
                 </button>
-                <button type="button" @click.stop="showExplanation = true; $nextTick(() => MathJax?.typesetPromise?.())"
+                <button type="button" @click.stop="showExplanation = true; $nextTick(() => { document.querySelectorAll('[data-math-rendered]').forEach(el => el.removeAttribute('data-math-rendered')); if (typeof renderAllMath === 'function') renderAllMath(); })"
                         class="flex items-center gap-1 hover:text-info-600 dark:hover:text-info-400 text-info-600 dark:text-info-500 font-bold">
                     <x-heroicon-o-play-circle class="w-4 h-4" />
                     <span>عرض الشرح</span>
@@ -82,7 +46,7 @@
 
         <!-- Question Content -->
         <div class="mb-8">
-            <div class="prose dark:prose-invert max-w-none text-lg text-gray-800 dark:text-gray-100 mb-4 leading-relaxed mathjax-content"
+            <div class="prose dark:prose-invert max-w-none text-lg text-gray-800 dark:text-gray-100 mb-4 leading-relaxed math-content"
                  dir="ltr" style="unicode-bidi: plaintext;">
                 {!! $record->text !!}
             </div>
@@ -107,7 +71,7 @@
                                                             }"
                     class="relative flex items-center p-4 border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 rounded-lg cursor-pointer transition-all">
 
-                    <span class="ml-auto flex-grow text-gray-700 dark:text-gray-200 text-lg mathjax-content">
+                    <span class="ml-auto flex-grow text-gray-700 dark:text-gray-200 text-lg math-content">
                         {!! $answer->text !!}
                     </span>
 
@@ -153,7 +117,7 @@
             <div
                 class="bg-green-50 dark:bg-green-900/20 p-4 border-b border-green-100 dark:border-green-900/30 text-center">
                 <span class="text-green-700 dark:text-green-400 font-bold">الإجابة الصحيحة: </span>
-                <span class="mathjax-content text-gray-800 dark:text-gray-100">
+                <span class="math-content text-gray-800 dark:text-gray-100">
                     @if($correct = $answers->where('is_correct', true)->first())
                         {!! $correct->text !!}
                     @else
@@ -166,13 +130,13 @@
             <div class="p-4 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800">
                 <div class="flex p-1 bg-gray-200 dark:bg-gray-950 rounded-lg">
                     <button type="button"
-                            @click="activeTab = 'video'; $nextTick(() => MathJax?.typesetPromise?.())"
+                            @click="activeTab = 'video'"
                             :class="activeTab === 'video' ? 'bg-white dark:bg-gray-800 text-gray-900 dark:text-white shadow-sm' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'"
                             class="flex-1 py-2 text-center text-sm font-bold rounded-md transition-all duration-200">
                         فيديو
                     </button>
                     <button type="button"
-                            @click="activeTab = 'text'; $nextTick(() => MathJax?.typesetPromise?.())"
+                            @click="activeTab = 'text'; $nextTick(() => { document.querySelectorAll('[data-math-rendered]').forEach(el => el.removeAttribute('data-math-rendered')); if (typeof renderAllMath === 'function') renderAllMath(); })"
                             :class="activeTab === 'text' ? 'bg-white dark:bg-gray-800 text-gray-900 dark:text-white shadow-sm' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'"
                             class="flex-1 py-2 text-center text-sm font-bold rounded-md transition-all duration-200">
                         نص
@@ -209,10 +173,10 @@
 
                 <!-- Text Tab -->
                 <div x-show="activeTab === 'text'" class="space-y-4">
-                    <div class="prose dark:prose-invert max-w-none text-gray-800 dark:text-gray-100 mathjax-content leading-relaxed"
+                    <div class="prose dark:prose-invert max-w-none text-gray-800 dark:text-gray-100 math-content leading-relaxed"
                          style="direction: rtl; unicode-bidi: plaintext;"
                          x-show="activeTab === 'text'"
-                         x-effect="if (activeTab === 'text') $nextTick(() => typesetMath())">
+                         x-effect="if (activeTab === 'text') $nextTick(() => { document.querySelectorAll('[data-math-rendered]').forEach(el => el.removeAttribute('data-math-rendered')); if (typeof renderAllMath === 'function') renderAllMath(); })">
                         {!! $record->explanation_text ?? 'لا يوجد شرح نصي لهذا السؤال' !!}
                     </div>
 
