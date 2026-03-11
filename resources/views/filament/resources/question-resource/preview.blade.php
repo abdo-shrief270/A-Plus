@@ -18,41 +18,34 @@
         window.MathJax = {
             tex: {
                 inlineMath: [['$', '$'], ['\\(', '\\)']],
-                displayMath: [['$$', '$$'], ['\\[', '\\]']]
+                displayMath: [['$$', '$$'], ['\\[', '\\]']],
+                processEscapes: true,
             },
-            svg: {
-                fontCache: 'global'
+            options: {
+                skipHtmlTags: ['script', 'noscript', 'style', 'textarea'],
             },
+            svg: { fontCache: 'global' },
             startup: {
                 ready() {
                     MathJax.startup.defaultReady();
+                    MathJax.startup.promise.then(() => typesetMath());
                 }
             }
         };
 
-        // Re-typeset when Alpine shows hidden elements (modals, tabs, etc.)
-        document.addEventListener('alpine:initialized', () => {
-            Alpine.effect(() => {
-                setTimeout(() => {
-                    if (window.MathJax?.typesetPromise) {
-                        MathJax.typesetPromise();
-                    }
-                }, 100);
-            });
-        });
-
-        // Re-typeset after Livewire updates
-        document.addEventListener('livewire:navigated', () => {
+        function typesetMath() {
             if (window.MathJax?.typesetPromise) {
-                MathJax.typesetPromise();
+                MathJax.typesetPromise().then(() => {
+                    document.querySelectorAll('mjx-container').forEach(el => {
+                        el.style.direction = 'ltr';
+                        el.style.display = 'inline-block';
+                    });
+                });
             }
-        });
+        }
 
-        document.addEventListener('livewire:update', () => {
-            if (window.MathJax?.typesetPromise) {
-                MathJax.typesetPromise();
-            }
-        });
+        document.addEventListener('livewire:navigated', typesetMath);
+        document.addEventListener('livewire:update', typesetMath);
     </script>
     <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
 
@@ -89,8 +82,8 @@
 
         <!-- Question Content -->
         <div class="mb-8">
-            <div
-                class="prose dark:prose-invert max-w-none text-lg text-gray-800 dark:text-gray-100 mb-4 leading-relaxed mathjax-content">
+            <div class="prose dark:prose-invert max-w-none text-lg text-gray-800 dark:text-gray-100 mb-4 leading-relaxed mathjax-content"
+                 dir="ltr" style="unicode-bidi: plaintext;">
                 {!! $record->text !!}
             </div>
 
@@ -216,8 +209,10 @@
 
                 <!-- Text Tab -->
                 <div x-show="activeTab === 'text'" class="space-y-4">
-                    <div
-                        class="prose dark:prose-invert max-w-none text-gray-800 dark:text-gray-100 mathjax-content leading-relaxed">
+                    <div class="prose dark:prose-invert max-w-none text-gray-800 dark:text-gray-100 mathjax-content leading-relaxed"
+                         style="direction: rtl; unicode-bidi: plaintext;"
+                         x-show="activeTab === 'text'"
+                         x-effect="if (activeTab === 'text') $nextTick(() => typesetMath())">
                         {!! $record->explanation_text ?? 'لا يوجد شرح نصي لهذا السؤال' !!}
                     </div>
 
