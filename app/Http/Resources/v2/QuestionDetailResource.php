@@ -2,7 +2,6 @@
 
 namespace App\Http\Resources\v2;
 
-use App\Services\QuestionService;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -15,8 +14,19 @@ class QuestionDetailResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
-//        $questionService = app(QuestionService::class);
-//        $context = $questionService->getQuestionContext($this->resource);
+        $previousId = null;
+        $nextId = null;
+
+        $category = $this->categories()->first();
+        if ($category) {
+            $siblingIds = $category->questions()->orderBy('questions.id')->pluck('questions.id');
+            $currentIndex = $siblingIds->search($this->id);
+
+            if ($currentIndex !== false) {
+                $previousId = $currentIndex > 0 ? $siblingIds[$currentIndex - 1] : null;
+                $nextId = $currentIndex < $siblingIds->count() - 1 ? $siblingIds[$currentIndex + 1] : null;
+            }
+        }
 
         return [
             'id' => $this->id,
@@ -43,7 +53,8 @@ class QuestionDetailResource extends JsonResource
                 'video_url' => $this->explanation_video_url,
             ],
             'answers' => AnswerResource::collection($this->whenLoaded('answers')),
-//            'belongs_to' => $context,
+            'previous_question_id' => $previousId,
+            'next_question_id' => $nextId,
             'type' => $this->whenLoaded('type', fn() => [
                 'id' => $this->type->id,
                 'name' => $this->type->name ?? null,
