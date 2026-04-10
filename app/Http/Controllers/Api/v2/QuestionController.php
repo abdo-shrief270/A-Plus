@@ -106,6 +106,8 @@ class QuestionController extends BaseApiController
 
             $questions = $this->questionService->getQuestionsByCategory($category, $filters);
 
+            $mapQuestion = fn($q) => ['id' => $q->id, 'text' => $q->text];
+
             if ($questions instanceof \Illuminate\Pagination\LengthAwarePaginator) {
                 return $this->successResponse([
                     'category' => [
@@ -113,7 +115,7 @@ class QuestionController extends BaseApiController
                         'name' => $category->name,
                         'description' => $category->description,
                     ],
-                    'questions' => QuestionDetailResource::collection($questions->items()),
+                    'questions' => array_map($mapQuestion, $questions->items()),
                     'pagination' => [
                         'current_page' => $questions->currentPage(),
                         'per_page' => $questions->perPage(),
@@ -129,7 +131,7 @@ class QuestionController extends BaseApiController
                     'name' => $category->name,
                     'description' => $category->description,
                 ],
-                'questions' => QuestionDetailResource::collection($questions)
+                'questions' => $questions->map($mapQuestion)->values(),
             ], 'Category questions retrieved successfully');
         } catch (\Exception $e) {
             return $this->errorResponse('Failed to retrieve category questions: ' . $e->getMessage(), 500);
