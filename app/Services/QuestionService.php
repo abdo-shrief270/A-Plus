@@ -75,9 +75,9 @@ class QuestionService
             $q->where('section_category_id', $category->id);
         })->pluck('id');
 
-        $allQuestionIds = $directQuestionIds->merge($articleQuestionIds)->unique();
+//        $allQuestionIds = $directQuestionIds->merge($articleQuestionIds)->unique();
 
-        $query = Question::whereIn('id', $allQuestionIds)
+        $query = Question::whereIn('id', $directQuestionIds)
             ->with([
                 'answers' => function ($query) {
                     $query->orderBy('order');
