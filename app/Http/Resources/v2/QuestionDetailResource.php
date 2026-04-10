@@ -16,7 +16,7 @@ class QuestionDetailResource extends JsonResource
     public function toArray(Request $request): array
     {
         $questionService = app(QuestionService::class);
-        $context = $questionService->getQuestionContext($this->resource);
+//        $context = $questionService->getQuestionContext($this->resource);
 
         return [
             'id' => $this->id,
@@ -43,7 +43,7 @@ class QuestionDetailResource extends JsonResource
                 'video_url' => $this->explanation_video_url,
             ],
             'answers' => AnswerResource::collection($this->whenLoaded('answers')),
-            'belongs_to' => $context,
+//            'belongs_to' => $context,
             'type' => $this->whenLoaded('type', fn() => [
                 'id' => $this->type->id,
                 'name' => $this->type->name ?? null,
