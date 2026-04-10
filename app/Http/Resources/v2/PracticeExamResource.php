@@ -2,6 +2,7 @@
 
 namespace App\Http\Resources\v2;
 
+use App\Services\QuestionService;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -21,7 +22,10 @@ class PracticeExamResource extends JsonResource
             'questions_count' => $this->whenLoaded('questions', function () {
                 return $this->questions->count();
             }, 0),
-            'questions' => QuestionDetailResource::collection($this->whenLoaded('questions')),
+            'questions' => QuestionDetailResource::collection($this->whenLoaded('questions', function () {
+                app(QuestionService::class)->attachSiblingIds($this->questions);
+                return $this->questions;
+            })),
         ];
     }
 }

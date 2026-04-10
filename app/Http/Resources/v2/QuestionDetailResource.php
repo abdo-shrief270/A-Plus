@@ -14,20 +14,6 @@ class QuestionDetailResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
-        $previousId = null;
-        $nextId = null;
-
-        $category = $this->categories()->first();
-        if ($category) {
-            $siblingIds = $category->questions()->orderBy('questions.id')->pluck('questions.id');
-            $currentIndex = $siblingIds->search($this->id);
-
-            if ($currentIndex !== false) {
-                $previousId = $currentIndex > 0 ? $siblingIds[$currentIndex - 1] : null;
-                $nextId = $currentIndex < $siblingIds->count() - 1 ? $siblingIds[$currentIndex + 1] : null;
-            }
-        }
-
         return [
             'id' => $this->id,
             'text' => $this->text,
@@ -53,8 +39,8 @@ class QuestionDetailResource extends JsonResource
                 'video_url' => $this->explanation_video_url,
             ],
             'answers' => AnswerResource::collection($this->whenLoaded('answers')),
-            'previous_question_id' => $previousId,
-            'next_question_id' => $nextId,
+            'previous_question_id' => $this->previous_question_id ?? null,
+            'next_question_id' => $this->next_question_id ?? null,
             'type' => $this->whenLoaded('type', fn() => [
                 'id' => $this->type->id,
                 'name' => $this->type->name ?? null,

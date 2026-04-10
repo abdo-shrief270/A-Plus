@@ -38,9 +38,13 @@ class QuestionService
 
         $perPage = $filters['per_page'] ?? 15;
 
-        return isset($filters['paginate']) && $filters['paginate']
+        $result = isset($filters['paginate']) && $filters['paginate']
             ? $query->paginate($perPage)
             : $query->get();
+
+        $this->attachSiblingIds($result instanceof LengthAwarePaginator ? $result->items() : $result);
+
+        return $result;
     }
 
     /**
@@ -51,13 +55,17 @@ class QuestionService
      */
     public function getQuestionDetails(Question $question): Question
     {
-        return $question->load([
+        $question->load([
             'answers' => function ($query) {
                 $query->orderBy('order');
             },
             'categories.section.exam',
             'type'
         ]);
+
+        $this->attachSiblingIds(collect([$question]));
+
+        return $question;
     }
 
     /**
@@ -96,9 +104,13 @@ class QuestionService
 
         $perPage = $filters['per_page'] ?? 15;
 
-        return isset($filters['paginate']) && $filters['paginate']
+        $result = isset($filters['paginate']) && $filters['paginate']
             ? $query->paginate($perPage)
             : $query->get();
+
+        $this->attachSiblingIds($result instanceof LengthAwarePaginator ? $result->items() : $result);
+
+        return $result;
     }
 
     /**
@@ -129,9 +141,13 @@ class QuestionService
 
         $perPage = $filters['per_page'] ?? 15;
 
-        return isset($filters['paginate']) && $filters['paginate']
+        $result = isset($filters['paginate']) && $filters['paginate']
             ? $query->paginate($perPage)
             : $query->get();
+
+        $this->attachSiblingIds($result instanceof LengthAwarePaginator ? $result->items() : $result);
+
+        return $result;
     }
 
     /**
@@ -157,9 +173,75 @@ class QuestionService
 
         $perPage = $filters['per_page'] ?? 15;
 
-        return isset($filters['paginate']) && $filters['paginate']
+        $result = isset($filters['paginate']) && $filters['paginate']
             ? $query->paginate($perPage)
             : $query->get();
+
+        $this->attachSiblingIds($result instanceof LengthAwarePaginator ? $result->items() : $result);
+
+        return $result;
+    }
+
+    /**
+     * Attach previous_question_id and next_question_id to each question
+     * based on sibling questions in the same category.
+     *
+     * @param \Illuminate\Support\Collection|array $questions
+     * @return \Illuminate\Support\Collection|array
+     */
+    public function attachSiblingIds($questions)
+    {
+        $questionIds = collect($questions)->pluck('id')->all();
+
+        if (empty($questionIds)) {
+            return $questions;
+        }
+
+        // Get the first category for each question in one query
+        $pivots = \DB::table('category_questions')
+            ->whereIn('question_id', $questionIds)
+            ->get()
+            ->groupBy('question_id');
+
+        // Collect unique category IDs (first category per question)
+        $categoryMap = [];
+        foreach ($questionIds as $qId) {
+            if (isset($pivots[$qId]) && $pivots[$qId]->isNotEmpty()) {
+                $categoryMap[$qId] = $pivots[$qId]->first()->section_category_id;
+            }
+        }
+
+        $categoryIds = array_unique(array_values($categoryMap));
+
+        // Get all questions per category, ordered by id
+        $categoryQuestions = \DB::table('category_questions')
+            ->whereIn('section_category_id', $categoryIds)
+            ->orderBy('question_id')
+            ->get()
+            ->groupBy('section_category_id');
+
+        // Build ordered lists per category
+        $orderedByCategory = [];
+        foreach ($categoryQuestions as $catId => $rows) {
+            $orderedByCategory[$catId] = $rows->pluck('question_id')->values()->all();
+        }
+
+        // Assign prev/next to each question
+        foreach ($questions as $question) {
+            $catId = $categoryMap[$question->id] ?? null;
+            if ($catId && isset($orderedByCategory[$catId])) {
+                $siblings = $orderedByCategory[$catId];
+                $index = array_search($question->id, $siblings);
+
+                $question->previous_question_id = ($index !== false && $index > 0) ? $siblings[$index - 1] : null;
+                $question->next_question_id = ($index !== false && $index < count($siblings) - 1) ? $siblings[$index + 1] : null;
+            } else {
+                $question->previous_question_id = null;
+                $question->next_question_id = null;
+            }
+        }
+
+        return $questions;
     }
 
     /**

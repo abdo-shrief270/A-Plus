@@ -8,10 +8,17 @@ use App\Http\Resources\v2\ArticleResource;
 use App\Http\Resources\v2\QuestionDetailResource;
 use App\Models\Article;
 use App\Models\SectionCategory;
+use App\Services\QuestionService;
 use Illuminate\Http\JsonResponse;
 
 class ArticleController extends BaseApiController
 {
+    protected QuestionService $questionService;
+
+    public function __construct(QuestionService $questionService)
+    {
+        $this->questionService = $questionService;
+    }
     /**
      * Get Articles by Category (قطع الفئة)
      *
@@ -67,6 +74,8 @@ class ArticleController extends BaseApiController
             }]);
             $article->loadCount('questions');
 
+            $this->questionService->attachSiblingIds($article->questions);
+
             return $this->successResponse([
                 'article' => new ArticleResource($article),
                 'questions' => QuestionDetailResource::collection($article->questions),
@@ -100,6 +109,8 @@ class ArticleController extends BaseApiController
                     $q->orderBy('order');
                 }, 'type'])
                 ->paginate($perPage);
+
+            $this->questionService->attachSiblingIds($questions->items());
 
             return $this->successResponse([
                 'article' => [
