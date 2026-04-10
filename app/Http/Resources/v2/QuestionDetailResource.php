@@ -15,7 +15,7 @@ class QuestionDetailResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
-        $questionService = app(QuestionService::class);
+//        $questionService = app(QuestionService::class);
 //        $context = $questionService->getQuestionContext($this->resource);
 
         return [

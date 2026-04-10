@@ -1,13 +1,19 @@
 <?php
 
-use App\Http\Controllers\Api\v1\AuthController;
-use App\Http\Controllers\Api\v1\EnrollmentController;
-use App\Http\Controllers\Api\v1\ExamController;
-use App\Http\Controllers\Api\v1\HomeController;
-use App\Http\Controllers\Api\v1\LessonController;
-use App\Http\Controllers\Api\v1\PaymentController;
-use App\Http\Controllers\Api\v1\QuestionController;
+use App\Http\Controllers\Api\v2\AnswerController;
+use App\Http\Controllers\Api\v2\ArticleController;
 use App\Http\Controllers\Api\v2\Auth\AuthController as V2AuthController;
+use App\Http\Controllers\Api\v2\ContactController;
+use App\Http\Controllers\Api\v2\EnrollmentController;
+use App\Http\Controllers\Api\v2\ExamController;
+use App\Http\Controllers\Api\v2\PracticeExamController;
+use App\Http\Controllers\Api\v2\QuestionController;
+use App\Http\Controllers\Api\v2\SettingController;
+use App\Http\Controllers\Api\v2\StatsController;
+use App\Http\Controllers\Api\v2\StudentController;
+use App\Http\Controllers\Api\v2\StudentImportController;
+use App\Http\Controllers\Api\v2\StudentStatsController;
+use App\Http\Controllers\Api\v2\TrendingCourseController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -55,72 +61,72 @@ Route::prefix('v2')->name('api.v2.')->group(function () {
 
     // Exams
     Route::prefix('exams')->name('exams.')->group(function () {
-        Route::get('/', [\App\Http\Controllers\Api\v2\ExamController::class, 'index'])->name('index');
-        Route::get('/{exam}', [\App\Http\Controllers\Api\v2\ExamController::class, 'show'])->name('show');
-        Route::get('/{exam}/sections', [\App\Http\Controllers\Api\v2\ExamController::class, 'sections'])->name('sections');
+        Route::get('/', [ExamController::class, 'index'])->name('index');
+        Route::get('/{exam}', [ExamController::class, 'show'])->name('show');
+        Route::get('/{exam}/sections', [ExamController::class, 'sections'])->name('sections');
     });
 
     // Questions
     Route::prefix('questions')->name('questions.')->group(function () {
-        Route::get('/trending', [\App\Http\Controllers\Api\v2\QuestionController::class, 'trending'])->name('trending');
-        Route::get('/recent', [\App\Http\Controllers\Api\v2\QuestionController::class, 'recent'])->name('recent');
-        Route::get('/search', [\App\Http\Controllers\Api\v2\QuestionController::class, 'search'])->name('search');
-        Route::get('/{question}', [\App\Http\Controllers\Api\v2\QuestionController::class, 'show'])->name('show');
+        Route::get('/trending', [QuestionController::class, 'trending'])->name('trending');
+        Route::get('/recent', [QuestionController::class, 'recent'])->name('recent');
+        Route::get('/search', [QuestionController::class, 'search'])->name('search');
+        Route::get('/{question}', [QuestionController::class, 'show'])->name('show');
     });
 
     // Category Questions
-    Route::get('/categories/{category}/questions', [\App\Http\Controllers\Api\v2\QuestionController::class, 'byCategory'])->name('categories.questions');
+    Route::get('/categories/{category}/questions', [QuestionController::class, 'byCategory'])->name('categories.questions');
 
     // Category Articles
-    Route::get('/categories/{category}/articles', [\App\Http\Controllers\Api\v2\ArticleController::class, 'byCategory'])->name('categories.articles');
+    Route::get('/categories/{category}/articles', [ArticleController::class, 'byCategory'])->name('categories.articles');
 
     // Articles
     Route::prefix('articles')->name('articles.')->group(function () {
-        Route::get('/{article}', [\App\Http\Controllers\Api\v2\ArticleController::class, 'show'])->name('show');
-        Route::get('/{article}/questions', [\App\Http\Controllers\Api\v2\ArticleController::class, 'questions'])->name('questions');
+        Route::get('/{article}', [ArticleController::class, 'show'])->name('show');
+        Route::get('/{article}/questions', [ArticleController::class, 'questions'])->name('questions');
     });
 
     // Practice Exams (Models)
     Route::prefix('practice-exams')->name('practice-exams.')->group(function () {
-        Route::get('/', [\App\Http\Controllers\Api\v2\PracticeExamController::class, 'index'])->name('index');
-        Route::get('/{practiceExam}', [\App\Http\Controllers\Api\v2\PracticeExamController::class, 'show'])->name('show');
+        Route::get('/', [PracticeExamController::class, 'index'])->name('index');
+        Route::get('/{practiceExam}', [PracticeExamController::class, 'show'])->name('show');
     });
 
     // Contact Us
-    Route::post('/contact', [\App\Http\Controllers\Api\v2\ContactController::class, 'store'])->name('contact.store');
+    Route::post('/contact', [ContactController::class, 'store'])->name('contact.store');
 
     // Settings
-    Route::get('/settings', [\App\Http\Controllers\Api\v2\SettingController::class, 'index'])->name('settings.index');
-    Route::get('/settings/groups', [\App\Http\Controllers\Api\v2\SettingController::class, 'groups'])->name('settings.groups');
-    Route::get('/settings/{key}', [\App\Http\Controllers\Api\v2\SettingController::class, 'show'])->name('settings.show');
+    Route::get('/settings', [SettingController::class, 'index'])->name('settings.index');
+    Route::get('/settings/groups', [SettingController::class, 'groups'])->name('settings.groups');
+    Route::get('/settings/{key}', [SettingController::class, 'show'])->name('settings.show');
 
     // =====================================================
     // Stats & Analytics (Authenticated)
     // =====================================================
     Route::middleware('jwt')->group(function () {
         // Platform Stats
-        Route::get('/stats', [\App\Http\Controllers\Api\v2\StatsController::class, 'index'])->name('stats.index');
+        Route::get('/stats', [StatsController::class, 'index'])->name('stats.index');
 
         // Trending Courses
-        Route::get('/trending-courses', [\App\Http\Controllers\Api\v2\TrendingCourseController::class, 'index'])->name('trending-courses.index');
+        Route::get('/trending-courses', [TrendingCourseController::class, 'index'])->name('trending-courses.index');
 
         // Student Stats (for charts)
-        Route::get('/student-stats', [\App\Http\Controllers\Api\v2\StudentStatsController::class, 'index'])->name('student-stats.index');
+        Route::get('/student-stats', [StudentStatsController::class, 'index'])->name('student-stats.index');
 
         // Student Management (CRUD)
-        Route::apiResource('students', \App\Http\Controllers\Api\v2\StudentController::class)->except(['create', 'store']);
-        
+        Route::apiResource('students', StudentController::class)->except(['create', 'store']);
+
         // Enrollments/Subscriptions List
-        Route::get('/enrollments', [\App\Http\Controllers\Api\v2\EnrollmentController::class, 'index'])->name('enrollments.index');
+        Route::get('/enrollments', [EnrollmentController::class, 'index'])->name('enrollments.index');
 
         // Student Import
         Route::prefix('students')->name('students.')->group(function () {
-            Route::post('/', [\App\Http\Controllers\Api\v2\StudentImportController::class, 'store'])->name('store');
-            Route::post('/bulk', [\App\Http\Controllers\Api\v2\StudentImportController::class, 'bulkStore'])->name('bulk');
-            Route::post('/import', [\App\Http\Controllers\Api\v2\StudentImportController::class, 'importFile'])->name('import');
+            Route::post('/', [StudentImportController::class, 'store'])->name('store');
+            Route::post('/bulk', [StudentImportController::class, 'bulkStore'])->name('bulk');
+            Route::post('/import', [StudentImportController::class, 'importFile'])->name('import');
         });
 
         // Question Answers
-        Route::post('/questions/answer', [\App\Http\Controllers\Api\v2\AnswerController::class, 'submit'])->name('questions.answer');
+        Route::post('/questions/answer', [AnswerController::class, 'submit'])->name('questions.answer');
     });
 });
