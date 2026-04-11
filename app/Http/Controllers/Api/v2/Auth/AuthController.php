@@ -396,7 +396,7 @@ class AuthController extends BaseApiController
         ];
 
         if ($user->type === 'student' && $user->student && $user->student?->exam) {
-            $data['exam_name'] = $user->student?->exam?->name;
+            $data['user']['student'] = $user->student?->exam?->name;
             unset($data['user']['student']['exam']);
         }
 
