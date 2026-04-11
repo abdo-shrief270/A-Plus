@@ -464,6 +464,7 @@ class AuthController extends BaseApiController
                 'user' => $user->fresh()->makeHidden(['id', 'created_at', 'updated_at', 'password', 'remember_token']),
             ], 'تم تحديث الملف الشخصي بنجاح');
         } catch (\Exception $e) {
+            logger()->error('Error updating profile: ' . $e->getMessage());
             return $this->errorResponse('فشل تحديث الملف الشخصي', Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
