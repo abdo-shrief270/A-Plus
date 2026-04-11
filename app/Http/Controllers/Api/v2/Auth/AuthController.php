@@ -397,6 +397,7 @@ class AuthController extends BaseApiController
 
         if ($user->type === 'student' && $user->student && $user->student?->exam) {
             $data['exam_name'] = $user->student?->exam?->name;
+            unset($data['user']['student']['exam']);
         }
 
         return $this->successResponse($data, 'تم جلب بيانات المستخدم');
