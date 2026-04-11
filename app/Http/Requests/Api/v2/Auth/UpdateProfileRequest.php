@@ -36,6 +36,7 @@ class UpdateProfileRequest extends FormRequest
         return [
             'name.min' => 'الاسم يجب أن يكون حرفين على الأقل',
             'email.email' => 'البريد الإلكتروني غير صالح',
+            'user_name.unique' => 'اسم المستخدم موجود بالفعل',
             'email.unique' => 'البريد الإلكتروني مستخدم بالفعل',
             'gender.in' => 'الجنس يجب أن يكون ذكر أو أنثى',
             'exam_id.exists' => 'نوع الاختبار غير موجود',
