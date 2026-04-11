@@ -37,7 +37,7 @@ class AuthController extends BaseApiController
      *
      * تتحقق هذه النهاية الطرفية مما إذا كان اسم المستخدم المقترح متاحًا للتسجيل أم لا.
      * يمكن للواجهة الأمامية استخدام هذا المسار (Endpoint) ليتم استدعاؤه بشكل ديناميكي أثناء كتابة المستخدم لاسم لتقديم ملاحظات فورية.
-     * 
+     *
      * @bodyParam user_name string required اسم المستخدم الذي يجب التحقق منه. يجب ألا يحتوي على مسافات، فقط أحرف، أرقام، وشرطات سفلية. Example: ahmed_ali123
      *
      * @group Authentication (المصادقة)
@@ -57,10 +57,10 @@ class AuthController extends BaseApiController
     /**
      * Register Student
      *
-     * يقوم بتسجيل حساب طالب جديد في المنصة. 
+     * يقوم بتسجيل حساب طالب جديد في المنصة.
      * يجب على الواجهة الأمامية تقديم جميع البيانات الإلزامية مثل الاسم، واسم المستخدم، وكلمة المرور.
      * بالإضافة إلى ذلك، يجب ربط الطالب بامتحان معين (`exam_id`).
-     * 
+     *
      * @bodyParam name string required اسم الطالب بالكامل. Example: أحمد علي
      * @bodyParam user_name string required اسم المستخدم (فريد). يجب استخدام مسار Check Username للتأكد من توفره. Example: ahmed_ali
      * @bodyParam phone string optional رقم هاتف الطالب للاتصال به (لحالات الـ OTP لاحقاً). Example: 01012345678
@@ -119,7 +119,7 @@ class AuthController extends BaseApiController
      *
      * يتحقق هذا المسار من وجود اسم المستخدم المعطى وما إذا كان هذا الحساب يلزمه تفعيل المصادقة الثنائية (2FA) قبل إتمام تسجيل الدخول.
      * مفيد لتقسيم واجهة تسجيل الدخول إلى خطوات مستقلة.
-     * 
+     *
      * @bodyParam user_name string required اسم المستخدم المسجل في النظام المراد التحقق منه. Example: ahmed_ali
      *
      * @group Authentication (المصادقة)
@@ -143,11 +143,11 @@ class AuthController extends BaseApiController
      * Login Authentication (تسجيل الدخول)
      *
      * يصادق المستخدم باستخدام (اسم المستخدم) و (كلمة المرور).
-     * يحتوي هذا المسار أيضاً على فحص للأجهزة المسجلة (Device Management)، حيث سيتم ربط الجهاز الجديد بحساب المستخدم. 
+     * يحتوي هذا المسار أيضاً على فحص للأجهزة المسجلة (Device Management)، حيث سيتم ربط الجهاز الجديد بحساب المستخدم.
      * إذا اكتشف النظام أن المستخدم يسجل من جهاز ثانٍ تجاوز الحد المسموح به، فسيتم إرجاع خطأ `403` بأن الجهاز بانتظار موافقة الإدارة (Pending Approval).
-     * 
+     *
      * إذا كان النظام يتطلب 2FA، فسيقوم الحقل `requires_2fa: true` بالرجوع بدون الـ JWT token، لبدء مسار الـ OTP.
-     * 
+     *
      * @bodyParam user_name string required اسم المستخدم. Example: ahmed_ali
      * @bodyParam password string required كلمة المرور المرتبطة بهذا الحساب. Example: Password123!
      * @bodyParam device_name string optional اسم الجهاز المراد تسجيله (مثال: iPhone 14 Pro). Example: iPhone 13
@@ -200,7 +200,7 @@ class AuthController extends BaseApiController
      * يرسل رمز تحقق مكون من 6 أرقام (OTP) إلى الهاتف أو البريد الإلكتروني.
      * يتم استخدام هذا المسار لإتمام إجراءات المصادقة الثنائية (2FA) أو استعادة كلمة المرور (Password Reset).
      * يجب على الواجهة الأمامية حفظ الـ `token` الذي سيتم إرجاعه لأنه يُستخدم لاحقاً مع مسار `verifyOtp`.
-     * 
+     *
      * @bodyParam user_name string required اسم المستخدم المراد إرسال الرمز المرتبط به (في حال استعادة كلمة المرور). Example: ahmed_ali
      * @bodyParam method string required طريقة إرسال الرمز: 'sms' للرسائل القصيرة، 'whatsapp' للواتساب، 'email' للبريد الإلكتروني. Example: sms
      *
@@ -238,7 +238,7 @@ class AuthController extends BaseApiController
      * يتم إرسال الرمز المرسل من المستخدم (`otp`) مع الـ (`token`) الذي تم إرجاعه من مسار الإرسال `sendOtp`.
      * إذا كان السياق هو استرجاع كلمة مرور `type=reset`، فسيرجع المسار مفتاحاً مؤكداً لعملية تغيير الكلمة `verified=true`.
      * أما إذا كان سياق المستخدم `type=login`، فسيُرجع المسار مباشرة الـ JWT لتسجيل الدخول النهائي.
-     * 
+     *
      * @bodyParam token string required مفتاح التحقق الذي تم إرجاعه من خطوة `sendOtp`. Example: otp-token-uuid
      * @bodyParam otp string required رمز الـ OTP المكون من 6 أرقام المدخل من المستخدم. Example: 123456
      * @bodyParam type string optional نوع التحقق، استخدم `login` لاستكمال تسجيل الدخول، أو `reset` لاسترجاع كلمة المرور. قيم أخرى ستفترض أنها مسار دخول عادي. Example: login
@@ -294,7 +294,7 @@ class AuthController extends BaseApiController
      *
      * الخطوة الأولى لاسترجاع المفقود، يقوم النظام بالبحث عن المستخدم بناءً على الحقل المدخل (user_name، أو email، أو phone)
      * ويرجع للواجهة الأمامية أجزاء مخفية من البريد أو الهاتف (Masked) ليقوم المستخدم باختيار أي وسيلة استقبال كود الـ OTP يرغب بها باستخدام مسار الإرسال `sendOtp`.
-     * 
+     *
      * @bodyParam user_name string required اسم المستخدم المفقود كلمة مروره. يمكن تمرير الهاتف أو الإيميل مكانه وسيتم البحث عنهما أيضاً. Example: ahmed_ali
      *
      * @group Authentication (المصادقة)
@@ -322,7 +322,7 @@ class AuthController extends BaseApiController
      * Change Password After OTP (تغيير كلمة المرور الجديدة)
      *
      * يتيح للمستخدم ضبط كلمة مرور جديدة بعد إتمامه لعملية التحقق وإرسال مفتاح الـ `token` المعادل (Verified) من خطوة `verifyOtp`.
-     * 
+     *
      * @bodyParam token string required مفتاح التحقق المصدق بنجاح في الخطوة السابقة. Example: otp-token-uuid
      * @bodyParam password string required كلمة المرور الجديدة القوية. Example: NewPassword123!
      * @bodyParam password_confirmation string required تأكيد كلمة المرور الجديدة لتجنب الأخطاء المطبعية. Example: NewPassword123!
@@ -387,13 +387,19 @@ class AuthController extends BaseApiController
 
         // Load relationships based on user type
         if ($user->type === 'student') {
-            $user->load('student');
+            $user->load('student.exam');
         }
 
-        return $this->successResponse([
+        $data = [
             'user' => $user->makeHidden(['id', 'created_at', 'updated_at', 'password', 'remember_token']),
             'devices' => $this->deviceService->getUserDevices($user),
-        ], 'تم جلب بيانات المستخدم');
+        ];
+
+        if ($user->type === 'student' && $user->student && $user->student?->exam) {
+            $data['exam_name'] = $user->student?->exam?->name;
+        }
+
+        return $this->successResponse($data, 'تم جلب بيانات المستخدم');
     }
 
     /**
@@ -402,7 +408,7 @@ class AuthController extends BaseApiController
      * يتيح للمستخدم تحديث بيانات حسابه. جميع الحقول اختيارية، ويتم تحديث ما يُرسل فقط.
      * في حال الرغبة بتغيير كلمة المرور، يجب إرسال `password` الجديدة مع إرسال `old_password`.
      * بالنسبة للطلاب، يمكنهم أيضاً تحديث `exam_id` أو `exam_date` الخاصة بالمرحلة الدراسية من خلال هذا المسار.
-     * 
+     *
      * @bodyParam name string optional الاسم الكامل الجديد. Example: أحمد علي
      * @bodyParam phone string optional رقم الهاتف الجديد. Example: 01012345678
      * @bodyParam country_code string optional كود الدولة للهاتف في حال تواجده. Example: +20
