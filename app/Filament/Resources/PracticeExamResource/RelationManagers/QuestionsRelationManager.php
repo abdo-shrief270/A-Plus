@@ -34,9 +34,6 @@ class QuestionsRelationManager extends RelationManager
                     ->label('نص السؤال')
                     ->limit(50)
                     ->tooltip(fn($record) => $record->text),
-                Tables\Columns\ImageColumn::make('image_path')
-                    ->label('صورة')
-                    ->square(),
                 Tables\Columns\IconColumn::make('is_new')
                     ->label('Trending')
                     ->boolean(),

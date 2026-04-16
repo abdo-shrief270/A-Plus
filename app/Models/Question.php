@@ -5,7 +5,6 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Support\Facades\Storage;
 use Spatie\Activitylog\Traits\LogsActivity;
 use Spatie\Activitylog\LogOptions;
 
@@ -15,9 +14,7 @@ class Question extends Model
 
     protected $fillable = [
         'text','uuid','question_type_id',
-        'image_path',
         'explanation_text',
-        'explanation_text_image_path',
         'explanation_video_url',
         'difficulty',
         'is_new',
@@ -59,16 +56,6 @@ class Question extends Model
     public function practiceExam()
     {
         return $this->belongsTo(PracticeExam::class);
-    }
-
-    public function getImagePathAttribute($value): ?string
-    {
-        return $value ? url(Storage::url($value)) : null;
-    }
-
-    public function getExplanationTextImagePathAttribute($value): ?string
-    {
-        return $value ? url(Storage::url($value)) : null;
     }
 
     public function scopeTrending($query)

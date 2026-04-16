@@ -25,9 +25,7 @@ class QuestionImporter extends Importer
                 ->requiredMapping()
                 ->numeric()
                 ->rules(['required', 'integer']),
-            ImportColumn::make('image_path'),
             ImportColumn::make('explanation_text'),
-            ImportColumn::make('explanation_text_image_path'),
             ImportColumn::make('explanation_video_url'),
         ];
     }

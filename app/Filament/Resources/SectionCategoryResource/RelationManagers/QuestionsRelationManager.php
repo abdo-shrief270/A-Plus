@@ -30,29 +30,9 @@ class QuestionsRelationManager extends RelationManager
                     ->rows(5)
                     ->required(),
 
-                Forms\Components\FileUpload::make('image_path')
-                    ->label('صورة مرفقة')
-                    ->image()
-                    ->imageEditor()
-                    ->directory('question_images')
-                    ->disk('public')
-                    ->imageEditorEmptyFillColor('#000000')
-                    ->previewable(false)
-                    ->moveFiles(),
-
                 Forms\Components\Textarea::make('explanation_text')
                     ->label('شرح السؤال')
                     ->rows(5),
-
-                Forms\Components\FileUpload::make('explanation_text_image_path')
-                    ->label('صورة مرفقة لشرح السؤال')
-                    ->image()
-                    ->imageEditor()
-                    ->disk('public')
-                    ->imageEditorEmptyFillColor('#000000')
-                    ->moveFiles()
-                    ->previewable(false)
-                    ->directory('question_explanation_images'),
 
                 Forms\Components\TextInput::make('explanation_video_url')
                     ->label('فيديو شرح السؤال')
@@ -146,25 +126,9 @@ class QuestionsRelationManager extends RelationManager
                     ->sortable()
                     ->toggleable(),
 
-                Tables\Columns\TextColumn::make('image_path')
-                    ->label('صورة مرفقة')
-                    ->formatStateUsing(fn ($state) => $state ? '<img src="' . $state . '" style="max-height: 50px; max-width: 50px;">' : 'No Image')
-                    ->html()
-                    ->searchable()
-                    ->sortable()
-                    ->toggleable(),
-
                 Tables\Columns\TextColumn::make('explanation_text')
                     ->label('شرح السؤال')
                     ->limit(50)
-                    ->searchable()
-                    ->sortable()
-                    ->toggleable(),
-
-                Tables\Columns\TextColumn::make('explanation_text_image_path')
-                    ->label('صورة مرفقة لشرح السؤال')
-                    ->formatStateUsing(fn ($state) => $state ? '<img src="' . $state . '" style="max-height: 50px; max-width: 50px;">' : 'No Image')
-                    ->html()
                     ->searchable()
                     ->sortable()
                     ->toggleable(),

@@ -17,7 +17,6 @@ class QuestionDetailResource extends JsonResource
         return [
             'id' => $this->id,
             'text' => $this->text,
-            'image_path' => $this->image_path,
             'difficulty' => $this->difficulty,
             'is_new' => $this->is_new,
             'comparison' => $this->when(
@@ -35,7 +34,6 @@ class QuestionDetailResource extends JsonResource
             ),
             'explanation' => [
                 'text' => $this->explanation_text,
-                'image_path' => $this->explanation_text_image_path,
                 'video_url' => $this->explanation_video_url,
             ],
             'answers' => AnswerResource::collection($this->whenLoaded('answers')),

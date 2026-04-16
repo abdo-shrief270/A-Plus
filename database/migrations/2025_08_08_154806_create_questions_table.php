@@ -15,9 +15,7 @@ return new class extends Migration {
             $table->uuid();
             $table->text('text');
             $table->foreignId('question_type_id')->constrained('question_types', 'id')->cascadeOnDelete();
-            $table->text('image_path')->nullable();
             $table->text('explanation_text')->nullable();
-            $table->text('explanation_text_image_path')->nullable();
             $table->text('explanation_video_url')->nullable();
             // Consolidated columns
             $table->string('difficulty')->nullable();

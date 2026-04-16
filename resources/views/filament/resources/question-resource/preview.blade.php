@@ -50,13 +50,6 @@
                  dir="ltr" style="unicode-bidi: plaintext;">
                 {!! $record->text !!}
             </div>
-
-            @if($record->image_path)
-                <div class="mb-6 flex justify-center">
-                    <img src="{{ $record->image_path }}" alt="Question Image"
-                        class="max-h-64 rounded-lg shadow-sm border border-gray-100 dark:border-gray-700">
-                </div>
-            @endif
         </div>
 
         <!-- Answers Grid -->
@@ -152,9 +145,6 @@
                     @if($hasVideo)
                         <div
                             class="aspect-video bg-black rounded-lg overflow-hidden shadow-lg relative group cursor-pointer flex items-center justify-center border border-gray-800">
-                            <!-- Placeholder for video player -->
-                            <div class="absolute inset-0 bg-cover bg-center opacity-60"
-                                style="background-image: url('{{ $record->explanation_text_image_path ?? '' }}')"></div>
                             <x-heroicon-s-play-circle
                                 class="w-16 h-16 text-white opacity-80 group-hover:opacity-100 transition-opacity z-10" />
                         </div>
@@ -179,13 +169,6 @@
                          x-effect="if (activeTab === 'text') $nextTick(() => { document.querySelectorAll('[data-math-rendered]').forEach(el => el.removeAttribute('data-math-rendered')); if (typeof renderAllMath === 'function') renderAllMath(); })">
                         {!! $record->explanation_text ?? 'لا يوجد شرح نصي لهذا السؤال' !!}
                     </div>
-
-                    @if($record->explanation_text_image_path)
-                        <div class="mt-4 flex justify-center">
-                            <img src="{{ $record->explanation_text_image_path }}" alt="Explanation Image"
-                                class="max-h-64 rounded-lg shadow-sm border border-gray-100 dark:border-gray-700">
-                        </div>
-                    @endif
                 </div>
 
             </div>

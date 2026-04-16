@@ -174,17 +174,6 @@ class QuestionResource extends Resource
                                 ->statePath('text')
                                 ->dehydrated(false)
                                 ->columnSpanFull(),
-                            Forms\Components\FileUpload::make('image_path')
-                                ->label('صورة مرفقة')
-                                ->image()
-                                ->imageEditor()
-                                ->directory('question_images')
-                                ->disk('public')
-                                ->imageEditorEmptyFillColor('#000000')
-                                ->previewable(true)
-                                ->moveFiles()
-                                ->formatStateUsing(fn($state, $record) => $record?->getRawOriginal('image_path') ? [$record->getRawOriginal('image_path')] : null),
-
                             // Comparison values — only for مقارنة type
                             Forms\Components\Section::make('القيم المقارنة')
                                 ->description('أدخل القيمتين اللتين سيتم المقارنة بينهما')
@@ -281,16 +270,6 @@ class QuestionResource extends Resource
                                 ->statePath('explanation_text')
                                 ->dehydrated(false)
                                 ->columnSpanFull(),
-                            Forms\Components\FileUpload::make('explanation_text_image_path')
-                                ->label('صورة مرفقة لشرح السؤال')
-                                ->image()
-                                ->imageEditor()
-                                ->disk('public')
-                                ->imageEditorEmptyFillColor('#000000')
-                                ->moveFiles()
-                                ->previewable(true)
-                                ->directory('question_explanation_images')
-                                ->formatStateUsing(fn($state, $record) => $record?->getRawOriginal('explanation_text_image_path') ? [$record->getRawOriginal('explanation_text_image_path')] : null),
                             Forms\Components\TextInput::make('explanation_video_url')
                                 ->label('فيديو شرح السؤال')
                                 ->url()
@@ -427,11 +406,6 @@ class QuestionResource extends Resource
                     ->wrap()
                     ->searchable()
                     ->sortable()
-                    ->toggleable(),
-                Tables\Columns\TextColumn::make('image_path')
-                    ->label('صورة مرفقة')
-                    ->formatStateUsing(fn($state) => $state ? '<img src="' . $state . '" style="max-height: 50px; max-width: 50px;">' : 'No Image')
-                    ->html()
                     ->toggleable(),
                 Tables\Columns\TextColumn::make('created_at')
                     ->label('تاريخ الاضافة')
@@ -637,10 +611,6 @@ class QuestionResource extends Resource
                             ->columnSpanFull()
                             ->html()
                             ->prose(),
-                        ImageEntry::make('image_path')
-                            ->label('صورة مرفقة')
-                            ->disk('public')
-                            ->columnSpanFull(),
                     ]),
 
                 Section::make('القيم المقارنة')
@@ -675,10 +645,6 @@ class QuestionResource extends Resource
                             ->columnSpanFull()
                             ->html()
                             ->prose(),
-                        ImageEntry::make('explanation_text_image_path')
-                            ->label('صورة مرفقة للشرح')
-                            ->disk('public')
-                            ->columnSpanFull(),
                         TextEntry::make('explanation_video_url')
                             ->label('فيديو شرح السؤال')
                             ->url(fn($state) => $state)

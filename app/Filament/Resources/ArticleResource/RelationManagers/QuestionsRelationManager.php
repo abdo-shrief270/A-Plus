@@ -55,29 +55,9 @@ class QuestionsRelationManager extends RelationManager
                     ->rows(5)
                     ->required(),
 
-                Forms\Components\FileUpload::make('image_path')
-                    ->label('صورة مرفقة')
-                    ->image()
-                    ->imageEditor()
-                    ->directory('question_images')
-                    ->disk('public')
-                    ->imageEditorEmptyFillColor('#000000')
-                    ->previewable(false)
-                    ->moveFiles(),
-
                 Forms\Components\Textarea::make('explanation_text')
                     ->label('شرح السؤال')
                     ->rows(5),
-
-                Forms\Components\FileUpload::make('explanation_text_image_path')
-                    ->label('صورة مرفقة لشرح السؤال')
-                    ->image()
-                    ->imageEditor()
-                    ->disk('public')
-                    ->imageEditorEmptyFillColor('#000000')
-                    ->moveFiles()
-                    ->previewable(false)
-                    ->directory('question_explanation_images'),
 
                 Forms\Components\TextInput::make('explanation_video_url')
                     ->label('فيديو شرح السؤال')
@@ -144,9 +124,6 @@ class QuestionsRelationManager extends RelationManager
                     ->label('نص السؤال')
                     ->limit(50)
                     ->tooltip(fn($record) => $record->text),
-                Tables\Columns\ImageColumn::make('image_path')
-                    ->label('صورة')
-                    ->square(),
             ])
             ->filters([
                 //

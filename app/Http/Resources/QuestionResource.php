@@ -19,14 +19,12 @@ class QuestionResource extends JsonResource
         return [
             'id' => $this->id,
             'text' => $this->text,
-            'image' => $this->image_path,
             'type' => $type,
             'points_cost' => $this->points_cost,
             'difficulty' => $this->difficulty,
             'is_new' => $this->is_new,
             'explanation' => [
                 'text' => $this->explanation_text,
-                'image' => $this->explanation_text_image_path,
                 'video' => $this->explanation_video_url,
             ],
             // Dynamic data based on type
