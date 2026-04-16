@@ -3,9 +3,15 @@
 namespace App\Filament\Imports;
 
 use App\Models\Question;
+use App\Models\QuestionType;
+use App\Models\SectionCategory;
 use Filament\Actions\Imports\ImportColumn;
 use Filament\Actions\Imports\Importer;
 use Filament\Actions\Imports\Models\Import;
+use Filament\Actions\Imports\Exceptions\RowImportFailedException;
+use Filament\Forms\Components\Select;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
 
 class QuestionImporter extends Importer
 {
@@ -14,30 +20,132 @@ class QuestionImporter extends Importer
     public static function getColumns(): array
     {
         return [
-            ImportColumn::make('uuid')
-                ->label('UUID')
-                ->requiredMapping()
-                ->rules(['required', 'max:36']),
             ImportColumn::make('text')
+                ->label('نص السؤال')
+                ->guess(['text', 'text question', 'question'])
                 ->requiredMapping()
                 ->rules(['required']),
-            ImportColumn::make('question_type_id')
+
+            ImportColumn::make('answer_1')
+                ->label('إجابة 1')
+                ->guess(['answer_1'])
                 ->requiredMapping()
-                ->numeric()
-                ->rules(['required', 'integer']),
-            ImportColumn::make('explanation_text'),
-            ImportColumn::make('explanation_video_url'),
+                ->fillRecordUsing(fn () => null)
+                ->rules(['required']),
+
+            ImportColumn::make('answer_2')
+                ->label('إجابة 2')
+                ->guess(['answer_2'])
+                ->requiredMapping()
+                ->fillRecordUsing(fn () => null)
+                ->rules(['required']),
+
+            ImportColumn::make('answer_3')
+                ->label('إجابة 3')
+                ->guess(['answer_3'])
+                ->requiredMapping()
+                ->fillRecordUsing(fn () => null)
+                ->rules(['required']),
+
+            ImportColumn::make('answer_4')
+                ->label('إجابة 4')
+                ->guess(['answer_4'])
+                ->requiredMapping()
+                ->fillRecordUsing(fn () => null)
+                ->rules(['required']),
+
+            ImportColumn::make('correct_answer')
+                ->label('الإجابة الصحيحة')
+                ->guess(['correct_answer'])
+                ->requiredMapping()
+                ->fillRecordUsing(fn () => null)
+                ->rules(['required']),
+
+            ImportColumn::make('explanation_text')
+                ->label('شرح السؤال')
+                ->guess(['explanation_text', 'answer_explaination', 'answer_explanation', 'explanation']),
+        ];
+    }
+
+    public static function getOptionsFormComponents(): array
+    {
+        return [
+            Select::make('question_type_id')
+                ->label('نوع السؤال')
+                ->options(fn () => QuestionType::query()->pluck('name', 'id'))
+                ->default(fn () => QuestionType::query()->where('name', 'نصي')->value('id'))
+                ->required(),
+
+            Select::make('section_category_id')
+                ->label('الفئة')
+                ->searchable()
+                ->options(function () {
+                    return SectionCategory::with('section.exam')
+                        ->get()
+                        ->mapWithKeys(function ($cat) {
+                            $label = ($cat->section?->exam?->name ?? '-') . ' > '
+                                . ($cat->section?->name ?? '-') . ' > '
+                                . $cat->name;
+                            return [$cat->id => $label];
+                        });
+                })
+                ->required(),
         ];
     }
 
     public function resolveRecord(): ?Question
     {
-        // return Question::firstOrNew([
-        //     // Update existing records, matching them by `$this->data['column_name']`
-        //     'email' => $this->data['email'],
-        // ]);
+        $correct = trim((string) ($this->data['correct_answer'] ?? ''));
+        $answers = [
+            1 => trim((string) ($this->data['answer_1'] ?? '')),
+            2 => trim((string) ($this->data['answer_2'] ?? '')),
+            3 => trim((string) ($this->data['answer_3'] ?? '')),
+            4 => trim((string) ($this->data['answer_4'] ?? '')),
+        ];
 
-        return new Question();
+        $matchedOrder = null;
+        foreach ($answers as $order => $text) {
+            if ($text !== '' && $text === $correct) {
+                $matchedOrder = $order;
+                break;
+            }
+        }
+
+        if ($matchedOrder === null) {
+            Log::warning('Question import skipped: correct_answer did not match any option', [
+                'text' => $this->data['text'] ?? null,
+                'correct_answer' => $correct,
+                'answers' => $answers,
+            ]);
+            throw new RowImportFailedException('correct_answer did not match any of answer_1..answer_4');
+        }
+
+        return new Question([
+            'uuid' => (string) Str::uuid(),
+            'question_type_id' => $this->options['question_type_id'],
+        ]);
+    }
+
+    protected function afterSave(): void
+    {
+        $correct = trim((string) ($this->data['correct_answer'] ?? ''));
+
+        foreach ([1, 2, 3, 4] as $order) {
+            $text = trim((string) ($this->data["answer_{$order}"] ?? ''));
+            if ($text === '') {
+                continue;
+            }
+
+            $this->record->answers()->create([
+                'text' => $text,
+                'is_correct' => $text === $correct,
+                'order' => $order,
+            ]);
+        }
+
+        if (! empty($this->options['section_category_id'])) {
+            $this->record->categories()->syncWithoutDetaching([$this->options['section_category_id']]);
+        }
     }
 
     public static function getCompletedNotificationBody(Import $import): string

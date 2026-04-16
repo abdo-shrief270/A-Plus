@@ -366,6 +366,91 @@ class QuestionResource extends Resource
             ->headerActions([
                 ExportAction::make()->exporter(QuestionExporter::class),
                 ImportAction::make()->importer(QuestionImporter::class),
+                Tables\Actions\Action::make('uploadQuestionImages')
+                    ->label('رفع صور الأسئلة')
+                    ->icon('heroicon-o-photo')
+                    ->color('info')
+                    ->modalHeading('رفع صور الأسئلة')
+                    ->modalDescription('اختر جميع صور المجلد. سيتم ربط كل صورة بالأسئلة التي تحتوي على ![](اسم الصورة) في النص أو الشرح.')
+                    ->form([
+                        Forms\Components\FileUpload::make('images')
+                            ->label('الصور')
+                            ->multiple()
+                            ->image()
+                            ->disk('public')
+                            ->directory('question_text_images')
+                            ->preserveFilenames()
+                            ->required(),
+                    ])
+                    ->action(function (array $data): void {
+                        $map = [];
+                        foreach ((array) $data['images'] as $path) {
+                            $map[basename($path)] = $path;
+                        }
+
+                        if (empty($map)) {
+                            \Filament\Notifications\Notification::make()
+                                ->title('لم يتم رفع أي صور')
+                                ->warning()
+                                ->send();
+                            return;
+                        }
+
+                        $updatedQuestions = 0;
+                        $replacedRefs = 0;
+                        $unmatched = [];
+
+                        Question::query()
+                            ->where(function ($q) {
+                                $q->where('text', 'like', '%![](%')
+                                    ->orWhere('explanation_text', 'like', '%![](%');
+                            })
+                            ->chunkById(200, function ($chunk) use ($map, &$updatedQuestions, &$replacedRefs, &$unmatched) {
+                                foreach ($chunk as $question) {
+                                    $dirty = false;
+                                    foreach (['text', 'explanation_text'] as $field) {
+                                        $value = $question->getAttribute($field);
+                                        if (! $value) {
+                                            continue;
+                                        }
+
+                                        $new = preg_replace_callback(
+                                            '/!\[\]\(([^)\s]+)\)/u',
+                                            function ($m) use ($map, &$replacedRefs, &$unmatched) {
+                                                $filename = basename($m[1]);
+                                                if (isset($map[$filename])) {
+                                                    $replacedRefs++;
+                                                    return '![](' . \Illuminate\Support\Facades\Storage::url($map[$filename]) . ')';
+                                                }
+                                                $unmatched[$filename] = true;
+                                                return $m[0];
+                                            },
+                                            $value
+                                        );
+
+                                        if ($new !== $value) {
+                                            $question->setAttribute($field, $new);
+                                            $dirty = true;
+                                        }
+                                    }
+                                    if ($dirty) {
+                                        $question->save();
+                                        $updatedQuestions++;
+                                    }
+                                }
+                            });
+
+                        $body = "تم تحديث {$updatedQuestions} سؤال، واستبدال {$replacedRefs} مرجع صورة.";
+                        if (! empty($unmatched)) {
+                            $body .= ' صور مشار إليها في النصوص لكنها لم تُرفع: ' . count($unmatched) . '.';
+                        }
+
+                        \Filament\Notifications\Notification::make()
+                            ->title('اكتمل رفع صور الأسئلة')
+                            ->body($body)
+                            ->success()
+                            ->send();
+                    }),
             ])
             ->columns([
                 Tables\Columns\TextColumn::make('id')
