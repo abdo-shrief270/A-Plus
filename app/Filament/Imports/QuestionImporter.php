@@ -8,7 +8,6 @@ use App\Models\SectionCategory;
 use Filament\Actions\Imports\ImportColumn;
 use Filament\Actions\Imports\Importer;
 use Filament\Actions\Imports\Models\Import;
-use Filament\Actions\Imports\Exceptions\RowImportFailedException;
 use Filament\Forms\Components\Select;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
@@ -132,16 +131,12 @@ class QuestionImporter extends Importer
         }
 
         if (! $hasCorrect) {
-            Log::warning('Question import: correct_answer did not match any option', [
+            Log::warning('[question_import_needs_review] correct_answer did not match any option', [
                 'question_id' => $this->record->id,
                 'uuid' => $this->record->uuid,
                 'correct_answer' => $correct,
                 'answers' => $answers,
             ]);
-
-            throw new RowImportFailedException(
-                "Question #{$this->record->id} imported but correct_answer did not match any of answer_1..answer_4. Review the question and mark the correct answer manually."
-            );
         }
     }
 
@@ -150,7 +145,12 @@ class QuestionImporter extends Importer
         $body = 'Your question import has completed and ' . number_format($import->successful_rows) . ' ' . str('row')->plural($import->successful_rows) . ' imported.';
 
         if ($failedRowsCount = $import->getFailedRowsCount()) {
-            $body .= ' ' . number_format($failedRowsCount) . ' ' . str('row')->plural($failedRowsCount) . ' were imported but flagged for review (no matching correct_answer). The failed-rows CSV contains each flagged question id.';
+            $body .= ' ' . number_format($failedRowsCount) . ' ' . str('row')->plural($failedRowsCount) . ' failed validation and were not imported.';
+        }
+
+        $needsReview = Question::whereDoesntHave('answers', fn ($q) => $q->where('is_correct', true))->count();
+        if ($needsReview > 0) {
+            $body .= ' ' . number_format($needsReview) . ' imported question(s) need review (no matching correct_answer). Open the "يحتاج مراجعة" tab on the Questions page to find them.';
         }
 
         return $body;
