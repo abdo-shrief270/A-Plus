@@ -95,31 +95,6 @@ class QuestionImporter extends Importer
 
     public function resolveRecord(): ?Question
     {
-        $correct = trim((string) ($this->data['correct_answer'] ?? ''));
-        $answers = [
-            1 => trim((string) ($this->data['answer_1'] ?? '')),
-            2 => trim((string) ($this->data['answer_2'] ?? '')),
-            3 => trim((string) ($this->data['answer_3'] ?? '')),
-            4 => trim((string) ($this->data['answer_4'] ?? '')),
-        ];
-
-        $matchedOrder = null;
-        foreach ($answers as $order => $text) {
-            if ($text !== '' && $text === $correct) {
-                $matchedOrder = $order;
-                break;
-            }
-        }
-
-        if ($matchedOrder === null) {
-            Log::warning('Question import skipped: correct_answer did not match any option', [
-                'text' => $this->data['text'] ?? null,
-                'correct_answer' => $correct,
-                'answers' => $answers,
-            ]);
-            throw new RowImportFailedException('correct_answer did not match any of answer_1..answer_4');
-        }
-
         return new Question([
             'uuid' => (string) Str::uuid(),
             'question_type_id' => $this->options['question_type_id'],
@@ -129,6 +104,8 @@ class QuestionImporter extends Importer
     protected function afterSave(): void
     {
         $correct = trim((string) ($this->data['correct_answer'] ?? ''));
+        $answers = [];
+        $hasCorrect = false;
 
         foreach ([1, 2, 3, 4] as $order) {
             $text = trim((string) ($this->data["answer_{$order}"] ?? ''));
@@ -136,15 +113,35 @@ class QuestionImporter extends Importer
                 continue;
             }
 
+            $isCorrect = $text === $correct;
+            if ($isCorrect) {
+                $hasCorrect = true;
+            }
+
             $this->record->answers()->create([
                 'text' => $text,
-                'is_correct' => $text === $correct,
+                'is_correct' => $isCorrect,
                 'order' => $order,
             ]);
+
+            $answers[$order] = $text;
         }
 
         if (! empty($this->options['section_category_id'])) {
             $this->record->categories()->syncWithoutDetaching([$this->options['section_category_id']]);
+        }
+
+        if (! $hasCorrect) {
+            Log::warning('Question import: correct_answer did not match any option', [
+                'question_id' => $this->record->id,
+                'uuid' => $this->record->uuid,
+                'correct_answer' => $correct,
+                'answers' => $answers,
+            ]);
+
+            throw new RowImportFailedException(
+                "Question #{$this->record->id} imported but correct_answer did not match any of answer_1..answer_4. Review the question and mark the correct answer manually."
+            );
         }
     }
 
@@ -153,7 +150,7 @@ class QuestionImporter extends Importer
         $body = 'Your question import has completed and ' . number_format($import->successful_rows) . ' ' . str('row')->plural($import->successful_rows) . ' imported.';
 
         if ($failedRowsCount = $import->getFailedRowsCount()) {
-            $body .= ' ' . number_format($failedRowsCount) . ' ' . str('row')->plural($failedRowsCount) . ' failed to import.';
+            $body .= ' ' . number_format($failedRowsCount) . ' ' . str('row')->plural($failedRowsCount) . ' were imported but flagged for review (no matching correct_answer). The failed-rows CSV contains each flagged question id.';
         }
 
         return $body;
