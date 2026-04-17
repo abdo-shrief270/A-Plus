@@ -48,7 +48,7 @@
         <div class="mb-8">
             <div class="prose dark:prose-invert max-w-none text-lg text-gray-800 dark:text-gray-100 mb-4 leading-relaxed math-content"
                  dir="ltr" style="unicode-bidi: plaintext;">
-                {!! $record->text !!}
+                {!! \App\Support\QuestionContentRenderer::render($record->text) !!}
             </div>
         </div>
 
@@ -65,7 +65,7 @@
                     class="relative flex items-center p-4 border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 rounded-lg cursor-pointer transition-all">
 
                     <span class="ml-auto flex-grow text-gray-700 dark:text-gray-200 text-lg math-content">
-                        {!! $answer->text !!}
+                        {!! \App\Support\QuestionContentRenderer::render($answer->text) !!}
                     </span>
 
                     <div :class="{
@@ -112,7 +112,7 @@
                 <span class="text-green-700 dark:text-green-400 font-bold">الإجابة الصحيحة: </span>
                 <span class="math-content text-gray-800 dark:text-gray-100">
                     @if($correct = $answers->where('is_correct', true)->first())
-                        {!! $correct->text !!}
+                        {!! \App\Support\QuestionContentRenderer::render($correct->text) !!}
                     @else
                         غير محدد
                     @endif
@@ -167,7 +167,11 @@
                          style="direction: rtl; unicode-bidi: plaintext;"
                          x-show="activeTab === 'text'"
                          x-effect="if (activeTab === 'text') $nextTick(() => { document.querySelectorAll('[data-math-rendered]').forEach(el => el.removeAttribute('data-math-rendered')); if (typeof renderAllMath === 'function') renderAllMath(); })">
-                        {!! $record->explanation_text ?? 'لا يوجد شرح نصي لهذا السؤال' !!}
+                        @if($record->explanation_text)
+                            {!! \App\Support\QuestionContentRenderer::render($record->explanation_text) !!}
+                        @else
+                            لا يوجد شرح نصي لهذا السؤال
+                        @endif
                     </div>
                 </div>
 

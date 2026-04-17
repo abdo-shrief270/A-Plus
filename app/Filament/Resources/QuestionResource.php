@@ -757,7 +757,8 @@ class QuestionResource extends Resource
                             ->label('نص السؤال')
                             ->columnSpanFull()
                             ->html()
-                            ->prose(),
+                            ->prose()
+                            ->formatStateUsing(fn ($state) => \App\Support\QuestionContentRenderer::render($state)),
                     ]),
 
                 Section::make('القيم المقارنة')
@@ -791,7 +792,8 @@ class QuestionResource extends Resource
                             ->label('شرح السؤال')
                             ->columnSpanFull()
                             ->html()
-                            ->prose(),
+                            ->prose()
+                            ->formatStateUsing(fn ($state) => \App\Support\QuestionContentRenderer::render($state)),
                         TextEntry::make('explanation_video_url')
                             ->label('فيديو شرح السؤال')
                             ->url(fn($state) => $state)
@@ -809,7 +811,8 @@ class QuestionResource extends Resource
                                     ->label('نص الإجابة')
                                     ->html()
                                     ->prose()
-                                    ->placeholder('-'),
+                                    ->placeholder('-')
+                                    ->formatStateUsing(fn ($state) => \App\Support\QuestionContentRenderer::render($state)),
                                 ImageEntry::make('image_path')
                                     ->label('صورة الإجابة')
                                     ->disk('public')
