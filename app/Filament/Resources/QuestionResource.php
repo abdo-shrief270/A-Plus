@@ -885,6 +885,10 @@ class QuestionResource extends Resource
                 ->modifyQueryUsing(fn(Builder $query) => $query->whereNotNull('practice_exam_id')),
             'comparison' => Tab::make('مقارنة')
                 ->modifyQueryUsing(fn(Builder $query) => $query->whereHas('type', fn($q) => $q->where('name', 'مقارنة'))),
+            'needs_review' => Tab::make('يحتاج مراجعة')
+                ->badge(fn() => \App\Models\Question::whereDoesntHave('answers', fn($q) => $q->where('is_correct', true))->count())
+                ->badgeColor('warning')
+                ->modifyQueryUsing(fn(Builder $query) => $query->whereDoesntHave('answers', fn($q) => $q->where('is_correct', true))),
         ];
     }
 
