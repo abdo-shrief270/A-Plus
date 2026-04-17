@@ -367,37 +367,95 @@ class QuestionResource extends Resource
                 ExportAction::make()->exporter(QuestionExporter::class),
                 ImportAction::make()->importer(QuestionImporter::class),
                 Tables\Actions\Action::make('uploadQuestionImages')
-                    ->label('رفع صور الأسئلة')
+                    ->label('رفع صور الأسئلة (ZIP)')
                     ->icon('heroicon-o-photo')
                     ->color('info')
-                    ->modalHeading('رفع صور الأسئلة')
-                    ->modalDescription('اختر جميع صور المجلد. سيتم ربط كل صورة بالأسئلة التي تحتوي على ![](اسم الصورة) في النص أو الشرح.')
+                    ->modalHeading('رفع صور الأسئلة عبر ZIP')
+                    ->modalDescription('ارفع ملف ZIP يحتوي على صور الأسئلة. سيتم استخراج جميع الصور (تجاهل المجلدات) ومطابقة الأسماء مع ![](اسم الصورة).')
                     ->form([
-                        Forms\Components\FileUpload::make('images')
-                            ->label('الصور')
-                            ->multiple()
-                            ->acceptedFileTypes(['image/*'])
-                            ->disk('public')
-                            ->directory('question_text_images')
-                            ->preserveFilenames()
+                        Forms\Components\FileUpload::make('zip')
+                            ->label('ملف ZIP')
+                            ->acceptedFileTypes(['application/zip', 'application/x-zip-compressed', 'application/octet-stream'])
+                            ->disk('local')
+                            ->directory('temp/question_image_zips')
                             ->previewable(false)
                             ->openable(false)
                             ->downloadable(false)
-                            ->live()
-                            ->helperText(fn (Forms\Get $get) => 'عدد الصور المحددة: ' . count((array) ($get('images') ?? [])))
                             ->required(),
                     ])
                     ->action(function (array $data): void {
-                        $map = [];
-                        foreach ((array) $data['images'] as $path) {
-                            $map[basename($path)] = $path;
+                        $zipRelPath = is_array($data['zip']) ? ($data['zip'][0] ?? null) : $data['zip'];
+                        if (! $zipRelPath) {
+                            \Filament\Notifications\Notification::make()
+                                ->title('لم يتم رفع أي ملف')
+                                ->danger()->send();
+                            return;
                         }
+
+                        $zipAbsPath = \Illuminate\Support\Facades\Storage::disk('local')->path($zipRelPath);
+                        if (! is_file($zipAbsPath)) {
+                            \Filament\Notifications\Notification::make()
+                                ->title('تعذر قراءة الملف')
+                                ->danger()->send();
+                            return;
+                        }
+
+                        $zip = new \ZipArchive();
+                        if ($zip->open($zipAbsPath) !== true) {
+                            @unlink($zipAbsPath);
+                            \Filament\Notifications\Notification::make()
+                                ->title('الملف ليس ZIP صالحاً')
+                                ->danger()->send();
+                            return;
+                        }
+
+                        $allowedExts = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg', 'bmp'];
+                        $maxTotalBytes = 500 * 1024 * 1024;
+                        $targetDir = storage_path('app/public/question_text_images');
+                        if (! is_dir($targetDir)) {
+                            @mkdir($targetDir, 0755, true);
+                        }
+
+                        $extractedBytes = 0;
+                        $map = [];
+                        $collisions = 0;
+                        $skipped = 0;
+
+                        for ($i = 0; $i < $zip->numFiles; $i++) {
+                            $stat = $zip->statIndex($i);
+                            if (! $stat) { continue; }
+
+                            $entryName = $stat['name'];
+                            if (str_ends_with($entryName, '/')) { continue; }
+
+                            $basename = basename(str_replace('\\', '/', $entryName));
+                            if ($basename === '' || str_starts_with($basename, '.')) { continue; }
+
+                            $ext = strtolower(pathinfo($basename, PATHINFO_EXTENSION));
+                            if (! in_array($ext, $allowedExts, true)) { $skipped++; continue; }
+
+                            $extractedBytes += (int) ($stat['size'] ?? 0);
+                            if ($extractedBytes > $maxTotalBytes) { break; }
+
+                            $stream = $zip->getStream($entryName);
+                            if (! $stream) { $skipped++; continue; }
+                            $contents = stream_get_contents($stream);
+                            fclose($stream);
+                            if ($contents === false) { $skipped++; continue; }
+
+                            $destPath = $targetDir . DIRECTORY_SEPARATOR . $basename;
+                            if (is_file($destPath)) { $collisions++; }
+                            file_put_contents($destPath, $contents);
+                            $map[$basename] = 'question_text_images/' . $basename;
+                        }
+
+                        $zip->close();
+                        @unlink($zipAbsPath);
 
                         if (empty($map)) {
                             \Filament\Notifications\Notification::make()
-                                ->title('لم يتم رفع أي صور')
-                                ->warning()
-                                ->send();
+                                ->title('لم يتم استخراج أي صورة من الملف')
+                                ->warning()->send();
                             return;
                         }
 
@@ -415,9 +473,7 @@ class QuestionResource extends Resource
                                     $dirty = false;
                                     foreach (['text', 'explanation_text'] as $field) {
                                         $value = $question->getAttribute($field);
-                                        if (! $value) {
-                                            continue;
-                                        }
+                                        if (! $value) { continue; }
 
                                         $new = preg_replace_callback(
                                             '/!\[\]\(([^)\s]+)\)/u',
@@ -445,16 +501,16 @@ class QuestionResource extends Resource
                                 }
                             });
 
-                        $body = "تم تحديث {$updatedQuestions} سؤال، واستبدال {$replacedRefs} مرجع صورة.";
-                        if (! empty($unmatched)) {
-                            $body .= ' صور مشار إليها في النصوص لكنها لم تُرفع: ' . count($unmatched) . '.';
-                        }
+                        $body = 'تم استخراج ' . count($map) . ' صورة. ';
+                        $body .= "تم تحديث {$updatedQuestions} سؤال، واستبدال {$replacedRefs} مرجع صورة.";
+                        if ($skipped > 0) { $body .= " تم تخطي {$skipped} ملف غير مدعوم."; }
+                        if ($collisions > 0) { $body .= " تم الكتابة فوق {$collisions} ملف بنفس الاسم."; }
+                        if (! empty($unmatched)) { $body .= ' صور مشار إليها في النصوص لكنها غير موجودة بالملف: ' . count($unmatched) . '.'; }
 
                         \Filament\Notifications\Notification::make()
                             ->title('اكتمل رفع صور الأسئلة')
                             ->body($body)
-                            ->success()
-                            ->send();
+                            ->success()->send();
                     }),
             ])
             ->columns([
