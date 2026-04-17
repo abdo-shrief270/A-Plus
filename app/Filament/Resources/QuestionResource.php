@@ -28,7 +28,6 @@ use App\Filament\Exports\QuestionExporter;
 use App\Filament\Imports\QuestionImporter;
 use Filament\Tables\Actions\ExportAction;
 use Filament\Tables\Actions\ImportAction;
-use Filament\Resources\Components\Tab;
 use App\Filament\Resources\QuestionResource\Widgets\QuestionStatsOverview;
 
 class QuestionResource extends Resource
@@ -461,35 +460,39 @@ class QuestionResource extends Resource
                         }
 
                         $updatedQuestions = 0;
+                        $updatedAnswers = 0;
                         $replacedRefs = 0;
                         $unmatched = [];
+
+                        $replaceRefs = function (string $value) use ($map, &$replacedRefs, &$unmatched): string {
+                            return preg_replace_callback(
+                                '/!\[\]\(([^)\s]+)\)/u',
+                                function ($m) use ($map, &$replacedRefs, &$unmatched) {
+                                    $filename = basename($m[1]);
+                                    if (isset($map[$filename])) {
+                                        $replacedRefs++;
+                                        return '![](' . \Illuminate\Support\Facades\Storage::url($map[$filename]) . ')';
+                                    }
+                                    $unmatched[$filename] = true;
+                                    return $m[0];
+                                },
+                                $value
+                            );
+                        };
 
                         Question::query()
                             ->where(function ($q) {
                                 $q->where('text', 'like', '%![](%')
                                     ->orWhere('explanation_text', 'like', '%![](%');
                             })
-                            ->chunkById(200, function ($chunk) use ($map, &$updatedQuestions, &$replacedRefs, &$unmatched) {
+                            ->chunkById(200, function ($chunk) use ($replaceRefs, &$updatedQuestions) {
                                 foreach ($chunk as $question) {
                                     $dirty = false;
                                     foreach (['text', 'explanation_text'] as $field) {
                                         $value = $question->getAttribute($field);
                                         if (! $value) { continue; }
 
-                                        $new = preg_replace_callback(
-                                            '/!\[\]\(([^)\s]+)\)/u',
-                                            function ($m) use ($map, &$replacedRefs, &$unmatched) {
-                                                $filename = basename($m[1]);
-                                                if (isset($map[$filename])) {
-                                                    $replacedRefs++;
-                                                    return '![](' . \Illuminate\Support\Facades\Storage::url($map[$filename]) . ')';
-                                                }
-                                                $unmatched[$filename] = true;
-                                                return $m[0];
-                                            },
-                                            $value
-                                        );
-
+                                        $new = $replaceRefs($value);
                                         if ($new !== $value) {
                                             $question->setAttribute($field, $new);
                                             $dirty = true;
@@ -502,8 +505,24 @@ class QuestionResource extends Resource
                                 }
                             });
 
+                        \App\Models\Answer::query()
+                            ->where('text', 'like', '%![](%')
+                            ->chunkById(200, function ($chunk) use ($replaceRefs, &$updatedAnswers) {
+                                foreach ($chunk as $answer) {
+                                    $value = $answer->getAttribute('text');
+                                    if (! $value) { continue; }
+
+                                    $new = $replaceRefs($value);
+                                    if ($new !== $value) {
+                                        $answer->setAttribute('text', $new);
+                                        $answer->save();
+                                        $updatedAnswers++;
+                                    }
+                                }
+                            });
+
                         $body = 'تم استخراج ' . count($map) . ' صورة. ';
-                        $body .= "تم تحديث {$updatedQuestions} سؤال، واستبدال {$replacedRefs} مرجع صورة.";
+                        $body .= "تم تحديث {$updatedQuestions} سؤال و {$updatedAnswers} إجابة، واستبدال {$replacedRefs} مرجع صورة.";
                         if ($skipped > 0) { $body .= " تم تخطي {$skipped} ملف غير مدعوم."; }
                         if ($collisions > 0) { $body .= " تم الكتابة فوق {$collisions} ملف بنفس الاسم."; }
                         if (! empty($unmatched)) { $body .= ' صور مشار إليها في النصوص لكنها غير موجودة بالملف: ' . count($unmatched) . '.'; }
@@ -867,28 +886,6 @@ class QuestionResource extends Resource
     {
         return [
             QuestionStatsOverview::class,
-        ];
-    }
-
-    public function getTabs(): array
-    {
-        return [
-            'all' => Tab::make('الكل'),
-
-            'text' => Tab::make('نصي')
-                ->modifyQueryUsing(fn(Builder $query) => $query->whereHas('type', fn($q) => $q->where('name', 'نصي'))),
-            'image' => Tab::make('صوري')
-                ->modifyQueryUsing(fn(Builder $query) => $query->whereHas('type', fn($q) => $q->where('name', 'صوري'))),
-            'trending' => Tab::make('Trending')
-                ->modifyQueryUsing(fn(Builder $query) => $query->where('is_new', true)->whereNull('practice_exam_id')),
-            'linked_to_model' => Tab::make('مرتبط بنموذج')
-                ->modifyQueryUsing(fn(Builder $query) => $query->whereNotNull('practice_exam_id')),
-            'comparison' => Tab::make('مقارنة')
-                ->modifyQueryUsing(fn(Builder $query) => $query->whereHas('type', fn($q) => $q->where('name', 'مقارنة'))),
-            'needs_review' => Tab::make('يحتاج مراجعة')
-                ->badge(fn() => \App\Models\Question::whereDoesntHave('answers', fn($q) => $q->where('is_correct', true))->count())
-                ->badgeColor('warning')
-                ->modifyQueryUsing(fn(Builder $query) => $query->whereDoesntHave('answers', fn($q) => $q->where('is_correct', true))),
         ];
     }
 
