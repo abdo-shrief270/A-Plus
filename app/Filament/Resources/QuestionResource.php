@@ -381,6 +381,7 @@ class QuestionResource extends Resource
                             ->previewable(false)
                             ->openable(false)
                             ->downloadable(false)
+                            ->maxSize(512000)
                             ->required(),
                     ])
                     ->action(function (array $data): void {
