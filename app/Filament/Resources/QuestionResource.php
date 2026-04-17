@@ -376,10 +376,15 @@ class QuestionResource extends Resource
                         Forms\Components\FileUpload::make('images')
                             ->label('الصور')
                             ->multiple()
-                            ->image()
+                            ->acceptedFileTypes(['image/*'])
                             ->disk('public')
                             ->directory('question_text_images')
                             ->preserveFilenames()
+                            ->previewable(false)
+                            ->openable(false)
+                            ->downloadable(false)
+                            ->live()
+                            ->helperText(fn (Forms\Get $get) => 'عدد الصور المحددة: ' . count((array) ($get('images') ?? [])))
                             ->required(),
                     ])
                     ->action(function (array $data): void {
