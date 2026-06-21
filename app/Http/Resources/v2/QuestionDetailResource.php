@@ -43,6 +43,61 @@ class QuestionDetailResource extends JsonResource
                 'id' => $this->type->id,
                 'name' => $this->type->name ?? null,
             ]),
+            'breadcrumb' => $this->breadcrumb(),
+            'is_bookmarked' => $this->isBookmarked(),
+        ];
+    }
+
+    protected function isBookmarked(): bool
+    {
+        $student = auth('api')->user()?->student;
+        if (!$student) return false;
+        return \App\Models\Bookmark::where('student_id', $student->id)
+            ->where('question_id', $this->id)
+            ->exists();
+    }
+
+    /**
+     * Build a section/category/article trail for the question header.
+     * Picks the first category (and the first article that maps to it) so the
+     * UI has a single, stable path to render.
+     */
+    protected function breadcrumb(): ?array
+    {
+        $category = $this->relationLoaded('categories') ? $this->categories->first() : null;
+
+        $article = null;
+        if ($this->relationLoaded('articles')) {
+            $article = $category
+                ? ($this->articles->first(function ($a) use ($category) {
+                    return ($a->section_category_id ?? null) === $category->id;
+                }) ?? $this->articles->first())
+                : $this->articles->first();
+        }
+
+        // Article-only questions carry no direct category pivot — derive the
+        // trail from the article's own category instead.
+        if (!$category && $article && $article->relationLoaded('category')) {
+            $category = $article->category;
+        }
+
+        if (!$category) return null;
+
+        $section = $category->relationLoaded('section') ? $category->section : null;
+
+        return [
+            'section' => $section ? [
+                'id' => $section->id,
+                'name' => $section->name,
+            ] : null,
+            'category' => [
+                'id' => $category->id,
+                'name' => $category->name,
+            ],
+            'article' => $article ? [
+                'id' => $article->id,
+                'title' => $article->title,
+            ] : null,
         ];
     }
 }

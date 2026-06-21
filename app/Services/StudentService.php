@@ -20,12 +20,19 @@ class StudentService
     {
         $query = Student::query()
             ->with(['user', 'league', 'scores', 'wallet'])
+            ->withExists(['subscriptions as has_unlimited_points' => function ($q) {
+                $q->where('status', 'active')
+                    ->where(function ($qq) {
+                        $qq->whereNull('ends_at')->orWhere('ends_at', '>', now());
+                    })
+                    ->whereHas('plan', fn ($pq) => $pq->where('type', 'subscription'));
+            }])
             ->orderByDesc('created_at');
 
         // Scope by user type
         if ($user) {
             if ($user->type === 'school') {
-                $schoolId = $user->studentSchool?->school_id;
+                $schoolId = $user->school?->id;
                 if ($schoolId) {
                     $query->whereHas('studentSchool', fn($q) => $q->where('school_id', $schoolId));
                 }
@@ -65,6 +72,13 @@ class StudentService
     public function show(int $studentId): ?Student
     {
         return Student::with(['user', 'league', 'scores', 'wallet', 'exam'])
+            ->withExists(['subscriptions as has_unlimited_points' => function ($q) {
+                $q->where('status', 'active')
+                    ->where(function ($qq) {
+                        $qq->whereNull('ends_at')->orWhere('ends_at', '>', now());
+                    })
+                    ->whereHas('plan', fn ($pq) => $pq->where('type', 'subscription'));
+            }])
             ->find($studentId);
     }
 

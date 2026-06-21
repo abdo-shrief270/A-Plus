@@ -11,24 +11,42 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Echo "Start"
-        run: echo "Start CI/CD"
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          extensions: pdo_sqlite, sqlite3, mbstring, bcmath
+          coverage: none
+
+      - name: Install dependencies
+        run: composer install --prefer-dist --no-interaction --no-progress
+
+      - name: Prepare environment
+        run: |
+          cp .env.example .env || true
+          php artisan key:generate --force
+
+      - name: Run test suite
+        run: vendor/bin/phpunit
 
   deploy:
     runs-on: ubuntu-latest
-    needs: laravel-tests # Ensure the tests job completes before deploying
+    needs: laravel-tests # Deploy only after tests pass
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
 
       - name: Setup SSH
-        uses: webfactory/ssh-agent@v0.5.3
+        uses: webfactory/ssh-agent@v0.9.0
         with:
           ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
 
       - name: SSH Deploy A-Plus-Dashboard
-        if: github.event_name == 'push' || github.event_name == 'pull_request' && github.ref == 'refs/heads/main'
         uses: appleboy/ssh-action@master
         with:
           host: ${{ secrets.REMOTE_HOST }}

@@ -8,18 +8,19 @@ use App\Models\Answer;
 use App\Models\Question;
 use App\Models\StudentAnswer;
 use App\Services\ScoreService;
+use App\Services\WalletService;
 use Illuminate\Http\JsonResponse;
+use Symfony\Component\HttpFoundation\Response;
 
 /**
  * @tags الأسئلة والإجابات (Questions & Answers)
  */
 class AnswerController extends BaseApiController
 {
-    protected ScoreService $scoreService;
-
-    public function __construct(ScoreService $scoreService)
-    {
-        $this->scoreService = $scoreService;
+    public function __construct(
+        protected ScoreService $scoreService,
+        protected WalletService $walletService
+    ) {
     }
 
     /**
@@ -57,6 +58,21 @@ class AnswerController extends BaseApiController
         }
 
         $question = Question::with('type')->findOrFail($request->question_id);
+        $student = $user->student;
+
+        // Wallet charge: deduct a flat cost the FIRST time a student answers a
+        // given question. Active subscribers answer free; payForContent is
+        // idempotent so re-answering the same question is never charged twice.
+        $cost = (int) config('learning.question_answer_cost', 0);
+        if ($student && $cost > 0 && !$student->hasUnlimitedAccess()) {
+            $paid = $this->walletService->payForContent($student, $question, $cost, 'question_answer');
+            if (!$paid) {
+                return $this->errorResponse(
+                    'رصيدك غير كافٍ للإجابة على هذا السؤال. يرجى شحن رصيدك أو الاشتراك للوصول غير المحدود.',
+                    Response::HTTP_PAYMENT_REQUIRED
+                );
+            }
+        }
 
         $isCorrect = false;
         $scoreEarned = 0;
@@ -79,13 +95,16 @@ class AnswerController extends BaseApiController
             }
         }
 
-        // Save or Update Answer
+        // Save or Update Answer. student_id MUST be set — revision metrics and
+        // quiz "wrong/unanswered" pools read StudentAnswer by student_id; a
+        // null here makes answers invisible to the whole revision page.
         $studentAnswer = StudentAnswer::updateOrCreate(
             [
                 'user_id' => $user->id,
                 'question_id' => $question->id,
             ],
             [
+                'student_id' => $user->student?->id,
                 'answer_id' => $request->answer_id,
                 'user_answer' => $request->user_answer,
                 'is_correct' => $isCorrect,
@@ -93,16 +112,19 @@ class AnswerController extends BaseApiController
             ]
         );
 
-        // Award Gamification Score if correct
-        if ($isCorrect && $studentAnswer->wasRecentlyCreated) {
-             // Ensure we pass the Student model, not the User model
-            $student = $user->student ?? $user; // fallback if needed, but it should be student
-            $this->scoreService->addScore($student, $scoreEarned, 'question_correct', $question);
+        // Award Gamification Score (league points) once per question, only on
+        // the first correct answer.
+        if ($isCorrect && $studentAnswer->wasRecentlyCreated && $user->student) {
+            $this->scoreService->addScore($user->student, $scoreEarned, 'question_correct', $question);
         }
 
         $responseData = [
             'is_correct' => $isCorrect,
             'score_earned' => $scoreEarned,
+            // Live point totals so the UI can update both counters instantly:
+            // wallet balance (spent) and league score (earned).
+            'balance' => $student ? $this->walletService->getBalance($student) : null,
+            'total_score' => $student ? (int) $student->refresh()->current_score : null,
         ];
 
         if (!$isCorrect) {

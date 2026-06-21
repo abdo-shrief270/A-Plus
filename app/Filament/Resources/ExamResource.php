@@ -21,7 +21,6 @@ use App\Filament\Exports\ExamExporter;
 use App\Filament\Imports\ExamImporter;
 use Filament\Tables\Actions\ExportAction;
 use Filament\Tables\Actions\ImportAction;
-use Filament\Resources\Components\Tab;
 use App\Filament\Resources\ExamResource\Widgets\ExamStatsOverview;
 
 class ExamResource extends Resource
@@ -181,12 +180,6 @@ class ExamResource extends Resource
         ];
     }
 
-    public function getTabs(): array
-    {
-        return [
-            'all' => Tab::make('الكل'),
-            'recent' => Tab::make('أضيف حديثاً')
-                ->modifyQueryUsing(fn(Builder $query) => $query->where('created_at', '>=', now()->subDays(7))),
-        ];
-    }
+    // Tabs live on ListExams (the ListRecords page) in Filament v3 — methods
+    // here on the Resource are silently ignored. See ExamResource/Pages/ListExams.php.
 }

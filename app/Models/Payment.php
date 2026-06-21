@@ -14,17 +14,23 @@ class Payment extends Model
         'transaction_id',
         'user_id',
         'enrollment_id',
+        'subscription_id',
         'amount',
+        'description',
         'currency',
         'payment_method',
-        'status', // pending, paid, failed, refunded
+        'status',
+        'paid_at',
         'coupon_id',
         'payload',
+        'metadata',
     ];
 
     protected $casts = [
         'amount' => 'decimal:2',
         'payload' => 'array',
+        'metadata' => 'array',
+        'paid_at' => 'datetime',
     ];
 
     public function user(): BelongsTo
@@ -35,6 +41,11 @@ class Payment extends Model
     public function enrollment(): BelongsTo
     {
         return $this->belongsTo(Enrollment::class);
+    }
+
+    public function subscription(): BelongsTo
+    {
+        return $this->belongsTo(Subscription::class);
     }
 
     public function coupon(): BelongsTo

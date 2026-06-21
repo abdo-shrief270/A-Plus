@@ -45,10 +45,10 @@ class StudentImportService
             ]);
 
             // Link to school if applicable
-            if ($createdBy->type === 'school' && $createdBy->studentSchool) {
+            if ($createdBy->type === 'school' && $createdBy->school) {
                 \App\Models\StudentSchool::create([
                     'student_id' => $student->id,
-                    'school_id' => $createdBy->studentSchool->school_id,
+                    'school_id' => $createdBy->school->id,
                 ]);
             }
 

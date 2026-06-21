@@ -96,8 +96,16 @@ class DeviceResource extends Resource
                     ->trueColor('success')
                     ->falseColor('danger'),
                 Tables\Columns\ToggleColumn::make('is_approved')
-                    ->label('تم التفعيل')
+                    ->label('مفعّل')
                     ->sortable()
+                    ->toggleable(),
+                Tables\Columns\IconColumn::make('is_current')
+                    ->label('الجلسة الحالية')
+                    ->boolean()
+                    ->trueIcon('heroicon-o-check-badge')
+                    ->falseIcon('heroicon-o-minus-circle')
+                    ->trueColor('success')
+                    ->falseColor('gray')
                     ->toggleable(),
                 Tables\Columns\TextColumn::make('last_login_at')
                     ->label('آخر تسجيل دخول')
@@ -110,28 +118,122 @@ class DeviceResource extends Resource
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
+                Tables\Filters\SelectFilter::make('user_id')
+                    ->label('المستخدم')
+                    ->relationship('user', 'name')
+                    ->searchable()
+                    ->preload(),
+
+                Tables\Filters\SelectFilter::make('user_type')
+                    ->label('نوع المستخدم')
+                    ->options([
+                        'student' => 'طالب',
+                        'parent' => 'ولي أمر',
+                        'school' => 'مدرسة',
+                    ])
+                    ->query(function (Builder $query, array $data): Builder {
+                        if (empty($data['value'])) return $query;
+                        return $query->whereHas('user', fn($q) => $q->where('type', $data['value']));
+                    }),
+
                 Tables\Filters\SelectFilter::make('platform')
                     ->label('المنصة')
                     ->options([
                         'iOS' => 'iOS',
                         'Android' => 'Android',
                         'Web' => 'Web',
+                        'web' => 'Web (lower)',
+                        'ios' => 'iOS (lower)',
+                        'android' => 'Android (lower)',
                     ]),
-                Tables\Filters\TernaryFilter::make('is_trusted')
-                    ->label('الحالة')
-                    ->placeholder('الكل')
-                    ->trueLabel('موثوق')
-                    ->falseLabel('محظور'),
+
                 Tables\Filters\TernaryFilter::make('is_approved')
                     ->label('التفعيل')
                     ->placeholder('الكل')
                     ->trueLabel('مفعل')
-                    ->falseLabel('معلق'),
+                    ->falseLabel('معلّق (بانتظار الإدارة)'),
+
+                Tables\Filters\TernaryFilter::make('is_current')
+                    ->label('الجلسة الحالية')
+                    ->placeholder('الكل')
+                    ->trueLabel('نشط الآن')
+                    ->falseLabel('غير نشط'),
+
+                Tables\Filters\TernaryFilter::make('is_trusted')
+                    ->label('الثقة')
+                    ->placeholder('الكل')
+                    ->trueLabel('موثوق')
+                    ->falseLabel('محظور'),
+
+                Tables\Filters\Filter::make('pending_review')
+                    ->label('بانتظار المراجعة')
+                    ->query(fn(Builder $query): Builder => $query->where('is_approved', false))
+                    ->toggle(),
+
+                Tables\Filters\Filter::make('online_now')
+                    ->label('متصل الآن')
+                    ->query(fn(Builder $query): Builder => $query
+                        ->where('is_current', true)
+                        ->where('is_approved', true)
+                        ->where('last_login_at', '>=', now()->subMinutes(15)))
+                    ->toggle(),
+
                 Tables\Filters\Filter::make('recent_login')
-                    ->label('نشط مؤخراً')
-                    ->query(fn(Builder $query): Builder => $query->where('last_login_at', '>=', now()->subDays(7))),
+                    ->label('نشط آخر 7 أيام')
+                    ->query(fn(Builder $query): Builder => $query->where('last_login_at', '>=', now()->subDays(7)))
+                    ->toggle(),
+
+                Tables\Filters\Filter::make('last_login_at')
+                    ->label('آخر تسجيل دخول')
+                    ->form([
+                        Forms\Components\DatePicker::make('from')->label('من'),
+                        Forms\Components\DatePicker::make('until')->label('إلى'),
+                    ])
+                    ->query(function (Builder $query, array $data): Builder {
+                        return $query
+                            ->when($data['from'] ?? null, fn($q, $d) => $q->whereDate('last_login_at', '>=', $d))
+                            ->when($data['until'] ?? null, fn($q, $d) => $q->whereDate('last_login_at', '<=', $d));
+                    })
+                    ->indicateUsing(function (array $data): array {
+                        $tags = [];
+                        if (!empty($data['from'])) $tags[] = 'من ' . $data['from'];
+                        if (!empty($data['until'])) $tags[] = 'إلى ' . $data['until'];
+                        return $tags;
+                    }),
             ])
+            ->filtersFormColumns(2)
             ->actions([
+                Tables\Actions\Action::make('approve')
+                    ->label('تفعيل')
+                    ->icon('heroicon-o-check-badge')
+                    ->color('success')
+                    ->visible(fn(Device $record): bool => !$record->is_approved)
+                    ->requiresConfirmation()
+                    ->modalHeading('تفعيل الجهاز')
+                    ->modalDescription('سيتمكن المستخدم من تسجيل الدخول من هذا الجهاز. الجهاز السابق سيتم تسجيل خروجه عند أول طلب.')
+                    ->action(function (Device $record): void {
+                        $record->update(['is_approved' => true]);
+                        activity()
+                            ->causedBy(\Filament\Facades\Filament::auth()->user())
+                            ->performedOn($record->user)
+                            ->event('device_approved')
+                            ->withProperties([
+                                'device_id' => $record->device_id,
+                                'name' => $record->name,
+                                'platform' => $record->platform,
+                            ])
+                            ->log('تم تفعيل جهاز عبر لوحة الإدارة');
+
+                        if ($record->user) {
+                            $record->user->notify(new \App\Notifications\SimpleNotification(
+                                title: 'تم تفعيل جهازك',
+                                description: 'وافقت الإدارة على ' . ($record->name ?? 'جهازك') . '. يمكنك الآن تسجيل الدخول.',
+                                link: '/dashboard/settings/security',
+                                color: 'success',
+                                icon: 'i-heroicons-shield-check',
+                            ));
+                        }
+                    }),
                 Tables\Actions\Action::make('toggle_trust')
                     ->label(fn(Device $record): string => $record->is_trusted ? 'حظر' : 'إلغاء الحظر')
                     ->icon(fn(Device $record): string => $record->is_trusted ? 'heroicon-o-x-circle' : 'heroicon-o-check-circle')
@@ -143,6 +245,12 @@ class DeviceResource extends Resource
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
+                    Tables\Actions\BulkAction::make('approve')
+                        ->label('تفعيل المحدد')
+                        ->icon('heroicon-o-check-badge')
+                        ->color('success')
+                        ->requiresConfirmation()
+                        ->action(fn($records) => $records->each->update(['is_approved' => true])),
                     Tables\Actions\BulkAction::make('block')
                         ->label('حظر المحدد')
                         ->icon('heroicon-o-x-circle')
@@ -179,11 +287,12 @@ class DeviceResource extends Resource
 
     public static function getNavigationBadge(): ?string
     {
-        return static::getModel()::where('is_trusted', false)->count() ?: null;
+        // Show count of devices waiting for admin approval.
+        return static::getModel()::where('is_approved', false)->count() ?: null;
     }
 
     public static function getNavigationBadgeColor(): ?string
     {
-        return 'danger';
+        return 'warning';
     }
 }

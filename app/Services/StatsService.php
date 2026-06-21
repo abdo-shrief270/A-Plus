@@ -25,7 +25,7 @@ class StatsService
         // Scope by user type
         if ($user) {
             if ($user->type === 'school') {
-                $schoolId = $user->studentSchool?->school_id;
+                $schoolId = $user->school?->id;
                 if ($schoolId) {
                     $studentQuery->whereHas('studentSchool', fn($q) => $q->where('school_id', $schoolId));
                 }

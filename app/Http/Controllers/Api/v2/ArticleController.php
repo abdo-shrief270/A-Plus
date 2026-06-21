@@ -70,7 +70,7 @@ class ArticleController extends BaseApiController
             $article->load(['category.section.exam', 'questions' => function ($query) {
                 $query->with(['answers' => function ($q) {
                     $q->orderBy('order');
-                }, 'type']);
+                }, 'type', 'categories.section.exam', 'articles.category.section.exam']);
             }]);
             $article->loadCount('questions');
 
@@ -107,7 +107,7 @@ class ArticleController extends BaseApiController
             $questions = $article->questions()
                 ->with(['answers' => function ($q) {
                     $q->orderBy('order');
-                }, 'type'])
+                }, 'type', 'categories.section.exam', 'articles.category.section.exam'])
                 ->paginate($perPage);
 
             $this->questionService->attachSiblingIds($questions->items());

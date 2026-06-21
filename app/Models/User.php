@@ -36,6 +36,8 @@ class User extends Authenticatable implements JWTSubject, FilamentUser
     {
         return [
             'email_verified_at' => 'datetime',
+            'phone_verified_at' => 'datetime',
+            'whatsapp_verified_at' => 'datetime',
             'password' => 'hashed',
         ];
     }
@@ -83,6 +85,24 @@ class User extends Authenticatable implements JWTSubject, FilamentUser
     public function student()
     {
         return $this->hasOne(Student::class, 'user_id', 'id');
+    }
+
+    /**
+     * The School metadata record this user manages (only for type=school).
+     */
+    public function school()
+    {
+        return $this->hasOne(School::class, 'user_id', 'id');
+    }
+
+    /**
+     * Activity log entries where this user is the subject. Used by the
+     * Filament User-side resource to render a per-user audit timeline.
+     */
+    public function userActivities()
+    {
+        return $this->morphMany(\Spatie\Activitylog\Models\Activity::class, 'subject')
+            ->orderByDesc('created_at');
     }
 
     public function studentParent()

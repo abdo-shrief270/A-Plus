@@ -9,8 +9,11 @@ use App\Http\Resources\v2\QuestionDetailResource;
 use App\Http\Resources\v2\QuestionResource;
 use App\Models\Question;
 use App\Models\SectionCategory;
+use App\Services\AiExplanationService;
 use App\Services\QuestionService;
+use App\Services\WalletService;
 use Illuminate\Http\JsonResponse;
+use Symfony\Component\HttpFoundation\Response;
 
 class QuestionController extends BaseApiController
 {
@@ -19,6 +22,62 @@ class QuestionController extends BaseApiController
     public function __construct(QuestionService $questionService)
     {
         $this->questionService = $questionService;
+    }
+
+    /**
+     * AI Explanation (شرح بالذكاء الاصطناعي)
+     *
+     * يولّد شرحاً مبسّطاً للسؤال بالذكاء الاصطناعي (يُخزَّن ويُعاد استخدامه).
+     * يُخصم رصيد مرة واحدة لكل سؤال؛ المشتركون بدون خصم. غير متاح إن لم
+     * يُضبط مفتاح OpenAI.
+     *
+     * @group Gamification / Answer Cycle (دورة الإجابة والتلعيب)
+     */
+    public function aiExplanation(Question $question, AiExplanationService $ai, WalletService $wallet): JsonResponse
+    {
+        $student = auth('api')->user()?->student;
+        if (!$student) {
+            return $this->errorResponse('متاح للطلاب فقط', Response::HTTP_FORBIDDEN);
+        }
+
+        // Already cached → serve free (no charge, no OpenAI call).
+        if (filled($question->ai_explanation)) {
+            return $this->successResponse([
+                'explanation' => $question->ai_explanation,
+                'cached' => true,
+                'balance' => $wallet->getBalance($student),
+            ], 'AI explanation retrieved');
+        }
+
+        if (!$ai->enabled()) {
+            return $this->errorResponse(
+                'ميزة الشرح بالذكاء الاصطناعي غير متاحة حالياً.',
+                Response::HTTP_SERVICE_UNAVAILABLE
+            );
+        }
+
+        // Charge once per question (subscribers free), like the answer flow.
+        $cost = (int) config('ai.explanation_cost', 0);
+        if ($cost > 0 && !$student->hasUnlimitedAccess()) {
+            $paid = $wallet->payForContent($student, $question, $cost, 'ai_explanation');
+            if (!$paid) {
+                return $this->errorResponse(
+                    'رصيدك غير كافٍ للحصول على شرح بالذكاء الاصطناعي.',
+                    Response::HTTP_PAYMENT_REQUIRED
+                );
+            }
+        }
+
+        $explanation = $ai->explain($question);
+        if (!$explanation) {
+            return $this->errorResponse('تعذّر توليد الشرح حالياً. حاول لاحقاً.', Response::HTTP_BAD_GATEWAY);
+        }
+
+        return $this->successResponse([
+            'explanation' => $explanation,
+            'cached' => false,
+            'balance' => $wallet->getBalance($student),
+        ], 'AI explanation generated');
     }
 
     /**
@@ -84,6 +143,33 @@ class QuestionController extends BaseApiController
         }
     }
 
+
+    /**
+     * Get Correct Answer (الإجابة الصحيحة)
+     *
+     * يجلب الإجابة الصحيحة لسؤال معين. مفيد لعرضها داخل نافذة الشرح بدون
+     * الحاجة لإعادة جلب تفاصيل السؤال كاملاً.
+     *
+     * @pathParam question integer required المعرف الافتراضي للسؤال. Example: 1
+     *
+     * @group Browsing / Questions (الأسئلة)
+     *
+     * @response 200 array{status: int, message: string, data: array{id: int, text: string}}
+     * @response 404 array{status: int, message: string}
+     */
+    public function correctAnswer(Question $question): JsonResponse
+    {
+        $answer = $question->answers()->where('is_correct', true)->first(['id', 'text']);
+
+        if (!$answer) {
+            return $this->errorResponse('Correct answer not found', 404);
+        }
+
+        return $this->successResponse(
+            ['id' => $answer->id, 'text' => $answer->text],
+            'Correct answer retrieved successfully'
+        );
+    }
 
     /**
      * Get Questions by Category (أسئلة تصنيف فرعي)

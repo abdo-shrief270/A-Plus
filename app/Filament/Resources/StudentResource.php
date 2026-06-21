@@ -287,6 +287,7 @@ class StudentResource extends Resource
     {
         return [
             RelationManagers\StudentEnrollmentsRelationManager::class,
+            \App\Filament\Resources\Shared\RelationManagers\UserActivityLogRelationManager::class,
         ];
     }
 

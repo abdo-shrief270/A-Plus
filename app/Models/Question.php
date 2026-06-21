@@ -23,11 +23,14 @@ class Question extends Model
         'comparison_image_1',
         'comparison_value_2',
         'comparison_image_2',
+        'ai_explanation',
+        'ai_explanation_generated_at',
     ];
     protected $hidden = ['pivot'];
     protected $casts = [
         'difficulty' => 'string',
         'is_new' => 'boolean',
+        'ai_explanation_generated_at' => 'datetime',
     ];
 
     public function getActivitylogOptions(): LogOptions

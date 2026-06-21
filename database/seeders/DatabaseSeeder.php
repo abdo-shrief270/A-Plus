@@ -14,5 +14,6 @@ class DatabaseSeeder extends Seeder
         $this->call(SuperAdminSeeder::class);
         $this->call(QuestionTypeSeeder::class);
         $this->call(LatexFormatSeeder::class);
+        $this->call(LeagueSeeder::class);
     }
 }

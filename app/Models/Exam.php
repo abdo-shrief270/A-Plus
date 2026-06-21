@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 use Spatie\Activitylog\Traits\LogsActivity;
 use Spatie\Activitylog\LogOptions;
 
@@ -24,6 +25,19 @@ class Exam extends Model
             ->logAll()
             ->logOnlyDirty()
             ->dontSubmitEmptyLogs();
+    }
+
+    /** Subjects (section categories) across all of the exam's sections. */
+    public function categories(): HasManyThrough
+    {
+        return $this->hasManyThrough(
+            SectionCategory::class,
+            ExamSection::class,
+            'exam_id',          // FK on exam_sections
+            'exam_section_id',  // FK on section_categories
+            'id',
+            'id'
+        );
     }
 
     public function sections(): HasMany

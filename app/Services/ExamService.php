@@ -15,7 +15,8 @@ class ExamService
      */
     public function getAllExams(array $filters = []): Collection
     {
-        $query = Exam::query();
+        // Counts power the "N مادة / N قسم" labels on the exam cards.
+        $query = Exam::query()->withCount(['sections', 'categories']);
 
         if (isset($filters['active'])) {
             $query->where('active', filter_var($filters['active'], FILTER_VALIDATE_BOOLEAN));

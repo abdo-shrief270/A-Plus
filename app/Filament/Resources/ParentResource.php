@@ -197,6 +197,7 @@ class ParentResource extends Resource
     {
         return [
             RelationManagers\ParentStudentsRelationManager::class,
+            \App\Filament\Resources\Shared\RelationManagers\UserActivityLogRelationManager::class,
         ];
     }
 

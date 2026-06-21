@@ -24,26 +24,77 @@ class DeviceService
             throw new \InvalidArgumentException('Device ID is required');
         }
 
-        // Check if user has any existing APPROVED devices (or any devices at all)
-        // If it's the first device, auto-approve it.
-        $existingDevicesCount = $user->devices()->count();
-        $isApproved = $existingDevicesCount === 0;
+        $existing = $user->devices()->where('device_id', $deviceId)->first();
 
-        return Device::updateOrCreate(
-            [
-                'user_id' => $user->id,
-                'device_id' => $deviceId,
-            ],
-            [
+        // Re-registration of an already-known device — only refresh metadata,
+        // never change approval state.
+        if ($existing) {
+            $existing->update([
                 'name' => $request->header('X-Device-Name'),
                 'platform' => $request->header('X-Device-Platform'),
                 'ip_address' => $request->ip(),
                 'user_agent' => $request->userAgent(),
                 'last_login_at' => now(),
-                'is_trusted' => true,
-                'is_approved' => $isApproved,
-            ]
-        );
+            ]);
+            return $existing;
+        }
+
+        $isFirstDevice = $user->devices()->count() === 0;
+
+        if (!$isFirstDevice) {
+            // SECURITY: a brand-new device tried to join an existing account.
+            // Lock every device for this user (including the previously
+            // current one) so the legitimate owner has to confirm with the
+            // admin before *anything* is usable again. Admin sees the new
+            // pending device + the activity log entry, decides what
+            // happened, and re-approves whichever device they trust.
+            $user->devices()->update([
+                'is_approved' => false,
+                'is_current' => false,
+            ]);
+
+            activity()
+                ->causedBy($user)
+                ->performedOn($user)
+                ->event('new_device_attempt')
+                ->withProperties([
+                    'device_id' => $deviceId,
+                    'name' => $request->header('X-Device-Name'),
+                    'platform' => $request->header('X-Device-Platform'),
+                    'ip' => $request->ip(),
+                    'user_agent' => $request->userAgent(),
+                ])
+                ->log('محاولة تسجيل دخول من جهاز جديد — تم قفل كل الأجهزة بانتظار مراجعة الإدارة');
+        }
+
+        return Device::create([
+            'user_id' => $user->id,
+            'device_id' => $deviceId,
+            'name' => $request->header('X-Device-Name'),
+            'platform' => $request->header('X-Device-Platform'),
+            'ip_address' => $request->ip(),
+            'user_agent' => $request->userAgent(),
+            'last_login_at' => now(),
+            'is_trusted' => true,
+            'is_approved' => $isFirstDevice,
+            'is_current' => $isFirstDevice,
+        ]);
+    }
+
+    /**
+     * Promote the given device to be the user's "current" session, demoting
+     * every other device. Call this only after credentials AND approval
+     * checks have passed.
+     */
+    public function promoteCurrent(User $user, string $deviceId): void
+    {
+        $user->devices()
+            ->where('device_id', '!=', $deviceId)
+            ->update(['is_current' => false]);
+
+        $user->devices()
+            ->where('device_id', $deviceId)
+            ->update(['is_current' => true, 'last_login_at' => now()]);
     }
 
     /**

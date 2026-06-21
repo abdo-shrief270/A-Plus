@@ -49,11 +49,42 @@ return Application::configure(basePath: dirname(__DIR__))
                         ], 429);
                     });
             });
+
+            // Quiz reads (pool-count, show, history, leaderboard, review): generous
+            RateLimiter::for('quiz-read', function (Request $request) {
+                return Limit::perMinute(120)
+                    ->by(optional(auth('api')->user())->id ?: $request->ip())
+                    ->response(fn () => response()->json([
+                        'status' => 429,
+                        'message' => 'طلبات كثيرة جداً. يرجى الانتظار قليلاً.',
+                    ], 429));
+            });
+
+            // Quiz answer submissions: ~1/second sustained is plenty for a human
+            RateLimiter::for('quiz-answer', function (Request $request) {
+                return Limit::perMinute(60)
+                    ->by(optional(auth('api')->user())->id ?: $request->ip())
+                    ->response(fn () => response()->json([
+                        'status' => 429,
+                        'message' => 'إجابات متسارعة بشكل غير طبيعي. يرجى التمهّل.',
+                    ], 429));
+            });
+
+            // Session lifecycle (create/complete/abandon/daily start): rare actions
+            RateLimiter::for('quiz-mutate', function (Request $request) {
+                return Limit::perMinute(15)
+                    ->by(optional(auth('api')->user())->id ?: $request->ip())
+                    ->response(fn () => response()->json([
+                        'status' => 429,
+                        'message' => 'طلبات كثيرة جداً. يرجى الانتظار قليلاً.',
+                    ], 429));
+            });
         },
     )
     ->withMiddleware(function (Middleware $middleware) {
         $middleware->alias([
-            'jwt' => \App\Http\Middleware\JwtMiddleware::class
+            'jwt' => \App\Http\Middleware\JwtMiddleware::class,
+            'single-device' => \App\Http\Middleware\EnforceSingleDevice::class,
         ]);
     })
     ->withExceptions(function ($exceptions) {
@@ -63,6 +94,13 @@ return Application::configure(basePath: dirname(__DIR__))
         });
         $exceptions->render(function (Throwable $e, \Illuminate\Http\Request $request) {
             if ($request->is('api/*')) {
+                // Some framework exceptions carry their own ready response
+                // (rate-limiter custom 429s, redirects). Return it verbatim —
+                // mangling these turned throttle hits into empty 500s.
+                if ($e instanceof \Illuminate\Http\Exceptions\HttpResponseException) {
+                    return $e->getResponse();
+                }
+
                 if ($e instanceof \Illuminate\Validation\ValidationException) {
                     return response()->json([
                         'status' => 422,
@@ -85,11 +123,19 @@ return Application::configure(basePath: dirname(__DIR__))
                     ]);
                 }
 
-                // Default exception handler
+                // Default exception handler. HttpExceptions carry intentional,
+                // user-facing messages; anything else (DB errors, runtime
+                // failures) must not leak internals — SQL, paths, stack info —
+                // to API clients outside of debug mode.
+                $isHttp = method_exists($e, 'getStatusCode');
+                $status = $isHttp ? $e->getStatusCode() : 500;
+
                 return response()->json([
-                    'status' => method_exists($e, 'getStatusCode') ? $e->getStatusCode() : 500,
-                    'message' => $e->getMessage(),
-                ]);
+                    'status' => $status,
+                    'message' => ($isHttp || config('app.debug'))
+                        ? $e->getMessage()
+                        : 'حدث خطأ غير متوقع. يرجى المحاولة مرة أخرى.',
+                ], $status);
             }
 
         });

@@ -35,6 +35,7 @@ class StudentResource extends JsonResource
             ] : null,
             'total_score' => $totalScore,
             'total_points' => $totalPoints,
+            'has_unlimited_points' => (bool) ($this->has_unlimited_points ?? false),
             'joined_at' => $this->created_at?->format('Y-m-d'),
             'created_at' => $this->created_at?->toISOString(),
         ];

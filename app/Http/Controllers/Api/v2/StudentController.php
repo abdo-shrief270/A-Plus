@@ -86,10 +86,10 @@ class StudentController extends BaseApiController
      * @pathParam student integer required المعرف الفريد للطالب المطلوب تعديله. Example: 5
      * 
      * @bodyParam exam_id integer optional الصف/المرحلة الدراسية للطالب. Example: 1
-     * @bodyParam id_number string optional الرقم القومي أو المعرف المدني. Example: 2990101010101
+     * @bodyParam id_number string optional رقم الهوية الوطنية. Example: 1234567890
      * @bodyParam name string optional الاسم الكامل للتحديث. Example: أحمد حسن
      * @bodyParam email string optional عنوان البريد الإلكتروني. Example: user@example.com
-     * @bodyParam phone string optional رقم الهاتف. Example: 01012345678
+     * @bodyParam phone string optional رقم الهاتف. Example: 0512345678
      *
      * @group Dashboard / Students (الطلاب)
      * @unauthenticated false

@@ -37,7 +37,9 @@ class SchoolResource extends Resource
         return $form
             ->schema([
                 Forms\Components\TextInput::make('name')
-                    ->label('اسم المدرسة'),
+                    ->label('اسم المدرسة')
+                    ->required()
+                    ->maxLength(255),
 
                 Forms\Components\TextInput::make('user_name')
                     ->label('كود المدرسة')
@@ -53,12 +55,11 @@ class SchoolResource extends Resource
                             return 'كود المدرسة يجب أن يكون 5 حروف على الأقل ❌';
                         }
 
-                        // Get the current record ID if editing
-                        $currentId = $get('id'); // This works in edit mode
-            
+                        $currentId = $get('id');
+
                         $query = \App\Models\School::where('user_name', $state);
                         if ($currentId) {
-                            $query->where('id', '!=', $currentId); // Ignore current record
+                            $query->where('id', '!=', $currentId);
                         }
 
                         if ($query->exists()) {
@@ -67,6 +68,17 @@ class SchoolResource extends Resource
 
                         return 'كود المدرسة متاح ✅';
                     }),
+
+                Forms\Components\TextInput::make('password')
+                    ->label('كلمة المرور')
+                    ->password()
+                    ->revealable()
+                    ->minLength(6)
+                    ->required(fn (string $operation): bool => $operation === 'create')
+                    ->dehydrated(fn (?string $state): bool => filled($state))
+                    ->helperText(fn (string $operation): ?string => $operation === 'edit'
+                        ? 'اتركها فارغة للحفاظ على كلمة المرور الحالية'
+                        : 'يجب أن لا تقل عن 6 أحرف'),
             ]);
     }
 
@@ -164,6 +176,7 @@ class SchoolResource extends Resource
     {
         return [
             SchoolStudentsRelationManager::class,
+            \App\Filament\Resources\Shared\RelationManagers\UserActivityLogRelationManager::class,
         ];
     }
     public static function getNavigationBadge(): ?string

@@ -2,12 +2,16 @@
 
 namespace App\Http\Controllers\Api\v2;
 
+use App\Exceptions\QuizConflictException;
 use App\Http\Controllers\Api\BaseApiController;
 use App\Http\Requests\v2\PracticeExamIndexRequest;
 use App\Http\Resources\v2\PracticeExamResource;
+use App\Http\Resources\v2\QuizSessionDetailResource;
 use App\Models\PracticeExam;
 use App\Services\PracticeExamService;
+use App\Services\QuizService;
 use Illuminate\Http\JsonResponse;
+use Symfony\Component\HttpFoundation\Response;
 
 class PracticeExamController extends BaseApiController
 {
@@ -16,6 +20,38 @@ class PracticeExamController extends BaseApiController
     public function __construct(PracticeExamService $practiceExamService)
     {
         $this->practiceExamService = $practiceExamService;
+    }
+
+    /**
+     * Simulate Model (محاكاة النموذج)
+     *
+     * يبدأ جلسة محاكاة لاختبار تجريبي (نموذج) محدد: تُجمَّد جميع أسئلة النموذج
+     * في وضع الاختبار مع مؤقّت. تُكمَّل وتُراجَع عبر مسارات الاختبارات الذاتية.
+     *
+     * @group Browsing / Practice Exams (الاختبارات التجريبية)
+     */
+    public function simulate(PracticeExam $practiceExam, QuizService $quizService): JsonResponse
+    {
+        $student = auth('api')->user()?->student;
+        if (!$student) {
+            return $this->errorResponse('Simulation is only available for students', Response::HTTP_FORBIDDEN);
+        }
+
+        try {
+            $session = $quizService->startFromModel($student, $practiceExam);
+        } catch (QuizConflictException $e) {
+            return response()->json([
+                'status' => Response::HTTP_CONFLICT,
+                'message' => $e->getMessage(),
+                'data' => $e->payload,
+            ], Response::HTTP_CONFLICT);
+        }
+
+        $session->load(['questions.question.answers', 'questions.question.type', 'practiceExam']);
+
+        return $this->successResponse([
+            'session' => new QuizSessionDetailResource($session),
+        ], 'Model simulation started successfully', Response::HTTP_CREATED);
     }
 
     /**

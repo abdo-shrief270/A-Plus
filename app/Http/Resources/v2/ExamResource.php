@@ -18,6 +18,9 @@ class ExamResource extends JsonResource
             'id' => $this->id,
             'name' => $this->name,
             'active' => $this->active,
+            // Counts for the exam cards (present when loaded via withCount).
+            'sections_count' => $this->whenCounted('sections'),
+            'subjects_count' => $this->whenCounted('categories'),
         ];
     }
 }

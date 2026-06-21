@@ -115,6 +115,23 @@ class PaymentResource extends Resource
             ])
             ->actions([
                 Tables\Actions\ViewAction::make(),
+                // Manual activation while payment gateways are disabled: marks
+                // the payment paid and activates its subscription/enrollment.
+                Tables\Actions\Action::make('activate')
+                    ->label('تفعيل')
+                    ->icon('heroicon-o-check-badge')
+                    ->color('success')
+                    ->visible(fn ($record) => $record->status === 'pending')
+                    ->requiresConfirmation()
+                    ->modalHeading('تفعيل الدفع يدوياً')
+                    ->modalDescription('سيتم اعتبار هذه العملية مدفوعة وتفعيل الاشتراك/التسجيل المرتبط بها.')
+                    ->action(function ($record) {
+                        app(\App\Services\PaymentActivationService::class)->activate($record, 'manual');
+                        \Filament\Notifications\Notification::make()
+                            ->title('تم التفعيل بنجاح')
+                            ->success()
+                            ->send();
+                    }),
             ])
             ->bulkActions([
                 //

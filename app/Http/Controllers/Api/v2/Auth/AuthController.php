@@ -63,7 +63,7 @@ class AuthController extends BaseApiController
      *
      * @bodyParam name string required اسم الطالب بالكامل. Example: أحمد علي
      * @bodyParam user_name string required اسم المستخدم (فريد). يجب استخدام مسار Check Username للتأكد من توفره. Example: ahmed_ali
-     * @bodyParam phone string optional رقم هاتف الطالب للاتصال به (لحالات الـ OTP لاحقاً). Example: 01012345678
+     * @bodyParam phone string optional رقم هاتف الطالب للاتصال به (لحالات الـ OTP لاحقاً). Example: 0512345678
      * @bodyParam gender string required جنس الطالب (`male` أو `female`). Example: male
      * @bodyParam password string required كلمة المرور (يجب أن تحتوي على 8 أحرف على الأقل، حرفيات، وأرقام). Example: Password123!
      * @bodyParam password_confirmation string required تأكيد كلمة المرور المطابق لـ password. Example: Password123!
@@ -411,7 +411,7 @@ class AuthController extends BaseApiController
      * بالنسبة للطلاب، يمكنهم أيضاً تحديث `exam_id` أو `exam_date` الخاصة بالمرحلة الدراسية من خلال هذا المسار.
      *
      * @bodyParam name string optional الاسم الكامل الجديد. Example: أحمد علي
-     * @bodyParam phone string optional رقم الهاتف الجديد. Example: 01012345678
+     * @bodyParam phone string optional رقم الهاتف الجديد. Example: 0512345678
      * @bodyParam country_code string optional كود الدولة للهاتف في حال تواجده. Example: +20
      * @bodyParam email string optional البريد الإلكتروني. Example: user@example.com
      * @bodyParam password string optional كلمة المرور الجديدة. Example: NewPassword123!

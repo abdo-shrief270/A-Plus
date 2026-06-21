@@ -17,6 +17,7 @@ class Device extends Model
         'last_login_at',
         'is_trusted',
         'is_approved',
+        'is_current',
     ];
 
     protected function casts(): array
@@ -25,6 +26,7 @@ class Device extends Model
             'last_login_at' => 'datetime',
             'is_trusted' => 'boolean',
             'is_approved' => 'boolean',
+            'is_current' => 'boolean',
         ];
     }
 

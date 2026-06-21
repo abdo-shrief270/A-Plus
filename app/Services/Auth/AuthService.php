@@ -110,6 +110,14 @@ class AuthService
         $user = User::where('user_name', $userName)->first();
 
         if (!$user || !Hash::check($password, $user->password)) {
+            if ($user) {
+                activity()
+                    ->causedBy($user)
+                    ->performedOn($user)
+                    ->event('login_failed')
+                    ->withProperties(['ip' => $request->ip(), 'user_agent' => $request->userAgent()])
+                    ->log('محاولة تسجيل دخول فاشلة');
+            }
             return [
                 'success' => false,
                 'message' => 'بيانات الاعتماد غير صحيحة',
@@ -143,10 +151,10 @@ class AuthService
             ];
         }
 
-        // Register device if new
+        // Register device if new — pending approval gate is enforced inside
+        // registerDevice (only the very first device of a user auto-approves).
         if ($deviceCheck['is_new']) {
             $device = $this->deviceService->registerDevice($user, $request);
-
             if (!$device->is_approved) {
                 return [
                     'success' => false,
@@ -158,7 +166,25 @@ class AuthService
             $deviceCheck['device']->updateLastLogin();
         }
 
+        // Single-device enforcement: promote this approved device to current
+        // and demote every other one. The previously-current device's next API
+        // call returns 401 device_taken_over and gets signed out by the
+        // frontend interceptor.
+        $deviceId = $this->deviceService->extractDeviceId($request);
+        $this->deviceService->promoteCurrent($user, $deviceId);
+
+        activity()
+            ->causedBy($user)
+            ->performedOn($user)
+            ->event('login_success')
+            ->withProperties(['device_id' => $deviceId, 'ip' => $request->ip()])
+            ->log('تسجيل دخول ناجح');
+
         $token = $this->generateToken($user);
+
+        if ($user->type === 'student') {
+            $user->load('student');
+        }
 
         return [
             'success' => true,
@@ -195,7 +221,15 @@ class AuthService
             $deviceCheck['device']->updateLastLogin();
         }
 
+        // Same single-device enforcement as the password-only path.
+        $deviceId = $this->deviceService->extractDeviceId($request);
+        $this->deviceService->promoteCurrent($user, $deviceId);
+
         $token = $this->generateToken($user);
+
+        if ($user->type === 'student') {
+            $user->load('student');
+        }
 
         return [
             'success' => true,

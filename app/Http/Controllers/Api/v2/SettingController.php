@@ -38,7 +38,14 @@ class SettingController extends BaseApiController
         $settings = $this->settingService->getAllSettings($group);
 
         return $this->successResponse(
-            ['settings' => SettingResource::collection($settings)],
+            [
+                'settings' => SettingResource::collection($settings),
+                // Client uses this to hide the pay button and show a
+                // "pending admin activation" notice while gateways are off.
+                'payments_enabled' => (bool) config('payments.enabled'),
+                // Hide the "AI explanation" button when no OpenAI key is set.
+                'ai_explanations_enabled' => filled(config('ai.openai_key')),
+            ],
             'Settings retrieved successfully'
         );
     }

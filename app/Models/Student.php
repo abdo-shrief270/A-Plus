@@ -81,4 +81,32 @@ class Student extends Model
     {
         return $this->hasMany(Subscription::class);
     }
+
+    /**
+     * True when the student has an active subscription plan (any duration —
+     * weekly/monthly/yearly). Such students get unlimited content access and
+     * are never charged from their wallet. Mirrors the `has_unlimited_points`
+     * flag computed in StudentService so both stay consistent.
+     */
+    public function hasUnlimitedAccess(): bool
+    {
+        return $this->subscriptions()
+            ->where('status', 'active')
+            ->where(function ($q) {
+                $q->whereNull('ends_at')->orWhere('ends_at', '>', now());
+            })
+            ->whereHas('plan', fn ($pq) => $pq->where('type', 'subscription'))
+            ->exists();
+    }
+
+    public function bookmarks(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(Bookmark::class);
+    }
+
+    public function bookmarkedQuestions(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
+    {
+        return $this->belongsToMany(Question::class, 'bookmarks', 'student_id', 'question_id')
+            ->withTimestamps();
+    }
 }

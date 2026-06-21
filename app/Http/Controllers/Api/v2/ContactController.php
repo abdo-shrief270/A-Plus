@@ -25,7 +25,7 @@ class ContactController extends BaseApiController
      * @bodyParam type string required نوع الرسالة (`complaint`, `suggestion`, `inquiry`). Example: inquiry
      * @bodyParam name string required اسم المُرسل. Example: عبدالله أحمد
      * @bodyParam email string optional البريد الإلكتروني (إن وُجد). Example: test@test.com
-     * @bodyParam phone string optional الهاتف رقم (إن وُجد). Example: 0110000000
+     * @bodyParam phone string optional الهاتف رقم (إن وُجد). Example: 0512345678
      * @bodyParam message string required نص الرسالة بحد أقصى 1000 حرف. Example: أواجه مشكلة في تسجيل الدخول.
      *
      * @group Support & Settings (الإعدادات والدعم)

@@ -60,6 +60,7 @@ class QuestionService
                 $query->orderBy('order');
             },
             'categories.section.exam',
+            'articles.category.section.exam',
             'type'
         ]);
 
