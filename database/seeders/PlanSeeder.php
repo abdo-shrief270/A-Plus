@@ -10,6 +10,15 @@ class PlanSeeder extends Seeder
     public function run(): void
     {
         $plans = [
+            // Free trial — granted automatically to every new student. Gives full
+            // (unlimited) access for a short window; no payment, no points grant.
+            [
+                'name' => 'التجربة المجانية',
+                'type' => 'trial',
+                'price' => 0,
+                'points' => 0,
+                'duration_days' => 3,
+            ],
             // Subscription plans (recurring access, with monthly points allowance)
             [
                 'name' => 'الباقة الشهرية الأساسية',

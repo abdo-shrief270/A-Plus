@@ -139,6 +139,13 @@ Route::prefix('v2')->name('api.v2.')->group(function () {
     Route::get('/settings/groups', [SettingController::class, 'groups'])->name('settings.groups');
     Route::get('/settings/{key}', [SettingController::class, 'show'])->name('settings.show');
 
+    // Public catalog: guests browse the course catalog and pricing on the
+    // landing page. Listing/detail only — enrolling/subscribing stays gated.
+    Route::get('/courses', [CourseController::class, 'index'])->name('courses.index');
+    Route::get('/courses/{course}', [CourseController::class, 'show'])->name('courses.show');
+    Route::get('/plans', [PlanController::class, 'index'])->name('plans.index');
+    Route::get('/plans/{plan}', [PlanController::class, 'show'])->name('plans.show');
+
     // =====================================================
     // Stats & Analytics (Authenticated)
     // =====================================================
@@ -158,17 +165,9 @@ Route::prefix('v2')->name('api.v2.')->group(function () {
         // Student Management (CRUD)
         Route::apiResource('students', StudentController::class)->except(['create', 'store']);
 
-        // Courses
-        Route::get('/courses', [CourseController::class, 'index'])->name('courses.index');
-        Route::get('/courses/{course}', [CourseController::class, 'show'])->name('courses.show');
-
         // Enrollments (course-level)
         Route::get('/enrollments', [EnrollmentController::class, 'index'])->name('enrollments.index');
         Route::post('/enrollments', [EnrollmentController::class, 'store'])->name('enrollments.store');
-
-        // Plans (الباقات)
-        Route::get('/plans', [PlanController::class, 'index'])->name('plans.index');
-        Route::get('/plans/{plan}', [PlanController::class, 'show'])->name('plans.show');
 
         // Subscriptions (plan-level)
         Route::get('/subscriptions', [SubscriptionController::class, 'index'])->name('subscriptions.index');

@@ -25,7 +25,7 @@ class StudentService
                     ->where(function ($qq) {
                         $qq->whereNull('ends_at')->orWhere('ends_at', '>', now());
                     })
-                    ->whereHas('plan', fn ($pq) => $pq->where('type', 'subscription'));
+                    ->whereHas('plan', fn ($pq) => $pq->whereIn('type', ['subscription', 'trial']));
             }])
             ->orderByDesc('created_at');
 
@@ -77,7 +77,7 @@ class StudentService
                     ->where(function ($qq) {
                         $qq->whereNull('ends_at')->orWhere('ends_at', '>', now());
                     })
-                    ->whereHas('plan', fn ($pq) => $pq->where('type', 'subscription'));
+                    ->whereHas('plan', fn ($pq) => $pq->whereIn('type', ['subscription', 'trial']));
             }])
             ->find($studentId);
     }

@@ -95,7 +95,7 @@ class Student extends Model
             ->where(function ($q) {
                 $q->whereNull('ends_at')->orWhere('ends_at', '>', now());
             })
-            ->whereHas('plan', fn ($pq) => $pq->where('type', 'subscription'))
+            ->whereHas('plan', fn ($pq) => $pq->whereIn('type', ['subscription', 'trial']))
             ->exists();
     }
 
