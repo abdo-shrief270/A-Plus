@@ -31,6 +31,12 @@ class AppServiceProvider extends ServiceProvider
         \Filament\Actions\Exports\Models\Export::polymorphicUserRelationship();
         \Filament\Actions\Imports\Models\Import::polymorphicUserRelationship();
 
+        // Default every admin table to newest-first (id desc). Resources that set
+        // their own ->defaultSort() in table() still override this baseline.
+        \Filament\Tables\Table::configureUsing(function (\Filament\Tables\Table $table): void {
+            $table->defaultSort('id', 'desc');
+        });
+
         \Illuminate\Database\Eloquent\Relations\Relation::morphMap([
             'App\Models\User' => \App\Models\User::class,
             'App\Models\Admin' => \App\Models\Admin::class,

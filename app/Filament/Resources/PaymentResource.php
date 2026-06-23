@@ -43,11 +43,11 @@ class PaymentResource extends Resource
                 Forms\Components\Select::make('user_id')
                     ->label('المستخدم')
                     ->relationship('user', 'name')
-                    ->readOnly(),
+                    ->disabled(),
                 Forms\Components\Select::make('enrollment_id')
                     ->label('رقم التسجيل')
                     ->relationship('enrollment', 'id')
-                    ->readOnly(),
+                    ->disabled(),
                 Forms\Components\TextInput::make('amount')
                     ->label('المبلغ')
                     ->prefix(fn(Payment $record) => $record->currency)
@@ -61,10 +61,10 @@ class PaymentResource extends Resource
                 Forms\Components\Select::make('coupon_id')
                     ->label('الكوبون')
                     ->relationship('coupon', 'code')
-                    ->readOnly(),
+                    ->disabled(),
                 Forms\Components\KeyValue::make('payload')
                     ->label('بيانات المعاملة')
-                    ->readOnly()
+                    ->disabled()
                     ->columnSpanFull(),
             ]);
     }
@@ -201,7 +201,12 @@ class PaymentResource extends Resource
                         \Filament\Infolists\Components\TextEntry::make('metadata')
                             ->label('بيانات وصفية (Metadata)')
                             ->columnSpanFull()
-                            ->formatStateUsing(fn($state) => is_array($state) ? json_encode($state, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE) : $state)
+                            // Resolve to a JSON string up front — an array state makes
+                            // the TextEntry try to render multiple values and throws
+                            // "Array to string conversion" on the nested arrays.
+                            ->state(fn (Payment $record) => filled($record->metadata)
+                                ? json_encode($record->metadata, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE)
+                                : '—')
                             ->fontFamily('mono'),
                     ])
                     ->collapsed(),

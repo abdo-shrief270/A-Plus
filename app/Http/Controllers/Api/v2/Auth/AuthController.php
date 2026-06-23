@@ -517,8 +517,17 @@ class AuthController extends BaseApiController
             return $this->errorResponse('غير مصرح', Response::HTTP_UNAUTHORIZED);
         }
 
+        // Flag the requesting device so the client can show a "current" badge.
+        $currentDeviceId = request()->header('X-Device-ID') ?? request()->input('device_id');
+        $devices = $this->deviceService->getUserDevices($user)->map(function ($device) use ($currentDeviceId) {
+            $data = $device->toArray();
+            $data['is_current'] = $currentDeviceId !== null && $device->device_id === $currentDeviceId;
+
+            return $data;
+        });
+
         return $this->successResponse([
-            'devices' => $this->deviceService->getUserDevices($user),
+            'devices' => $devices,
         ], 'تم جلب الأجهزة');
     }
 
