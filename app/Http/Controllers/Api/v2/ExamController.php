@@ -96,6 +96,17 @@ class ExamController extends BaseApiController
         try {
             $sections = $this->examService->getExamSections($exam);
 
+            // Trial users: mark every category locked except the allowed sample one.
+            $student = auth('api')->user()?->student;
+            if ($student && $student->onTrial()) {
+                $allowedId = app(\App\Services\TrialEntitlementService::class)->allowedCategoryId($student);
+                foreach ($sections as $section) {
+                    foreach (($section->categories ?? []) as $cat) {
+                        $cat->is_locked = $cat->id !== $allowedId;
+                    }
+                }
+            }
+
             return $this->successResponse([
                 'sections' => SectionResource::collection($sections)
             ], 'Exam sections retrieved successfully');

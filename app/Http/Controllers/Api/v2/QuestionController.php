@@ -41,6 +41,15 @@ class QuestionController extends BaseApiController
             return $this->errorResponse('متاح للطلاب فقط', Response::HTTP_FORBIDDEN);
         }
 
+        // Trial users may only use AI on questions in the allowed sample category.
+        if (!app(\App\Services\TrialEntitlementService::class)->canAccessQuestion($student, $question)) {
+            return $this->errorResponse(
+                \App\Services\TrialEntitlementService::LOCKED_MESSAGE,
+                Response::HTTP_FORBIDDEN,
+                ['code' => \App\Services\TrialEntitlementService::LOCKED_REASON]
+            );
+        }
+
         // Already cached → serve free (no charge, no OpenAI call).
         if (filled($question->ai_explanation)) {
             return $this->successResponse([
@@ -191,6 +200,17 @@ class QuestionController extends BaseApiController
             $filters = $request->validated();
             $filters['paginate'] = $filters['paginate'] ?? true;
 
+            // Trial users may only browse the allowed sample category. Null-safe:
+            // guests and paid users keep full public browsing.
+            $student = auth('api')->user()?->student;
+            if ($student && !app(\App\Services\TrialEntitlementService::class)->canAccessCategory($student, $category->id)) {
+                return $this->errorResponse(
+                    \App\Services\TrialEntitlementService::LOCKED_MESSAGE,
+                    Response::HTTP_FORBIDDEN,
+                    ['code' => \App\Services\TrialEntitlementService::LOCKED_REASON]
+                );
+            }
+
             $questions = $this->questionService->getQuestionsByCategory($category, $filters);
 
             $categoryData = [
@@ -201,7 +221,6 @@ class QuestionController extends BaseApiController
 
             // Batch-attach the student's saved answers so the resource's
             // `student_answer` field is N+1-free across the paginated list.
-            $student = auth('api')->user()?->student;
             $attach = function ($items) use ($student) {
                 if (!$student) {
                     return;

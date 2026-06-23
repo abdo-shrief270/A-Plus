@@ -11,4 +11,14 @@ return [
     | make answering free for everyone.
     */
     'question_answer_cost' => (int) env('QUESTION_ANSWER_COST', 1),
+
+    /*
+    |--------------------------------------------------------------------------
+    | Free-trial content sample
+    |--------------------------------------------------------------------------
+    | Trial users only access a small fixed sample: the first N study-plan
+    | lessons (by Lesson.order) and the first category of the exam.
+    */
+    'trial_lesson_count' => (int) env('TRIAL_LESSON_COUNT', 3),
+    'trial_unlock_first_category' => (bool) env('TRIAL_UNLOCK_FIRST_CATEGORY', true),
 ];

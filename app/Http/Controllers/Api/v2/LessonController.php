@@ -39,6 +39,15 @@ class LessonController extends BaseApiController
             return $this->errorResponse('Lesson not found', Response::HTTP_NOT_FOUND);
         }
 
+        // Trial users only access the first N lessons of the plan.
+        if (!app(\App\Services\TrialEntitlementService::class)->canAccessLesson($student, $lesson)) {
+            return $this->errorResponse(
+                \App\Services\TrialEntitlementService::LOCKED_MESSAGE,
+                Response::HTTP_FORBIDDEN,
+                ['code' => \App\Services\TrialEntitlementService::LOCKED_REASON]
+            );
+        }
+
         $progress = StudentLessonProgress::firstOrCreate(
             ['student_id' => $student->id, 'lesson_id' => $lesson->id],
             ['scheduled_date' => now()->toDateString(), 'status' => 'pending']
@@ -92,6 +101,14 @@ class LessonController extends BaseApiController
 
         if ($lesson->exam_id !== $student->exam_id) {
             return $this->errorResponse('Lesson not found', Response::HTTP_NOT_FOUND);
+        }
+
+        if (!app(\App\Services\TrialEntitlementService::class)->canAccessLesson($student, $lesson)) {
+            return $this->errorResponse(
+                \App\Services\TrialEntitlementService::LOCKED_MESSAGE,
+                Response::HTTP_FORBIDDEN,
+                ['code' => \App\Services\TrialEntitlementService::LOCKED_REASON]
+            );
         }
 
         $validated = $request->validate([

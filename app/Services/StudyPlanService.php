@@ -237,11 +237,15 @@ class StudyPlanService
 
         $today = Carbon::today();
 
+        // Trial users only access the first N lessons; the rest are shown locked.
+        $onTrial = $student->onTrial();
+        $allowedIds = $onTrial ? app(TrialEntitlementService::class)->allowedLessonIds($student) : [];
+
         // Build the day buckets first (oldest → newest).
         $days = $progress
             ->groupBy(fn ($p) => optional($p->scheduled_date)->toDateString() ?? 'unscheduled')
             ->sortKeys()
-            ->map(function ($dayProgress, $date) use ($today) {
+            ->map(function ($dayProgress, $date) use ($today, $onTrial, $allowedIds) {
                 $dateObj = $date !== 'unscheduled' ? Carbon::parse($date) : null;
                 // A day is locked if it's scheduled for a future calendar day.
                 $isFuture = $dateObj ? $dateObj->gt($today) : false;
@@ -256,9 +260,13 @@ class StudyPlanService
                         'color' => $p->lesson->color,
                         'duration_minutes' => $p->lesson->duration_minutes,
                         'status' => $p->status,
-                        // Future-day lessons not yet started are locked until
-                        // their day arrives; started/completed stay accessible.
-                        'is_locked' => $isFuture && $p->status === 'pending',
+                        // Locked if a future-day pending lesson, OR a trial user
+                        // beyond the allowed sample. Trial lock takes precedence.
+                        'is_locked' => ($isFuture && $p->status === 'pending')
+                            || ($onTrial && !in_array($p->lesson_id, $allowedIds, true)),
+                        'locked_reason' => ($onTrial && !in_array($p->lesson_id, $allowedIds, true))
+                            ? 'trial_locked'
+                            : (($isFuture && $p->status === 'pending') ? 'scheduled' : null),
                         'started_at' => optional($p->started_at)->toIso8601String(),
                         'completed_at' => optional($p->completed_at)->toIso8601String(),
                     ])->values()->all();

@@ -100,6 +100,38 @@ class Student extends Model
             ->exists();
     }
 
+    /** Active PAID (type=subscription) plan — excludes the free trial. */
+    public function hasPaidAccess(): bool
+    {
+        return $this->subscriptions()
+            ->where('status', 'active')
+            ->where(function ($q) {
+                $q->whereNull('ends_at')->orWhere('ends_at', '>', now());
+            })
+            ->whereHas('plan', fn ($pq) => $pq->where('type', 'subscription'))
+            ->exists();
+    }
+
+    /**
+     * On the free trial: an active trial plan and NO active paid subscription.
+     * Trial users keep free answers (hasUnlimitedAccess) but only within the
+     * fixed sample enforced by TrialEntitlementService.
+     */
+    public function onTrial(): bool
+    {
+        if ($this->hasPaidAccess()) {
+            return false;
+        }
+
+        return $this->subscriptions()
+            ->where('status', 'active')
+            ->where(function ($q) {
+                $q->whereNull('ends_at')->orWhere('ends_at', '>', now());
+            })
+            ->whereHas('plan', fn ($pq) => $pq->where('type', 'trial'))
+            ->exists();
+    }
+
     public function bookmarks(): \Illuminate\Database\Eloquent\Relations\HasMany
     {
         return $this->hasMany(Bookmark::class);

@@ -60,6 +60,15 @@ class AnswerController extends BaseApiController
         $question = Question::with('type')->findOrFail($request->question_id);
         $student = $user->student;
 
+        // Trial users may only answer questions in the allowed sample category.
+        if ($student && !app(\App\Services\TrialEntitlementService::class)->canAccessQuestion($student, $question)) {
+            return $this->errorResponse(
+                \App\Services\TrialEntitlementService::LOCKED_MESSAGE,
+                Response::HTTP_FORBIDDEN,
+                ['code' => \App\Services\TrialEntitlementService::LOCKED_REASON]
+            );
+        }
+
         // Wallet charge: deduct a flat cost the FIRST time a student answers a
         // given question. Active subscribers answer free; payForContent is
         // idempotent so re-answering the same question is never charged twice.
