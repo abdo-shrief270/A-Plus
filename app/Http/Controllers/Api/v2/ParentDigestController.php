@@ -29,7 +29,14 @@ class ParentDigestController extends BaseApiController
     public function weekly(\Illuminate\Http\Request $request): JsonResponse
     {
         $user = auth('api')->user();
-        if (!$user || !$user->studentParent()->exists()) {
+        if (!$user) {
+            return $this->errorResponse('Unauthenticated', Response::HTTP_UNAUTHORIZED);
+        }
+        // Authorize by guardian role: a parent-type user is always allowed
+        // (returns an empty summary if no children are linked yet), as is any
+        // user who already has linked children. This avoids a 403 for parents
+        // who haven't added a child yet.
+        if ($user->type !== 'parent' && !$user->studentParent()->exists()) {
             return $this->errorResponse('This summary is only available for parents', Response::HTTP_FORBIDDEN);
         }
 
