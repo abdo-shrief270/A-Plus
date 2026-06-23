@@ -12,7 +12,7 @@ class Student extends Model
 {
     use HasFactory, LogsActivity;
 
-    protected $fillable = ['user_id', 'exam_id', 'exam_date', 'id_number'];
+    protected $fillable = ['user_id', 'exam_id', 'exam_date', 'id_number', 'review_cooldown_hours'];
 
     public function getActivitylogOptions(): LogOptions
     {
@@ -26,6 +26,7 @@ class Student extends Model
     {
         return [
             'exam_date' => 'datetime',
+            'review_cooldown_hours' => 'integer',
         ];
     }
 

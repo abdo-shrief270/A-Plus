@@ -90,19 +90,12 @@ class SubscriptionController extends BaseApiController
             $skipped = [];
 
             foreach ($studentIds as $sid) {
-                if ($plan->type === 'subscription') {
-                    // Block if the student already has ANY active subscription-type plan.
-                    // Pack plans don't count — packs can stack.
-                    $alreadyOnSub = Subscription::where('student_id', $sid)
-                        ->where('status', 'active')
-                        ->whereHas('plan', fn ($q) => $q->where('type', 'subscription'))
-                        ->exists();
-                    if ($alreadyOnSub) {
-                        $skipped[] = ['student_id' => $sid, 'reason' => 'already on a subscription plan'];
-                        continue;
-                    }
-                }
-                // Pack plans: no uniqueness check — students can buy the same/different packs repeatedly.
+                // Subscription plans now REPLACE any current active subscription
+                // instead of being blocked. Free plans activate immediately (the
+                // old one is expired right after create, below); paid plans stay
+                // pending and the swap happens on payment activation
+                // (PaymentActivationService) so access isn't stripped before
+                // checkout completes. Packs always stack — no uniqueness check.
 
                 $startsAt = now();
                 $endsAt = $plan->duration_days
@@ -118,6 +111,15 @@ class SubscriptionController extends BaseApiController
                     'status' => $plan->price > 0 ? 'pending' : 'active',
                 ]);
                 $created[] = ['student_id' => $sid, 'subscription_id' => $sub->id];
+
+                // Free subscription plan: active now → expire the previous one.
+                if ($plan->type === 'subscription' && $sub->status === 'active') {
+                    Subscription::where('student_id', $sid)
+                        ->where('id', '!=', $sub->id)
+                        ->where('status', 'active')
+                        ->whereHas('plan', fn ($q) => $q->where('type', 'subscription'))
+                        ->update(['status' => 'expired', 'ends_at' => now()]);
+                }
             }
 
             $payment = null;

@@ -26,6 +26,7 @@ use App\Http\Controllers\Api\v2\ExamSimulationController;
 use App\Http\Controllers\Api\v2\StudyPlanController;
 use App\Http\Controllers\Api\v2\LessonController;
 use App\Http\Controllers\Api\v2\ReviewController;
+use App\Http\Controllers\Api\v2\ReviewSettingsController;
 use App\Http\Controllers\Api\v2\PerformanceController;
 use App\Http\Controllers\Api\v2\ParentDigestController;
 use App\Http\Controllers\Api\v2\ChallengeController;
@@ -195,6 +196,12 @@ Route::prefix('v2')->name('api.v2.')->group(function () {
             Route::post('/{payment}/cancel', [PaymentController::class, 'cancel'])->name('cancel');
         });
 
+        // Wallet / points history (سجل النقاط)
+        Route::prefix('wallet')->name('wallet.')->group(function () {
+            Route::get('/transactions', [\App\Http\Controllers\Api\v2\WalletController::class, 'transactions'])
+                ->middleware('throttle:quiz-read')->name('transactions');
+        });
+
         // Support tickets / رسائل التواصل
         Route::prefix('tickets')->name('tickets.')->group(function () {
             Route::get('/', [TicketController::class, 'index'])->name('index');
@@ -235,6 +242,11 @@ Route::prefix('v2')->name('api.v2.')->group(function () {
         // Smart Review (المراجعة الذكية)
         Route::get('/review/queue', [ReviewController::class, 'queue'])
             ->middleware('throttle:quiz-read')->name('review.queue');
+
+        // Per-student review cooldown setting (hours/days)
+        Route::get('/review/settings', [ReviewSettingsController::class, 'show'])
+            ->middleware('throttle:quiz-read')->name('review.settings.show');
+        Route::put('/review/settings', [ReviewSettingsController::class, 'update'])->name('review.settings.update');
 
         // Performance analytics (تحليل الأداء)
         Route::get('/performance', [PerformanceController::class, 'index'])

@@ -18,6 +18,8 @@ class LeaderboardController extends BaseApiController
 {
     private const TOP_LIMIT = 20;
 
+    private const HISTORY_WEEKS = 8;
+
     /**
      * League Leaderboard (لوحة المتصدرين)
      *
@@ -36,6 +38,12 @@ class LeaderboardController extends BaseApiController
         }
 
         $period = $request->input('period', 'week') === 'all' ? 'all' : 'week';
+        // Past-week history: 0 = current week, 1 = last week, ... (week period only)
+        $weekOffset = $period === 'week'
+            ? max(0, min(self::HISTORY_WEEKS - 1, (int) $request->input('week_offset', 0)))
+            : 0;
+        $weekStart = now()->startOfWeek()->subWeeks($weekOffset);
+        $weekEnd = (clone $weekStart)->endOfWeek();
 
         // Students created before the league backfill may have no league yet —
         // resolve to the lowest ladder rung on the fly.
@@ -46,7 +54,7 @@ class LeaderboardController extends BaseApiController
             return $this->errorResponse('لم يتم إعداد الدوريات بعد.', Response::HTTP_NOT_FOUND);
         }
 
-        $standings = $this->standings($league->id, $period);
+        $standings = $this->standings($league->id, $period, $weekStart, $weekEnd);
 
         $rows = $standings->take(self::TOP_LIMIT)->values()->map(fn ($row, $i) => [
             'rank' => $i + 1,
@@ -94,7 +102,48 @@ class LeaderboardController extends BaseApiController
             ],
             'top' => $rows,
             'ladder' => $ladder,
+            // Week selector + history (week period only).
+            'week' => $period === 'week' ? [
+                'offset' => $weekOffset,
+                'start' => $weekStart->toDateString(),
+                'end' => $weekEnd->toDateString(),
+                'is_current' => $weekOffset === 0,
+                'label' => $this->weekLabel($weekOffset, $weekStart, $weekEnd),
+            ] : null,
+            'weeks' => $period === 'week' ? $this->weekOptions() : [],
         ], 'Leaderboard retrieved successfully');
+    }
+
+    /** Human label for a week range. */
+    private function weekLabel(int $offset, \Illuminate\Support\Carbon $start, \Illuminate\Support\Carbon $end): string
+    {
+        if ($offset === 0) {
+            return 'هذا الأسبوع';
+        }
+        if ($offset === 1) {
+            return 'الأسبوع الماضي';
+        }
+
+        return $start->toDateString() . ' - ' . $end->toDateString();
+    }
+
+    /** Selector options for the last HISTORY_WEEKS weeks (0 = current). */
+    private function weekOptions(): array
+    {
+        $options = [];
+        for ($i = 0; $i < self::HISTORY_WEEKS; $i++) {
+            $start = now()->startOfWeek()->subWeeks($i);
+            $end = (clone $start)->endOfWeek();
+            $options[] = [
+                'offset' => $i,
+                'start' => $start->toDateString(),
+                'end' => $end->toDateString(),
+                'is_current' => $i === 0,
+                'label' => $this->weekLabel($i, $start, $end),
+            ];
+        }
+
+        return $options;
     }
 
     /**
@@ -104,7 +153,7 @@ class LeaderboardController extends BaseApiController
      *
      * @return \Illuminate\Support\Collection<int, object{student_id: int, name: string, points: int|string}>
      */
-    private function standings(int $leagueId, string $period)
+    private function standings(int $leagueId, string $period, ?\Illuminate\Support\Carbon $weekStart = null, ?\Illuminate\Support\Carbon $weekEnd = null)
     {
         if ($period === 'all') {
             return Student::query()
@@ -120,7 +169,8 @@ class LeaderboardController extends BaseApiController
                 ]);
         }
 
-        $weekStart = now()->startOfWeek();
+        $weekStart = $weekStart ?? now()->startOfWeek();
+        $weekEnd = $weekEnd ?? (clone $weekStart)->endOfWeek();
 
         return Student::query()
             ->where('current_league_id', $leagueId)
@@ -129,6 +179,7 @@ class LeaderboardController extends BaseApiController
             ->leftJoinSub(
                 StudentScore::query()
                     ->where('created_at', '>=', $weekStart)
+                    ->where('created_at', '<=', $weekEnd)
                     ->groupBy('student_id')
                     ->select('student_id', DB::raw('SUM(score) as weekly_points')),
                 'weekly',

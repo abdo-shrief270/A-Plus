@@ -69,6 +69,17 @@ class PaymentActivationService
             ->get();
 
         foreach ($subs as $sub) {
+            // Replace the student's previous active subscription with this paid one
+            // (the old plan stayed active through pending checkout so access was
+            // never lost). Packs are left alone — they stack.
+            if ($sub->plan?->type === 'subscription' && $sub->student_id) {
+                Subscription::where('student_id', $sub->student_id)
+                    ->where('id', '!=', $sub->id)
+                    ->where('status', 'active')
+                    ->whereHas('plan', fn ($q) => $q->where('type', 'subscription'))
+                    ->update(['status' => 'expired', 'ends_at' => now()]);
+            }
+
             $startsAt = now();
             $durationDays = $sub->plan?->duration_days;
             $sub->forceFill([
@@ -78,7 +89,8 @@ class PaymentActivationService
                     ?? ($durationDays ? $startsAt->copy()->addDays($durationDays) : null),
             ])->save();
 
-            // Credit the plan's points to the student's wallet (point packs).
+            // Credit the plan's points. increment() (never set) is intentional so
+            // renewal points STACK on the student's carried-over balance.
             $points = (int) ($sub->plan?->points ?? 0);
             if ($points > 0 && $sub->student_id) {
                 $wallet = Wallet::firstOrCreate(['student_id' => $sub->student_id], ['balance' => 0]);

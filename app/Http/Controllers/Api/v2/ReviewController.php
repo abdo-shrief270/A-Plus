@@ -41,7 +41,8 @@ class ReviewController extends BaseApiController
             return $this->errorResponse('Review is only available for students', Response::HTTP_FORBIDDEN);
         }
 
-        $threshold = now()->subHours(self::COOLDOWN_HOURS);
+        $cooldownHours = (int) ($user->student->review_cooldown_hours ?: self::COOLDOWN_HOURS);
+        $threshold = now()->subHours($cooldownHours);
 
         $wrong = StudentAnswer::where('user_id', $user->id)->where('is_correct', false);
 
@@ -74,9 +75,11 @@ class ReviewController extends BaseApiController
                 'due_count' => $dueCount,
                 'resting_count' => $restingCount,
                 'next_due_at' => $nextResting
-                    ? \Carbon\Carbon::parse($nextResting)->addHours(self::COOLDOWN_HOURS)->toIso8601String()
+                    ? \Carbon\Carbon::parse($nextResting)->addHours($cooldownHours)->toIso8601String()
                     : null,
-                'cooldown_hours' => self::COOLDOWN_HOURS,
+                'cooldown_hours' => $cooldownHours,
+                'cooldown_days' => intdiv($cooldownHours, 24),
+                'cooldown_is_whole_days' => $cooldownHours % 24 === 0,
             ],
             'pagination' => [
                 'current_page' => $dueAnswers->currentPage(),
