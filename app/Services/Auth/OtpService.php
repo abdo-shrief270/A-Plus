@@ -105,12 +105,15 @@ class OtpService
     }
 
     /**
-     * Generate a random OTP code.
+     * Generate a cryptographically-random OTP code.
+     * In non-production, sendOtp() logs the code so developers can read it
+     * (no SMS/email provider wired yet). Production MUST configure a provider.
      */
     protected function generateOtpCode(): string
     {
-        return '123456';
-//        return str_pad((string) random_int(0, 999999), $this->otpLength, '0', STR_PAD_LEFT);
+        $max = (10 ** $this->otpLength) - 1;
+
+        return str_pad((string) random_int(0, $max), $this->otpLength, '0', STR_PAD_LEFT);
     }
 
     /**

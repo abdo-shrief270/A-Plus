@@ -6,6 +6,7 @@ use App\Http\Controllers\Api\BaseApiController;
 use App\Http\Requests\Api\v2\UpdateStudentRequest;
 use App\Http\Resources\v2\StudentResource;
 use App\Models\Student;
+use App\Models\StudentSchool;
 use App\Services\StudentService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -15,6 +16,36 @@ class StudentController extends BaseApiController
     public function __construct(
         protected StudentService $studentService
     ) {
+    }
+
+    /**
+     * The student ids the authenticated user may act on:
+     * a student → only themselves, a parent → their kids, a school → its students.
+     */
+    private function accessibleStudentIds($user): array
+    {
+        if (!$user) {
+            return [];
+        }
+        if ($user->type === 'parent') {
+            return $user->studentParent()->pluck('student_id')->all();
+        }
+        if ($user->type === 'school') {
+            $schoolId = $user->school?->id;
+
+            return $schoolId ? StudentSchool::where('school_id', $schoolId)->pluck('student_id')->all() : [];
+        }
+        if ($user->type === 'student') {
+            return $user->student?->id ? [$user->student->id] : [];
+        }
+
+        return [];
+    }
+
+    /** True when the authenticated user owns / may access this student. */
+    private function ownsStudent(Student $student): bool
+    {
+        return in_array($student->id, $this->accessibleStudentIds(auth('api')->user()), true);
     }
 
     /**
@@ -65,6 +96,10 @@ class StudentController extends BaseApiController
      */
     public function show(Student $student): JsonResponse
     {
+        if (!$this->ownsStudent($student)) {
+            return $this->errorResponse('Student not found', 404);
+        }
+
         $student = $this->studentService->show($student->id);
 
         if (!$student) {
@@ -100,6 +135,10 @@ class StudentController extends BaseApiController
      */
     public function update(UpdateStudentRequest $request, Student $student): JsonResponse
     {
+        if (!$this->ownsStudent($student)) {
+            return $this->errorResponse('Student not found', 404);
+        }
+
         $updated = $this->studentService->update($student->id, $request->validated());
 
         if (!$updated) {
@@ -130,6 +169,10 @@ class StudentController extends BaseApiController
     public function destroy(Request $request, Student $student): JsonResponse
     {
         $user = auth('api')->user();
+
+        if (!$this->ownsStudent($student)) {
+            return $this->errorResponse('Student not found', 404);
+        }
 
         $deletionRequest = $this->studentService->requestDeletion(
             $student->id,

@@ -47,6 +47,7 @@ class User extends Authenticatable implements JWTSubject, FilamentUser
             'created_at',
             'updated_at',
             'password',
+            'remember_token',
         ];
     }
 

@@ -46,12 +46,16 @@ Route::prefix('v2')->name('api.v2.')->group(function () {
     // Auth Group
     Route::prefix('auth')->name('auth.')->group(function () {
         // Public routes
-        Route::post('/username/check', [V2AuthController::class, 'checkUsername'])->name('username.check');
-        Route::post('/register/student', [V2AuthController::class, 'registerStudent'])->name('register.student');
-        Route::post('/register/parent', [V2AuthController::class, 'registerParent'])->name('register.parent');
+        Route::post('/username/check', [V2AuthController::class, 'checkUsername'])
+            ->middleware('throttle:auth-probe')->name('username.check');
+        Route::post('/register/student', [V2AuthController::class, 'registerStudent'])
+            ->middleware('throttle:register')->name('register.student');
+        Route::post('/register/parent', [V2AuthController::class, 'registerParent'])
+            ->middleware('throttle:register')->name('register.parent');
 
         // Login flow
-        Route::post('/login/check', [V2AuthController::class, 'loginCheck'])->name('login.check');
+        Route::post('/login/check', [V2AuthController::class, 'loginCheck'])
+            ->middleware('throttle:auth-probe')->name('login.check');
         Route::post('/login', [V2AuthController::class, 'login'])
             ->middleware('throttle:login')
             ->name('login');
@@ -65,8 +69,10 @@ Route::prefix('v2')->name('api.v2.')->group(function () {
             ->name('otp.verify');
 
         // Password reset
-        Route::post('/password/reset', [V2AuthController::class, 'resetPassword'])->name('password.reset');
-        Route::post('/password/change', [V2AuthController::class, 'changePassword'])->name('password.change');
+        Route::post('/password/reset', [V2AuthController::class, 'resetPassword'])
+            ->middleware('throttle:password-reset')->name('password.reset');
+        Route::post('/password/change', [V2AuthController::class, 'changePassword'])
+            ->middleware('throttle:password-reset')->name('password.change');
 
         // Authenticated routes
         Route::middleware(['jwt', 'single-device'])->group(function () {
@@ -126,7 +132,8 @@ Route::prefix('v2')->name('api.v2.')->group(function () {
     });
 
     // Contact Us
-    Route::post('/contact', [ContactController::class, 'store'])->name('contact.store');
+    Route::post('/contact', [ContactController::class, 'store'])
+        ->middleware('throttle:contact')->name('contact.store');
 
     // CMS Pages (about / terms / privacy ...)
     Route::prefix('pages')->name('pages.')->group(function () {

@@ -2,12 +2,15 @@
 
 namespace App\Filament\Resources;
 
+use App\Filament\Exports\PaymentExporter;
 use App\Filament\Resources\PaymentResource\Pages;
 use App\Models\Payment;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
+use Filament\Tables\Actions\ExportAction;
+use Filament\Tables\Actions\ExportBulkAction;
 use Filament\Tables\Table;
 
 class PaymentResource extends Resource
@@ -113,6 +116,10 @@ class PaymentResource extends Resource
                         'refunded' => 'مسترد',
                     ]),
             ])
+            ->headerActions([
+                // Export payments (respects active filters) for financial reporting.
+                ExportAction::make()->exporter(PaymentExporter::class),
+            ])
             ->actions([
                 Tables\Actions\ViewAction::make(),
                 // Manual activation while payment gateways are disabled: marks
@@ -134,7 +141,7 @@ class PaymentResource extends Resource
                     }),
             ])
             ->bulkActions([
-                //
+                ExportBulkAction::make()->exporter(PaymentExporter::class),
             ]);
     }
 

@@ -50,6 +50,48 @@ return Application::configure(basePath: dirname(__DIR__))
                     });
             });
 
+            // Registration: account creation is rare per person, and each new
+            // student is auto-granted a free trial — throttle hard to stop
+            // mass account / trial farming from one IP.
+            RateLimiter::for('register', function (Request $request) {
+                return Limit::perHour(15)
+                    ->by($request->ip())
+                    ->response(fn () => response()->json([
+                        'status' => 429,
+                        'message' => 'محاولات إنشاء حسابات كثيرة. يرجى المحاولة لاحقاً.',
+                    ], 429));
+            });
+
+            // Username/login existence probes — limit enumeration of accounts.
+            RateLimiter::for('auth-probe', function (Request $request) {
+                return Limit::perMinute(20)
+                    ->by($request->ip())
+                    ->response(fn () => response()->json([
+                        'status' => 429,
+                        'message' => 'طلبات كثيرة جداً. يرجى الانتظار قليلاً.',
+                    ], 429));
+            });
+
+            // Password reset/change — sensitive; keep tight per IP.
+            RateLimiter::for('password-reset', function (Request $request) {
+                return Limit::perMinute(5)
+                    ->by($request->ip())
+                    ->response(fn () => response()->json([
+                        'status' => 429,
+                        'message' => 'محاولات كثيرة. يرجى الانتظار دقيقة قبل المحاولة مرة أخرى.',
+                    ], 429));
+            });
+
+            // Public contact form — anti-spam.
+            RateLimiter::for('contact', function (Request $request) {
+                return Limit::perMinute(5)
+                    ->by($request->ip())
+                    ->response(fn () => response()->json([
+                        'status' => 429,
+                        'message' => 'لقد أرسلت رسائل كثيرة. يرجى المحاولة لاحقاً.',
+                    ], 429));
+            });
+
             // Quiz reads (pool-count, show, history, leaderboard, review): generous
             RateLimiter::for('quiz-read', function (Request $request) {
                 return Limit::perMinute(120)
