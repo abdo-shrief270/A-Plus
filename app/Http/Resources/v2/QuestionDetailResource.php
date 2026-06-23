@@ -45,7 +45,33 @@ class QuestionDetailResource extends JsonResource
             ]),
             'breadcrumb' => $this->breadcrumb(),
             'is_bookmarked' => $this->isBookmarked(),
+            'student_answer' => $this->studentAnswer(),
         ];
+    }
+
+    /**
+     * The student's last saved answer ({answer_id, is_correct}) or null.
+     * Prefers a value batched onto the model by the controller to avoid N+1
+     * in paginated lists; falls back to a single lookup.
+     */
+    protected function studentAnswer(): ?array
+    {
+        if (array_key_exists('student_answer', $this->resource->getAttributes())) {
+            $row = $this->resource->getAttribute('student_answer');
+
+            return $row ? ['answer_id' => (int) $row->answer_id, 'is_correct' => (bool) $row->is_correct] : null;
+        }
+
+        $student = auth('api')->user()?->student;
+        if (!$student) {
+            return null;
+        }
+
+        $row = \App\Models\StudentAnswer::where('student_id', $student->id)
+            ->where('question_id', $this->id)
+            ->first(['answer_id', 'is_correct']);
+
+        return $row ? ['answer_id' => (int) $row->answer_id, 'is_correct' => (bool) $row->is_correct] : null;
     }
 
     protected function isBookmarked(): bool

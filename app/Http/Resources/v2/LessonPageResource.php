@@ -65,12 +65,12 @@ class LessonPageResource extends JsonResource
                         'id' => $question->type->id,
                         'name' => $question->type->name,
                     ] : null,
-                    'answers' => $question->answers->map(fn ($a) => [
+                    'answers' => $question->answers->shuffle()->map(fn ($a) => [
                         'id' => $a->id,
                         'text' => $a->text,
                         'image_path' => $a->image_path,
                         'order' => $a->order,
-                    ])->all(),
+                    ])->values()->all(),
                 ] : null,
             ];
         }

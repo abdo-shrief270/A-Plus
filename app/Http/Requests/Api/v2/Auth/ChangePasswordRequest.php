@@ -15,7 +15,7 @@ class ChangePasswordRequest extends FormRequest
     {
         return [
             'token' => ['required', 'string'],
-            'password' => ['required', 'string', 'min:8', 'confirmed'],
+            'password' => \App\Support\PasswordRules::rules(),
         ];
     }
 
@@ -44,6 +44,7 @@ class ChangePasswordRequest extends FormRequest
             'password.required' => 'كلمة المرور الجديدة مطلوبة',
             'password.min' => 'كلمة المرور يجب أن تكون 8 أحرف على الأقل',
             'password.confirmed' => 'تأكيد كلمة المرور غير متطابق',
+            'password.regex' => \App\Support\PasswordRules::MESSAGE,
         ];
     }
 }

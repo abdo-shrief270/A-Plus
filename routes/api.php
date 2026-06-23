@@ -214,6 +214,10 @@ Route::prefix('v2')->name('api.v2.')->group(function () {
         // Question Answers
         Route::post('/questions/answer', [AnswerController::class, 'submit'])->name('questions.answer');
 
+        // Reset saved answers for a category (student only)
+        Route::delete('/categories/{category}/answers', [QuestionController::class, 'resetCategoryAnswers'])
+            ->name('categories.answers.reset');
+
         // AI explanation (شرح بالذكاء الاصطناعي)
         Route::post('/questions/{question}/ai-explanation', [QuestionController::class, 'aiExplanation'])
             ->middleware('throttle:quiz-mutate')->name('questions.ai-explanation');

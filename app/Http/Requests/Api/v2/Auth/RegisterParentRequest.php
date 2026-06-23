@@ -19,7 +19,7 @@ class RegisterParentRequest extends FormRequest
             'email' => ['nullable', 'email', 'max:255', 'unique:users,email'],
             'country_code' => ['required_with:phone', 'string', 'max:5'],
             'phone' => ['required', 'string', 'max:20'],
-            'password' => ['required', 'string', 'min:8', 'confirmed'],
+            'password' => \App\Support\PasswordRules::rules(),
             'gender' => ['required', 'in:male,female'],
         ];
     }
@@ -38,6 +38,7 @@ class RegisterParentRequest extends FormRequest
             'password.required' => 'كلمة المرور مطلوبة',
             'password.min' => 'كلمة المرور يجب أن تكون 8 أحرف على الأقل',
             'password.confirmed' => 'تأكيد كلمة المرور غير متطابق',
+            'password.regex' => \App\Support\PasswordRules::MESSAGE,
             'gender.required' => 'الجنس مطلوب',
             'gender.in' => 'الجنس يجب أن يكون ذكر أو أنثى',
         ];

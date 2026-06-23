@@ -9,6 +9,7 @@ use App\Http\Resources\v2\QuestionDetailResource;
 use App\Http\Resources\v2\QuestionResource;
 use App\Models\Question;
 use App\Models\SectionCategory;
+use App\Models\StudentAnswer;
 use App\Services\AiExplanationService;
 use App\Services\QuestionService;
 use App\Services\WalletService;
@@ -192,16 +193,33 @@ class QuestionController extends BaseApiController
 
             $questions = $this->questionService->getQuestionsByCategory($category, $filters);
 
-            $mapQuestion = fn($q) => ['id' => $q->id, 'text' => $q->text];
+            $categoryData = [
+                'id' => $category->id,
+                'name' => $category->name,
+                'description' => $category->description,
+            ];
+
+            // Batch-attach the student's saved answers so the resource's
+            // `student_answer` field is N+1-free across the paginated list.
+            $student = auth('api')->user()?->student;
+            $attach = function ($items) use ($student) {
+                if (!$student) {
+                    return;
+                }
+                $saMap = StudentAnswer::where('student_id', $student->id)
+                    ->whereIn('question_id', collect($items)->pluck('id'))
+                    ->get()->keyBy('question_id');
+                foreach ($items as $q) {
+                    $q->setAttribute('student_answer', $saMap->get($q->id));
+                }
+            };
 
             if ($questions instanceof \Illuminate\Pagination\LengthAwarePaginator) {
+                $attach($questions->items());
+
                 return $this->successResponse([
-                    'category' => [
-                        'id' => $category->id,
-                        'name' => $category->name,
-                        'description' => $category->description,
-                    ],
-                    'questions' => array_map($mapQuestion, $questions->items()),
+                    'category' => $categoryData,
+                    'questions' => QuestionDetailResource::collection(collect($questions->items())),
                     'pagination' => [
                         'current_page' => $questions->currentPage(),
                         'per_page' => $questions->perPage(),
@@ -211,17 +229,37 @@ class QuestionController extends BaseApiController
                 ], 'Category questions retrieved successfully');
             }
 
+            $attach($questions);
+
             return $this->successResponse([
-                'category' => [
-                    'id' => $category->id,
-                    'name' => $category->name,
-                    'description' => $category->description,
-                ],
-                'questions' => $questions->map($mapQuestion)->values(),
+                'category' => $categoryData,
+                'questions' => QuestionDetailResource::collection($questions),
             ], 'Category questions retrieved successfully');
         } catch (\Exception $e) {
             return $this->errorResponse('Failed to retrieve category questions: ' . $e->getMessage(), 500);
         }
+    }
+
+    /**
+     * Reset (delete) the authenticated student's saved answers for one category.
+     * Does not touch earned score/wallet — irreversible by design.
+     */
+    public function resetCategoryAnswers(SectionCategory $category): JsonResponse
+    {
+        $student = auth('api')->user()?->student;
+        if (!$student) {
+            return $this->errorResponse('غير مصرح', 401);
+        }
+
+        $ids = $this->questionService->categoryQuestionIds($category);
+        $deleted = StudentAnswer::where('student_id', $student->id)
+            ->whereIn('question_id', $ids)
+            ->delete();
+
+        return $this->successResponse(
+            ['deleted_count' => $deleted, 'category_id' => $category->id],
+            'تم إعادة تعيين إجابات هذا التصنيف'
+        );
     }
 
     /**

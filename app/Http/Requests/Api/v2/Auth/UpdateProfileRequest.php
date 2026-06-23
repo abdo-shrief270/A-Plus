@@ -27,7 +27,7 @@ class UpdateProfileRequest extends FormRequest
             'exam_date' => ['sometimes', 'nullable', 'date'],
             // Password change (optional)
             'old_password' => ['required_with:password', 'string'],
-            'password' => ['sometimes', 'string', 'min:8', 'confirmed'],
+            'password' => \App\Support\PasswordRules::rules(required: false),
         ];
     }
 
@@ -43,6 +43,7 @@ class UpdateProfileRequest extends FormRequest
             'old_password.required_with' => 'كلمة المرور القديمة مطلوبة لتغيير كلمة المرور',
             'password.min' => 'كلمة المرور يجب أن تكون 8 أحرف على الأقل',
             'password.confirmed' => 'تأكيد كلمة المرور غير متطابق',
+            'password.regex' => \App\Support\PasswordRules::MESSAGE,
         ];
     }
 }

@@ -115,6 +115,20 @@ class QuestionService
     }
 
     /**
+     * All question ids belonging to a category (direct pivot + article-linked).
+     * Used to reset a student's saved answers for the whole category.
+     */
+    public function categoryQuestionIds(SectionCategory $category): Collection
+    {
+        $direct = $category->questions()->pluck('questions.id');
+        $viaArticles = Question::whereHas('articles', function ($q) use ($category) {
+            $q->where('section_category_id', $category->id);
+        })->pluck('id');
+
+        return $direct->merge($viaArticles)->unique()->values();
+    }
+
+    /**
      * Search questions by text
      *
      * @param string $searchTerm
