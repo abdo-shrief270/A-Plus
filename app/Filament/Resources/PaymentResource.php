@@ -173,14 +173,18 @@ class PaymentResource extends Resource
                             ->label('الحالة')
                             ->badge()
                             ->color(fn(string $state): string => match ($state) {
-                                'completed' => 'success',
+                                'paid' => 'success',
                                 'pending' => 'warning',
                                 'failed' => 'danger',
+                                'refunded' => 'info',
+                                default => 'gray',
                             })
                             ->formatStateUsing(fn(string $state): string => match ($state) {
-                                'completed' => 'مكتمل',
+                                'paid' => 'مدفوع',
                                 'pending' => 'معلق',
                                 'failed' => 'فشل',
+                                'refunded' => 'مسترد',
+                                default => $state,
                             }),
                     ])->columns(2),
 
@@ -194,7 +198,7 @@ class PaymentResource extends Resource
 
                 \Filament\Infolists\Components\Section::make('بيانات تقنية')
                     ->schema([
-                        \Filament\Infolists\Components\TextEntry::make('payment_metadata')
+                        \Filament\Infolists\Components\TextEntry::make('metadata')
                             ->label('بيانات وصفية (Metadata)')
                             ->columnSpanFull()
                             ->formatStateUsing(fn($state) => is_array($state) ? json_encode($state, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE) : $state)

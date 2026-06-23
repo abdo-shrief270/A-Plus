@@ -390,6 +390,9 @@ class AuthController extends BaseApiController
             $user->load('student.exam');
         }
 
+        // Expose join date under a non-hidden key (created_at itself stays hidden).
+        $user->joined_at = $user->created_at;
+
         $data = [
             'user' => $user->makeHidden(['id', 'created_at', 'updated_at', 'password', 'remember_token']),
             'devices' => $this->deviceService->getUserDevices($user),
@@ -460,8 +463,11 @@ class AuthController extends BaseApiController
                 }
             }
 
+            $fresh = $user->fresh();
+            $fresh->joined_at = $fresh->created_at;
+
             return $this->successResponse([
-                'user' => $user->fresh()->makeHidden(['id', 'created_at', 'updated_at', 'password', 'remember_token']),
+                'user' => $fresh->makeHidden(['id', 'created_at', 'updated_at', 'password', 'remember_token']),
             ], 'تم تحديث الملف الشخصي بنجاح');
         } catch (\Exception $e) {
             logger()->error('Error updating profile: ' . $e->getMessage());
