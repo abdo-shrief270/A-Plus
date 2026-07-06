@@ -81,12 +81,14 @@ class EnrollmentResource extends Resource
                         'active' => 'success',
                         'expired' => 'warning',
                         'cancelled' => 'danger',
+                        default => 'gray',
                     })
                     ->formatStateUsing(fn(string $state): string => match ($state) {
                         'pending' => 'معلق',
                         'active' => 'نشط',
                         'expired' => 'منتهي',
                         'cancelled' => 'ملغى',
+                        default => $state,
                     }),
                 Tables\Columns\TextColumn::make('enrolled_at')
                     ->label('تاريخ التسجيل')
@@ -167,12 +169,16 @@ class EnrollmentResource extends Resource
                             ->color(fn(string $state): string => match ($state) {
                                 'active' => 'success',
                                 'pending' => 'warning',
+                                'expired' => 'danger',
                                 'cancelled' => 'danger',
+                                default => 'gray',
                             })
                             ->formatStateUsing(fn(string $state): string => match ($state) {
                                 'active' => 'نشط',
                                 'pending' => 'معلق',
+                                'expired' => 'منتهي',
                                 'cancelled' => 'ملغي',
+                                default => $state,
                             }),
                     ])->columns(2),
             ]);

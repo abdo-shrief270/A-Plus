@@ -127,11 +127,13 @@ class CourseResource extends Resource
                         'beginner' => 'success',
                         'intermediate' => 'warning',
                         'advanced' => 'danger',
+                        default => 'gray',
                     })
                     ->formatStateUsing(fn(string $state): string => match ($state) {
                         'beginner' => 'مبتدئ',
                         'intermediate' => 'متوسط',
                         'advanced' => 'متقدم',
+                        default => $state,
                     }),
                 Tables\Columns\TextColumn::make('start_date')
                     ->label('تاريخ البدء')
