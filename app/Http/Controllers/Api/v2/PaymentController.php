@@ -27,6 +27,9 @@ class PaymentController extends BaseApiController
     public function index(Request $request): JsonResponse
     {
         $user = auth('api')->user();
+        if (!$user) {
+            return $this->errorResponse('Unauthenticated.', 401);
+        }
 
         $query = Payment::query()
             ->where('user_id', $user->id)
@@ -36,7 +39,7 @@ class PaymentController extends BaseApiController
             $query->where('status', $status);
         }
 
-        $payments = $query->paginate($request->input('per_page', 15));
+        $payments = $query->paginate(min(100, max(1, (int) $request->input('per_page', 15))));
 
         return $this->successResponse(
             PaymentResource::collection($payments)->response()->getData(true),
@@ -53,6 +56,9 @@ class PaymentController extends BaseApiController
     public function show(Payment $payment): JsonResponse
     {
         $user = auth('api')->user();
+        if (!$user) {
+            return $this->errorResponse('Unauthenticated.', 401);
+        }
         if ((int) $payment->user_id !== (int) $user->id) {
             return $this->errorResponse('غير مصرح', 403);
         }
@@ -84,6 +90,9 @@ class PaymentController extends BaseApiController
         }
 
         $user = auth('api')->user();
+        if (!$user) {
+            return $this->errorResponse('Unauthenticated.', 401);
+        }
         if ((int) $payment->user_id !== (int) $user->id) {
             return $this->errorResponse('غير مصرح', 403);
         }
@@ -179,6 +188,9 @@ class PaymentController extends BaseApiController
     public function cancel(Payment $payment): JsonResponse
     {
         $user = auth('api')->user();
+        if (!$user) {
+            return $this->errorResponse('Unauthenticated.', 401);
+        }
         if ((int) $payment->user_id !== (int) $user->id) {
             return $this->errorResponse('غير مصرح', 403);
         }

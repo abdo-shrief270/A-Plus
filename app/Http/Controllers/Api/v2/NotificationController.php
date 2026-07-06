@@ -17,6 +17,9 @@ class NotificationController extends BaseApiController
     public function index(Request $request): JsonResponse
     {
         $user = auth('api')->user();
+        if (!$user) {
+            return $this->errorResponse('Unauthenticated.', 401);
+        }
         $perPage = min(50, max(1, (int) $request->input('per_page', 20)));
 
         $query = $user->notifications()->orderByDesc('created_at');
@@ -47,6 +50,9 @@ class NotificationController extends BaseApiController
     public function markRead(string $id): JsonResponse
     {
         $user = auth('api')->user();
+        if (!$user) {
+            return $this->errorResponse('Unauthenticated.', 401);
+        }
         $notification = $user->notifications()->where('id', $id)->first();
         if (!$notification) {
             return $this->errorResponse('Notification not found', 404);
@@ -69,6 +75,9 @@ class NotificationController extends BaseApiController
     public function markAllRead(): JsonResponse
     {
         $user = auth('api')->user();
+        if (!$user) {
+            return $this->errorResponse('Unauthenticated.', 401);
+        }
         $user->unreadNotifications->markAsRead();
         return $this->successResponse(
             ['unread_count' => 0],

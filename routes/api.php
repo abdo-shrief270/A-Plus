@@ -183,17 +183,24 @@ Route::prefix('v2')->name('api.v2.')->group(function () {
 
         // Notifications (الإشعارات)
         Route::prefix('notifications')->name('notifications.')->group(function () {
-            Route::get('/', [NotificationController::class, 'index'])->name('index');
-            Route::post('/read-all', [NotificationController::class, 'markAllRead'])->name('readAll');
-            Route::post('/{id}/read', [NotificationController::class, 'markRead'])->name('read');
+            Route::get('/', [NotificationController::class, 'index'])
+                ->middleware('throttle:quiz-read')->name('index');
+            Route::post('/read-all', [NotificationController::class, 'markAllRead'])
+                ->middleware('throttle:quiz-mutate')->name('readAll');
+            Route::post('/{id}/read', [NotificationController::class, 'markRead'])
+                ->middleware('throttle:quiz-mutate')->name('read');
         });
 
         // Payments
         Route::prefix('payments')->name('payments.')->group(function () {
-            Route::get('/', [PaymentController::class, 'index'])->name('index');
-            Route::get('/{payment}', [PaymentController::class, 'show'])->name('show');
-            Route::post('/{payment}/confirm', [PaymentController::class, 'confirm'])->name('confirm');
-            Route::post('/{payment}/cancel', [PaymentController::class, 'cancel'])->name('cancel');
+            Route::get('/', [PaymentController::class, 'index'])
+                ->middleware('throttle:quiz-read')->name('index');
+            Route::get('/{payment}', [PaymentController::class, 'show'])
+                ->middleware('throttle:quiz-read')->name('show');
+            Route::post('/{payment}/confirm', [PaymentController::class, 'confirm'])
+                ->middleware('throttle:quiz-mutate')->name('confirm');
+            Route::post('/{payment}/cancel', [PaymentController::class, 'cancel'])
+                ->middleware('throttle:quiz-mutate')->name('cancel');
         });
 
         // Wallet / points history (سجل النقاط)
@@ -204,11 +211,16 @@ Route::prefix('v2')->name('api.v2.')->group(function () {
 
         // Support tickets / رسائل التواصل
         Route::prefix('tickets')->name('tickets.')->group(function () {
-            Route::get('/', [TicketController::class, 'index'])->name('index');
-            Route::post('/', [TicketController::class, 'store'])->name('store');
-            Route::get('/{ticket}', [TicketController::class, 'show'])->name('show');
-            Route::post('/{ticket}/replies', [TicketController::class, 'reply'])->name('reply');
-            Route::post('/{ticket}/close', [TicketController::class, 'close'])->name('close');
+            Route::get('/', [TicketController::class, 'index'])
+                ->middleware('throttle:quiz-read')->name('index');
+            Route::post('/', [TicketController::class, 'store'])
+                ->middleware('throttle:quiz-mutate')->name('store');
+            Route::get('/{ticket}', [TicketController::class, 'show'])
+                ->middleware('throttle:quiz-read')->name('show');
+            Route::post('/{ticket}/replies', [TicketController::class, 'reply'])
+                ->middleware('throttle:quiz-mutate')->name('reply');
+            Route::post('/{ticket}/close', [TicketController::class, 'close'])
+                ->middleware('throttle:quiz-mutate')->name('close');
         });
 
         // Student Import

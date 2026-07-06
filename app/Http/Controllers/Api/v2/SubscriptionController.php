@@ -47,7 +47,7 @@ class SubscriptionController extends BaseApiController
             }
         }
 
-        $subscriptions = $query->paginate($request->input('per_page', 20));
+        $subscriptions = $query->paginate(min(100, max(1, (int) $request->input('per_page', 20))));
 
         return $this->successResponse(
             SubscriptionResource::collection($subscriptions)->response()->getData(true),

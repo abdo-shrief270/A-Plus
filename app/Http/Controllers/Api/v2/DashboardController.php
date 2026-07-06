@@ -36,6 +36,9 @@ class DashboardController extends BaseApiController
     public function index(): JsonResponse
     {
         $user = auth('api')->user();
+        if (!$user) {
+            return $this->errorResponse('Unauthenticated.', 401);
+        }
         $bundle = $this->dashboardService->bundle($user);
 
         return $this->successResponse([

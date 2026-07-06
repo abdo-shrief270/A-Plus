@@ -60,7 +60,7 @@ class EnrollmentController extends BaseApiController
             }
         }
 
-        $perPage = $request->input('per_page', 15);
+        $perPage = min(100, max(1, (int) $request->input('per_page', 15)));
         $enrollments = $query->paginate($perPage);
 
         return $this->successResponse(

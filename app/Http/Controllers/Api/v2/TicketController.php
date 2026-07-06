@@ -30,6 +30,9 @@ class TicketController extends BaseApiController
     public function index(Request $request): JsonResponse
     {
         $user = auth('api')->user();
+        if (!$user) {
+            return $this->errorResponse('Unauthenticated.', 401);
+        }
 
         $query = Contact::query()
             ->where('user_id', $user->id)
@@ -41,7 +44,7 @@ class TicketController extends BaseApiController
             $query->where('status', $status);
         }
 
-        $tickets = $query->paginate($request->input('per_page', 15));
+        $tickets = $query->paginate(min(100, max(1, (int) $request->input('per_page', 15))));
 
         return $this->successResponse(
             ContactResource::collection($tickets)->response()->getData(true),
@@ -58,6 +61,9 @@ class TicketController extends BaseApiController
     public function show(Contact $ticket): JsonResponse
     {
         $user = auth('api')->user();
+        if (!$user) {
+            return $this->errorResponse('Unauthenticated.', 401);
+        }
         if ($ticket->user_id !== $user->id) {
             return $this->errorResponse('غير مصرح بالوصول إلى هذه الرسالة', 403);
         }
@@ -91,6 +97,9 @@ class TicketController extends BaseApiController
         ]);
 
         $user = auth('api')->user();
+        if (!$user) {
+            return $this->errorResponse('Unauthenticated.', 401);
+        }
 
         $ticket = Contact::create([
             'user_id' => $user->id,
@@ -129,6 +138,9 @@ class TicketController extends BaseApiController
         ]);
 
         $user = auth('api')->user();
+        if (!$user) {
+            return $this->errorResponse('Unauthenticated.', 401);
+        }
         if ($ticket->user_id !== $user->id) {
             return $this->errorResponse('غير مصرح بالرد على هذه الرسالة', 403);
         }
@@ -191,6 +203,9 @@ class TicketController extends BaseApiController
     public function close(Contact $ticket): JsonResponse
     {
         $user = auth('api')->user();
+        if (!$user) {
+            return $this->errorResponse('Unauthenticated.', 401);
+        }
         if ($ticket->user_id !== $user->id) {
             return $this->errorResponse('غير مصرح', 403);
         }
