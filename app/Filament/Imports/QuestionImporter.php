@@ -63,6 +63,16 @@ class QuestionImporter extends Importer
             ImportColumn::make('explanation_text')
                 ->label('شرح السؤال')
                 ->guess(['explanation_text', 'answer_explaination', 'answer_explanation', 'explanation']),
+
+            // Comparison questions (مقارنة): two values to compare. When either
+            // is present the row is saved as a comparison-type question.
+            ImportColumn::make('comparison_value_1')
+                ->label('قيمة المقارنة 1')
+                ->guess(['comparison_value_1', 'comparison_1', 'value_1', 'القيمة الأولى']),
+
+            ImportColumn::make('comparison_value_2')
+                ->label('قيمة المقارنة 2')
+                ->guess(['comparison_value_2', 'comparison_2', 'value_2', 'القيمة الثانية']),
         ];
     }
 
@@ -98,6 +108,39 @@ class QuestionImporter extends Importer
             'uuid' => (string) Str::uuid(),
             'question_type_id' => $this->options['question_type_id'],
         ]);
+    }
+
+    /**
+     * Runs after the columns are filled onto the record but before persisting.
+     * Rows carrying comparison values become comparison-type questions.
+     */
+    protected function beforeSave(): void
+    {
+        // Normalize blanks to null so plain rows keep clean columns.
+        $this->record->comparison_value_1 = filled($this->record->comparison_value_1)
+            ? $this->record->comparison_value_1
+            : null;
+        $this->record->comparison_value_2 = filled($this->record->comparison_value_2)
+            ? $this->record->comparison_value_2
+            : null;
+
+        if ($this->record->comparison_value_1 !== null || $this->record->comparison_value_2 !== null) {
+            $typeId = self::comparisonTypeId();
+            if ($typeId !== null) {
+                $this->record->question_type_id = $typeId;
+            } else {
+                Log::warning('[question_import] comparison values present but no "مقارنة" question type exists; keeping selected type', [
+                    'uuid' => $this->record->uuid,
+                ]);
+            }
+        }
+    }
+
+    protected static ?int $comparisonTypeId = null;
+
+    protected static function comparisonTypeId(): ?int
+    {
+        return self::$comparisonTypeId ??= QuestionType::where('name', 'مقارنة')->value('id');
     }
 
     protected function afterSave(): void

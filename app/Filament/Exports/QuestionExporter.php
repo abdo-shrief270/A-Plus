@@ -22,6 +22,8 @@ class QuestionExporter extends Exporter
             ExportColumn::make('question_type_id'),
             ExportColumn::make('explanation_text'),
             ExportColumn::make('explanation_video_url'),
+            ExportColumn::make('comparison_value_1'),
+            ExportColumn::make('comparison_value_2'),
             ExportColumn::make('created_at'),
             ExportColumn::make('updated_at'),
         ];
